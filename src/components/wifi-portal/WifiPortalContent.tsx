@@ -7,7 +7,7 @@ import AccessGranted from "@/components/AccessGranted";
 import ExtendTimeForWifi from "@/components/ExtendTimeForWifi";
 import LeadCollectionGame from "@/components/LeadCollectionGame";
 import { Button } from "@/components/ui/button";
-import { Timer, Trophy, ChevronLeft, Award, Users } from "lucide-react";
+import { Timer, Trophy, Award, Users } from "lucide-react";
 import { Step, EngagementType, UserData, Reward, MiniGameData } from "./types";
 import UserDashboard from "./UserDashboard";
 import RewardSystem from "./RewardSystem";
@@ -15,6 +15,7 @@ import ReferralSystem from "./ReferralSystem";
 import MiniGamesHub from "./MiniGamesHub";
 import AdminDashboard from "./AdminDashboard";
 import PaymentPortal from "./PaymentPortal";
+import { useLanguage } from "../LanguageContext";
 
 interface WifiPortalContentProps {
   currentStep: Step;
@@ -49,6 +50,8 @@ const WifiPortalContent = ({
   handleGameComplete,
   handlePaymentComplete,
 }: WifiPortalContentProps) => {
+  const { t } = useLanguage();
+  
   return (
     <>
       {currentStep === Step.AUTH && (
@@ -77,7 +80,7 @@ const WifiPortalContent = ({
               className="flex-1"
             >
               <Timer className="mr-2 h-4 w-4" />
-              Regarder une vidéo
+              {t("watchVideo")}
             </Button>
             
             <Button 
@@ -86,7 +89,7 @@ const WifiPortalContent = ({
               className="flex-1"
             >
               <Trophy className="mr-2 h-4 w-4" />
-              Jouer
+              {t("playGame")}
             </Button>
             
             <Button 
@@ -95,7 +98,7 @@ const WifiPortalContent = ({
               className="flex-1"
             >
               <Award className="mr-2 h-4 w-4" />
-              Récompenses
+              {t("rewards")}
             </Button>
             
             <Button 
@@ -104,7 +107,7 @@ const WifiPortalContent = ({
               className="flex-1"
             >
               <Users className="mr-2 h-4 w-4" />
-              Profil
+              {t("profile")}
             </Button>
           </div>
           
@@ -117,7 +120,7 @@ const WifiPortalContent = ({
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
               </svg>
-              Acheter du temps
+              {t("buyTime")}
             </Button>
             
             {userData.isAdmin && (
@@ -130,7 +133,7 @@ const WifiPortalContent = ({
                   <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                   <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                 </svg>
-                Administration
+                {t("administration")}
               </Button>
             )}
             
@@ -144,7 +147,7 @@ const WifiPortalContent = ({
                   <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                   <path d="M6 1v3M10 1v3M14 1v3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                 </svg>
-                Inviter des amis
+                {t("inviteFriends")}
               </Button>
             )}
           </div>
