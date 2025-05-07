@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface LanguageSelectorProps {
   variant?: "select" | "buttons";
@@ -63,29 +64,31 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = "select",
   }
 
   return (
-    <Select value={language} onValueChange={(value) => setLanguage(value as Language)} className={className}>
-      <SelectTrigger className="w-[130px]">
-        <span className="mr-2">{flags[language]}</span>
-        <SelectValue placeholder={names[language]} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="en">
-          <div className="flex items-center">
-            <span className="mr-2">{flags.en}</span> {names.en}
-          </div>
-        </SelectItem>
-        <SelectItem value="fr">
-          <div className="flex items-center">
-            <span className="mr-2">{flags.fr}</span> {names.fr}
-          </div>
-        </SelectItem>
-        <SelectItem value="es">
-          <div className="flex items-center">
-            <span className="mr-2">{flags.es}</span> {names.es}
-          </div>
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <div className={className}>
+      <Select value={language} onValueChange={(value) => setLanguage(value as Language)}>
+        <SelectTrigger className="w-[130px]">
+          <span className="mr-2">{flags[language]}</span>
+          <SelectValue placeholder={names[language]} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">
+            <div className="flex items-center">
+              <span className="mr-2">{flags.en}</span> {names.en}
+            </div>
+          </SelectItem>
+          <SelectItem value="fr">
+            <div className="flex items-center">
+              <span className="mr-2">{flags.fr}</span> {names.fr}
+            </div>
+          </SelectItem>
+          <SelectItem value="es">
+            <div className="flex items-center">
+              <span className="mr-2">{flags.es}</span> {names.es}
+            </div>
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 
