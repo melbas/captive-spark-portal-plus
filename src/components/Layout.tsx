@@ -3,6 +3,7 @@ import React, { ReactNode } from 'react';
 import Logo from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { ThemeProvider } from './ThemeProvider';
+import LanguageSelector from './LanguageSelector';
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,7 +21,10 @@ const Layout: React.FC<LayoutProps> = ({
       <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''}`}>
         <header className="py-4 px-6 flex items-center justify-between">
           {showLogo && <Logo />}
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            <LanguageSelector />
+            <ThemeToggle />
+          </div>
         </header>
         <main className="container mx-auto px-4 py-8">
           {children}

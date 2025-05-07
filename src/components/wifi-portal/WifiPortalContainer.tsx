@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useWifiPortal } from "./useWifiPortal";
 import WifiPortalContent from "./WifiPortalContent";
+import { useLanguage } from "../LanguageContext";
+import LanguageSelector from "../LanguageSelector";
 
 const WifiPortalContainer = () => {
   const {
@@ -28,22 +30,27 @@ const WifiPortalContainer = () => {
     handlePaymentComplete
   } = useWifiPortal();
   
+  const { t } = useLanguage();
+  
   return (
     <Layout withGradientBg>
       <div className="flex flex-col items-center justify-center min-h-[80vh] py-8">
         <div className="w-full max-w-md mb-8">
-          <h1 className="text-4xl font-bold text-center mb-2 text-foreground">
-            SparkWiFi Portal
-          </h1>
+          <div className="flex justify-between items-center mb-2">
+            <h1 className="text-4xl font-bold text-center text-foreground">
+              {t("portal")}
+            </h1>
+            <LanguageSelector variant="buttons" />
+          </div>
           <p className="text-center text-muted-foreground">
-            Connect to our high-speed WiFi network
+            {t("connectToWifi")}
           </p>
           
           {/* For demo purposes - show the simulated MAC address */}
           <p className="text-center text-xs text-muted-foreground mt-2">
-            Demo MAC: {getMacAddress()}
+            {t("demoMac")} {getMacAddress()}
             <Button variant="ghost" size="sm" className="ml-2 h-5 px-2" onClick={handleReset}>
-              <ChevronLeft className="h-3 w-3 mr-1" /> Reset
+              <ChevronLeft className="h-3 w-3 mr-1" /> {t("reset")}
             </Button>
           </p>
         </div>
@@ -52,7 +59,7 @@ const WifiPortalContainer = () => {
           <Card className="w-full max-w-md p-6">
             <div className="flex flex-col items-center justify-center">
               <div className="h-6 w-6 border-t-2 border-primary rounded-full animate-spin"></div>
-              <p className="mt-4 text-muted-foreground">Loading...</p>
+              <p className="mt-4 text-muted-foreground">{t("loading")}</p>
             </div>
           </Card>
         ) : (
@@ -76,10 +83,10 @@ const WifiPortalContainer = () => {
         
         <Card className="w-full max-w-md mt-8 p-4 glass-card">
           <p className="text-sm text-center text-muted-foreground">
-            By connecting to our network, you agree to our{" "}
-            <a href="#" className="text-primary hover:underline">Terms of Service</a>{" "}
-            and{" "}
-            <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+            {t("byConnecting")}{" "}
+            <a href="#" className="text-primary hover:underline">{t("termsOfService")}</a>{" "}
+            {t("and")}{" "}
+            <a href="#" className="text-primary hover:underline">{t("privacyPolicy")}</a>
           </p>
         </Card>
       </div>
