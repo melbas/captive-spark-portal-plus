@@ -25,31 +25,36 @@ interface AuthBoxProps {
   onAuth: (method: string, data: any) => void;
 }
 
-// Country codes for West African countries
+// Country codes for West African countries and other regions
 interface CountryCode {
   code: string;
   name: string;
   flag: string;
+  example: string;
 }
 
 const countryCodes: CountryCode[] = [
-  { code: "+221", name: "Senegal", flag: "🇸🇳" },
-  { code: "+225", name: "Côte d'Ivoire", flag: "🇨🇮" },
-  { code: "+223", name: "Mali", flag: "🇲🇱" },
-  { code: "+224", name: "Guinea", flag: "🇬🇳" },
-  { code: "+229", name: "Benin", flag: "🇧🇯" },
-  { code: "+226", name: "Burkina Faso", flag: "🇧🇫" },
-  { code: "+227", name: "Niger", flag: "🇳🇪" },
-  { code: "+228", name: "Togo", flag: "🇹🇬" },
-  { code: "+220", name: "Gambia", flag: "🇬🇲" },
-  { code: "+245", name: "Guinea-Bissau", flag: "🇬🇼" },
-  { code: "+234", name: "Nigeria", flag: "🇳🇬" },
-  { code: "+233", name: "Ghana", flag: "🇬🇭" },
-  { code: "+237", name: "Cameroon", flag: "🇨🇲" },
-  { code: "+235", name: "Chad", flag: "🇹🇩" },
-  { code: "+241", name: "Gabon", flag: "🇬🇦" },
-  { code: "+240", name: "Equatorial Guinea", flag: "🇬🇶" },
-  { code: "+236", name: "Central African Republic", flag: "🇨🇫" },
+  { code: "+221", name: "Senegal", flag: "🇸🇳", example: "77 123 45 67" },
+  { code: "+225", name: "Côte d'Ivoire", flag: "🇨🇮", example: "07 12 34 56" },
+  { code: "+223", name: "Mali", flag: "🇲🇱", example: "76 12 34 56" },
+  { code: "+224", name: "Guinea", flag: "🇬🇳", example: "62 12 34 56" },
+  { code: "+229", name: "Benin", flag: "🇧🇯", example: "97 12 34 56" },
+  { code: "+226", name: "Burkina Faso", flag: "🇧🇫", example: "70 12 34 56" },
+  { code: "+227", name: "Niger", flag: "🇳🇪", example: "90 12 34 56" },
+  { code: "+228", name: "Togo", flag: "🇹🇬", example: "90 12 34 56" },
+  { code: "+220", name: "Gambia", flag: "🇬🇲", example: "7 123 45 67" },
+  { code: "+245", name: "Guinea-Bissau", flag: "🇬🇼", example: "95 567 89 01" },
+  { code: "+234", name: "Nigeria", flag: "🇳🇬", example: "803 123 4567" },
+  { code: "+233", name: "Ghana", flag: "🇬🇭", example: "24 123 4567" },
+  { code: "+237", name: "Cameroon", flag: "🇨🇲", example: "6 71 23 45 67" },
+  { code: "+235", name: "Chad", flag: "🇹🇩", example: "63 12 34 56" },
+  { code: "+241", name: "Gabon", flag: "🇬🇦", example: "06 12 34 56" },
+  { code: "+240", name: "Equatorial Guinea", flag: "🇬🇶", example: "222 12 34 56" },
+  { code: "+236", name: "Central African Republic", flag: "🇨🇫", example: "70 12 34 56" },
+  { code: "+33", name: "France", flag: "🇫🇷", example: "6 12 34 56 78" },
+  { code: "+1", name: "USA/Canada", flag: "🇺🇸", example: "555 123 4567" },
+  { code: "+44", name: "United Kingdom", flag: "🇬🇧", example: "7911 123456" },
+  { code: "+34", name: "Spain", flag: "🇪🇸", example: "612 345 678" },
 ];
 
 const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
@@ -63,6 +68,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
   
+  // Get the current country example based on selected code
+  const getCurrentCountryExample = () => {
+    const country = countryCodes.find(c => c.code === countryCode);
+    return country ? country.example : t("localFormat");
+  };
+  
   // Clear any error when the user types
   useEffect(() => {
     if (phoneNumber) setPhoneError('');
@@ -75,7 +86,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   // Basic validation functions
   const isValidPhoneNumber = (phone: string): boolean => {
     // Simple validation - phone should be numbers only and at least 6 digits
-    return /^[0-9]{6,}$/.test(phone.replace(/\s/g, ''));
+    // Remove spaces and other non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, '');
+    return digitsOnly.length >= 6 && digitsOnly.length <= 15;
   };
   
   const isValidEmail = (email: string): boolean => {
@@ -124,30 +137,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     if (otp === '1234') { // Demo code
       toast.success(t("verificationSuccessful"));
       onAuth('otp', { 
-        phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber}` : undefined, 
+        phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber.replace(/\s/g, '')}` : undefined, 
         email: authMethod === 'email' ? email : undefined, 
         otp 
       });
     } else {
       toast.error(t("invalidCode"));
-    }
-  };
-
-  const formatPhoneExample = () => {
-    switch(countryCode) {
-      case "+221": return "77 123 45 67"; // Senegal
-      case "+225": return "07 12 34 56"; // Côte d'Ivoire
-      case "+223": return "76 12 34 56"; // Mali
-      case "+224": return "62 12 34 56"; // Guinea
-      case "+229": return "97 12 34 56"; // Benin
-      case "+226": return "70 12 34 56"; // Burkina Faso
-      case "+227": return "90 12 34 56"; // Niger
-      case "+228": return "90 12 34 56"; // Togo
-      case "+220": return "7 123 45 67"; // Gambia
-      case "+245": return "95 567 89 01"; // Guinea-Bissau
-      case "+234": return "803 123 4567"; // Nigeria
-      case "+233": return "24 123 4567"; // Ghana
-      default: return t("localFormat");
     }
   };
 
@@ -177,14 +172,22 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                   <div className="flex space-x-2">
                     <Select value={countryCode} onValueChange={setCountryCode}>
                       <SelectTrigger className="w-[110px]">
-                        <SelectValue placeholder={t("countryCode")} />
+                        <SelectValue>
+                          <div className="flex items-center">
+                            <span className="mr-1">
+                              {(countryCodes.find(c => c.code === countryCode) || { flag: '🌍' }).flag}
+                            </span>
+                            <span>{countryCode}</span>
+                          </div>
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {countryCodes.map((country) => (
                           <SelectItem key={country.code} value={country.code}>
                             <div className="flex items-center">
                               <span className="mr-2">{country.flag}</span>
-                              <span>{country.code}</span>
+                              <span className="mr-2">{country.code}</span>
+                              <span className="text-xs text-muted-foreground">{country.name}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -193,7 +196,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                     <div className="relative flex-1">
                       <Input 
                         id="phone" 
-                        placeholder={formatPhoneExample()} 
+                        placeholder={getCurrentCountryExample()}
                         className={`pl-2 ${phoneError ? 'border-red-500' : ''}`}
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
@@ -204,7 +207,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                     <p className="text-xs text-red-500">{phoneError}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    {t("example")}: {formatPhoneExample()}
+                    {t("example")}: {getCurrentCountryExample()}
                   </p>
                 </div>
                 <Button 

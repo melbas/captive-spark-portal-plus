@@ -36,23 +36,26 @@ const WifiPortalContainer = () => {
     <Layout withGradientBg>
       <div className="flex flex-col items-center justify-center min-h-[80vh] py-8">
         <div className="w-full max-w-md mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <h1 className="text-4xl font-bold text-center text-foreground">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h1 className="text-4xl font-bold text-center md:text-left text-foreground">
               {t("portal")}
             </h1>
             <LanguageSelector variant="buttons" />
           </div>
-          <p className="text-center text-muted-foreground">
+          
+          <p className="text-center md:text-left text-muted-foreground mt-2">
             {t("connectToWifi")}
           </p>
           
           {/* For demo purposes - show the simulated MAC address */}
-          <p className="text-center text-xs text-muted-foreground mt-2">
-            {t("demoMac")} {getMacAddress()}
-            <Button variant="ghost" size="sm" className="ml-2 h-5 px-2" onClick={handleReset}>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
+            <p className="text-xs text-muted-foreground">
+              {t("demoMac")} {getMacAddress()}
+            </p>
+            <Button variant="ghost" size="sm" className="h-6 px-2 py-0" onClick={handleReset}>
               <ChevronLeft className="h-3 w-3 mr-1" /> {t("reset")}
             </Button>
-          </p>
+          </div>
         </div>
         
         {loading ? (
