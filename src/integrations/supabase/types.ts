@@ -9,7 +9,107 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      portal_statistics: {
+        Row: {
+          date: string | null
+          games_played: number | null
+          id: string
+          leads_collected: number | null
+          quiz_completions: number | null
+          total_connections: number | null
+          video_views: number | null
+        }
+        Insert: {
+          date?: string | null
+          games_played?: number | null
+          id?: string
+          leads_collected?: number | null
+          quiz_completions?: number | null
+          total_connections?: number | null
+          video_views?: number | null
+        }
+        Update: {
+          date?: string | null
+          games_played?: number | null
+          id?: string
+          leads_collected?: number | null
+          quiz_completions?: number | null
+          total_connections?: number | null
+          video_views?: number | null
+        }
+        Relationships: []
+      }
+      wifi_sessions: {
+        Row: {
+          duration_minutes: number | null
+          engagement_data: Json | null
+          engagement_type: string | null
+          id: string
+          is_active: boolean | null
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          duration_minutes?: number | null
+          engagement_data?: Json | null
+          engagement_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          duration_minutes?: number | null
+          engagement_data?: Json | null
+          engagement_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wifi_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "wifi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wifi_users: {
+        Row: {
+          auth_method: string
+          created_at: string | null
+          email: string | null
+          id: string
+          last_connection: string | null
+          mac_address: string | null
+          name: string | null
+          phone: string | null
+        }
+        Insert: {
+          auth_method: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_connection?: string | null
+          mac_address?: string | null
+          name?: string | null
+          phone?: string | null
+        }
+        Update: {
+          auth_method?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_connection?: string | null
+          mac_address?: string | null
+          name?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
