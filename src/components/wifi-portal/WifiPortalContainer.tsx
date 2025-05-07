@@ -1,13 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Layout from "@/components/Layout";
-import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Timer, Trophy, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useWifiPortal } from "./useWifiPortal";
-import { Step, EngagementType, UserData } from "./types";
-import WifiPortalContent from "./WifiPortalContent"; // Add this import
+import WifiPortalContent from "./WifiPortalContent";
 
 const WifiPortalContainer = () => {
   const {
@@ -21,6 +19,9 @@ const WifiPortalContainer = () => {
     handleContinue,
     handleExtendTime,
     handleLeadGameComplete,
+    handleNavigate,
+    handleRedeemReward,
+    handleInvite,
     handleReset,
     getMacAddress
   } = useWifiPortal();
@@ -63,6 +64,9 @@ const WifiPortalContainer = () => {
             handleContinue={handleContinue}
             handleExtendTime={handleExtendTime}
             handleLeadGameComplete={handleLeadGameComplete}
+            handleNavigate={handleNavigate}
+            handleRedeemReward={handleRedeemReward}
+            handleInvite={handleInvite}
           />
         )}
         

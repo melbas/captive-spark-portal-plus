@@ -7,8 +7,11 @@ import AccessGranted from "@/components/AccessGranted";
 import ExtendTimeForWifi from "@/components/ExtendTimeForWifi";
 import LeadCollectionGame from "@/components/LeadCollectionGame";
 import { Button } from "@/components/ui/button";
-import { Timer, Trophy } from "lucide-react";
-import { Step, EngagementType, UserData } from "./types";
+import { Timer, Trophy, ChevronLeft, Award, Users } from "lucide-react";
+import { Step, EngagementType, UserData, Reward } from "./types";
+import UserDashboard from "./UserDashboard";
+import RewardSystem from "./RewardSystem";
+import ReferralSystem from "./ReferralSystem";
 
 interface WifiPortalContentProps {
   currentStep: Step;
@@ -20,6 +23,9 @@ interface WifiPortalContentProps {
   handleContinue: () => void;
   handleExtendTime: (additionalMinutes: number) => void;
   handleLeadGameComplete: (leadData: any) => void;
+  handleNavigate: (section: string) => void;
+  handleRedeemReward: (reward: Reward) => void;
+  handleInvite: (email: string) => void;
 }
 
 const WifiPortalContent = ({
@@ -32,6 +38,9 @@ const WifiPortalContent = ({
   handleContinue,
   handleExtendTime,
   handleLeadGameComplete,
+  handleNavigate,
+  handleRedeemReward,
+  handleInvite,
 }: WifiPortalContentProps) => {
   return (
     <>
@@ -54,14 +63,14 @@ const WifiPortalContent = ({
             onContinue={handleContinue} 
           />
           
-          <div className="w-full max-w-md mt-6 flex flex-col md:flex-row gap-3">
+          <div className="w-full max-w-md mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
             <Button 
               variant="outline" 
               onClick={() => setCurrentStep(Step.EXTEND_TIME)}
               className="flex-1"
             >
               <Timer className="mr-2 h-4 w-4" />
-              Watch Video for More Time
+              Regarder une vidéo
             </Button>
             
             <Button 
@@ -70,7 +79,25 @@ const WifiPortalContent = ({
               className="flex-1"
             >
               <Trophy className="mr-2 h-4 w-4" />
-              Play Game for Free WiFi
+              Jouer
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => handleNavigate("rewards")}
+              className="flex-1"
+            >
+              <Award className="mr-2 h-4 w-4" />
+              Récompenses
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => handleNavigate("dashboard")}
+              className="flex-1"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Profil
             </Button>
           </div>
         </>
@@ -82,6 +109,31 @@ const WifiPortalContent = ({
       
       {currentStep === Step.LEAD_GAME && (
         <LeadCollectionGame onComplete={handleLeadGameComplete} />
+      )}
+      
+      {currentStep === Step.DASHBOARD && (
+        <UserDashboard 
+          userData={userData}
+          onBack={() => setCurrentStep(Step.SUCCESS)}
+          onNavigate={handleNavigate}
+          onExtendTime={() => setCurrentStep(Step.EXTEND_TIME)}
+        />
+      )}
+      
+      {currentStep === Step.REWARDS && (
+        <RewardSystem 
+          userData={userData}
+          onBack={() => setCurrentStep(Step.SUCCESS)}
+          onRedeem={handleRedeemReward}
+        />
+      )}
+      
+      {currentStep === Step.REFERRAL && (
+        <ReferralSystem 
+          userData={userData}
+          onBack={() => setCurrentStep(Step.SUCCESS)}
+          onInvite={handleInvite}
+        />
       )}
     </>
   );
