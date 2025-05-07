@@ -56,27 +56,29 @@ const CountryCodeSelector: React.FC<CountryCodeSelectorProps> = ({
   const selectedCountry = countryCodes.find(country => country.code === value) || countryCodes[0];
 
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={`w-[110px] ${className || ''}`}>
-        <SelectValue>
-          <div className="flex items-center">
-            <span className="mr-1">{selectedCountry.flag}</span>
-            <span>{selectedCountry.code}</span>
-          </div>
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent className="max-h-[300px]">
-        {countryCodes.map((country) => (
-          <SelectItem key={country.code} value={country.code}>
+    <div className={className}>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-[110px]">
+          <SelectValue>
             <div className="flex items-center">
-              <span className="mr-2">{country.flag}</span>
-              <span className="mr-2">{country.code}</span>
-              <span className="text-xs text-muted-foreground truncate">{country.name}</span>
+              <span className="mr-1">{selectedCountry.flag}</span>
+              <span>{selectedCountry.code}</span>
             </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent className="max-h-[300px]">
+          {countryCodes.map((country) => (
+            <SelectItem key={country.code} value={country.code}>
+              <div className="flex items-center">
+                <span className="mr-2">{country.flag}</span>
+                <span className="mr-2">{country.code}</span>
+                <span className="text-xs text-muted-foreground truncate">{country.name}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 
