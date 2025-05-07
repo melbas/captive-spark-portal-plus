@@ -7,13 +7,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
 import { CheckCircle, ArrowRight, Mail, Phone } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useLanguage } from "@/components/LanguageContext";
 
 interface AuthBoxProps {
   onAuth: (method: string, data: any) => void;
 }
 
+// Country codes for West African countries
+interface CountryCode {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+const countryCodes: CountryCode[] = [
+  { code: "+221", name: "Senegal", flag: "🇸🇳" },
+  { code: "+225", name: "Côte d'Ivoire", flag: "🇨🇮" },
+  { code: "+223", name: "Mali", flag: "🇲🇱" },
+  { code: "+224", name: "Guinea", flag: "🇬🇳" },
+  { code: "+229", name: "Benin", flag: "🇧🇯" },
+  { code: "+226", name: "Burkina Faso", flag: "🇧🇫" },
+  { code: "+227", name: "Niger", flag: "🇳🇪" },
+  { code: "+228", name: "Togo", flag: "🇹🇬" },
+  { code: "+220", name: "Gambia", flag: "🇬🇲" },
+  { code: "+245", name: "Guinea-Bissau", flag: "🇬🇼" },
+];
+
 const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
+  const { t } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [countryCode, setCountryCode] = useState("+221"); // Senegal as default
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -43,7 +73,11 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     // Simulate OTP verification - in production, this would verify against a backend
     if (otp === '1234') { // Demo code
       toast.success("Verification successful");
-      onAuth('otp', { phoneNumber, email, otp });
+      onAuth('otp', { 
+        phoneNumber: phoneNumber ? `${countryCode}${phoneNumber}` : undefined, 
+        email, 
+        otp 
+      });
     } else {
       toast.error("Invalid verification code");
     }
@@ -68,16 +102,35 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                      id="phone" 
-                      placeholder="+221 xx xxx xx xx" 
-                      className="pl-10" 
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                    />
+                  <div className="flex space-x-2">
+                    <Select value={countryCode} onValueChange={setCountryCode}>
+                      <SelectTrigger className="w-[110px]">
+                        <SelectValue placeholder="Code" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countryCodes.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            <div className="flex items-center">
+                              <span className="mr-2">{country.flag}</span>
+                              <span>{country.code}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="relative flex-1">
+                      <Input 
+                        id="phone" 
+                        placeholder="77 123 45 67" 
+                        className="pl-2" 
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                      />
+                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Example: {countryCode === '+221' ? '77 123 45 67' : 'your local format'}
+                  </p>
                 </div>
                 <Button 
                   className="w-full" 
@@ -118,7 +171,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Verify Code</CardTitle>
             <CardDescription className="text-center">
-              Enter the verification code sent to your {phoneNumber || email}
+              Enter the verification code sent to your {phoneNumber ? `${countryCode} ${phoneNumber}` : email}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -21,9 +21,9 @@ export const translations: Translations = {
     es: "Conéctese a nuestra red WiFi de alta velocidad"
   },
   watchVideo: {
-    en: "Watch Video for More Time",
-    fr: "Regarder une vidéo pour plus de temps",
-    es: "Ver video para más tiempo"
+    en: "Watch Video",
+    fr: "Regarder une vidéo",
+    es: "Ver vídeo"
   },
   playGame: {
     en: "Play Game",
@@ -66,34 +66,39 @@ export const translations: Translations = {
     es: "Política de privacidad"
   },
   portal: {
-    en: "SparkWiFi Portal",
-    fr: "Portail SparkWiFi",
-    es: "Portal SparkWiFi"
+    en: "Portal",
+    fr: "Portail",
+    es: "Portal"
   },
-  byConnecting: {
-    en: "By connecting to our network, you agree to our",
-    fr: "En vous connectant à notre réseau, vous acceptez nos",
-    es: "Al conectarse a nuestra red, acepta nuestros"
+  phoneNumber: {
+    en: "Phone Number",
+    fr: "Numéro de téléphone",
+    es: "Número de teléfono"
   },
-  and: {
-    en: "and",
-    fr: "et",
-    es: "y"
+  emailAddress: {
+    en: "Email Address",
+    fr: "Adresse e-mail",
+    es: "Correo electrónico"
   },
-  loading: {
-    en: "Loading...",
-    fr: "Chargement...",
-    es: "Cargando..."
+  verificationCode: {
+    en: "Verification Code",
+    fr: "Code de vérification",
+    es: "Código de verificación"
   },
-  reset: {
-    en: "Reset",
-    fr: "Réinitialiser",
-    es: "Reiniciar"
+  sendCode: {
+    en: "Send Code",
+    fr: "Envoyer le code",
+    es: "Enviar código"
   },
-  demoMac: {
-    en: "Demo MAC:",
-    fr: "MAC démo :",
-    es: "MAC demo:"
+  verify: {
+    en: "Verify",
+    fr: "Vérifier",
+    es: "Verificar"
+  },
+  goBack: {
+    en: "Go Back",
+    fr: "Retour",
+    es: "Volver"
   }
 };
 
@@ -111,7 +116,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Try to get language from localStorage or default to English
   const [language, setLanguage] = useState<Language>(() => {
     const savedLanguage = localStorage.getItem("wifi-portal-language");
-    return (savedLanguage as Language) || "en";
+    return (savedLanguage as Language) || "fr"; // Default to French
   });
 
   // Save language preference to localStorage
@@ -121,11 +126,10 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Translation function
   const t = (key: string): string => {
-    if (!translations[key]) {
-      console.warn(`Translation key not found: ${key}`);
-      return key;
+    if (translations[key]) {
+      return translations[key][language] || key;
     }
-    return translations[key][language];
+    return key; // Fallback to the key itself if translation not found
   };
 
   return (
@@ -135,10 +139,10 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
-// Custom hook to use the language context
-export const useLanguage = (): LanguageContextType => {
+// Hook for easy access to the language context
+export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
