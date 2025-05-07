@@ -99,6 +99,86 @@ export const translations: Translations = {
     en: "Go Back",
     fr: "Retour",
     es: "Volver"
+  },
+  chooseVerification: {
+    en: "Choose your preferred verification method",
+    fr: "Choisissez votre méthode de vérification préférée",
+    es: "Elija su método de verificación preferido"
+  },
+  localFormat: {
+    en: "your local format",
+    fr: "votre format local",
+    es: "su formato local"
+  },
+  example: {
+    en: "Example",
+    fr: "Exemple",
+    es: "Ejemplo"
+  },
+  verificationCodeSent: {
+    en: "Verification code sent to your",
+    fr: "Code de vérification envoyé à votre",
+    es: "Código de verificación enviado a su"
+  },
+  toPhone: {
+    en: "phone",
+    fr: "téléphone",
+    es: "teléfono"
+  },
+  toEmail: {
+    en: "email",
+    fr: "email",
+    es: "correo electrónico"
+  },
+  enterValidCode: {
+    en: "Please enter a valid verification code",
+    fr: "Veuillez entrer un code de vérification valide",
+    es: "Por favor, introduzca un código de verificación válido"
+  },
+  verificationSuccessful: {
+    en: "Verification successful",
+    fr: "Vérification réussie",
+    es: "Verificación exitosa"
+  },
+  invalidCode: {
+    en: "Invalid verification code",
+    fr: "Code de vérification invalide",
+    es: "Código de verificación no válido"
+  },
+  useCodeForDemo: {
+    en: "Use code",
+    fr: "Utilisez le code",
+    es: "Use el código"
+  },
+  enterCodeSentTo: {
+    en: "Enter the verification code sent to",
+    fr: "Entrez le code de vérification envoyé à",
+    es: "Introduzca el código de verificación enviado a"
+  },
+  demoMac: {
+    en: "Demo MAC:",
+    fr: "MAC de démo:",
+    es: "MAC de demostración:"
+  },
+  loading: {
+    en: "Loading...",
+    fr: "Chargement...",
+    es: "Cargando..."
+  },
+  reset: {
+    en: "Reset",
+    fr: "Réinitialiser",
+    es: "Resetear"
+  },
+  byConnecting: {
+    en: "By connecting to our network, you agree to our",
+    fr: "En vous connectant à notre réseau, vous acceptez nos",
+    es: "Al conectarse a nuestra red, acepta nuestros"
+  },
+  and: {
+    en: "and",
+    fr: "et",
+    es: "y"
   }
 };
 

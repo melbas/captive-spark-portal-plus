@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
 import { CheckCircle, ArrowRight, Mail, Phone } from 'lucide-react';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -15,6 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/components/LanguageContext";
+import { 
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot
+} from "@/components/ui/input-otp";
 
 interface AuthBoxProps {
   onAuth: (method: string, data: any) => void;
@@ -47,6 +52,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'sms' | 'email'>('sms');
   
   const handleSendOtp = (method: 'sms' | 'email') => {
     // In a real implementation, this would call an API endpoint to send the OTP
@@ -60,26 +66,37 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
       return;
     }
     
-    toast.success(`Verification code sent to your ${method === 'sms' ? 'phone' : 'email'}`);
+    setAuthMethod(method);
+    toast.success(`${t("verificationCodeSent")} ${method === 'sms' ? t("toPhone") : t("toEmail")}`);
     setIsVerifying(true);
   };
   
   const handleVerifyOtp = () => {
-    if (!otp) {
-      toast.error("Please enter the verification code");
+    if (!otp || otp.length < 4) {
+      toast.error(t("enterValidCode"));
       return;
     }
     
     // Simulate OTP verification - in production, this would verify against a backend
     if (otp === '1234') { // Demo code
-      toast.success("Verification successful");
+      toast.success(t("verificationSuccessful"));
       onAuth('otp', { 
-        phoneNumber: phoneNumber ? `${countryCode}${phoneNumber}` : undefined, 
-        email, 
+        phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber}` : undefined, 
+        email: authMethod === 'email' ? email : undefined, 
         otp 
       });
     } else {
-      toast.error("Invalid verification code");
+      toast.error(t("invalidCode"));
+    }
+  };
+
+  const formatPhoneExample = () => {
+    switch(countryCode) {
+      case "+221": return "77 123 45 67"; // Senegal
+      case "+225": return "07 12 34 56"; // Côte d'Ivoire
+      case "+223": return "76 12 34 56"; // Mali
+      case "+224": return "62 12 34 56"; // Guinea
+      default: return t("localFormat");
     }
   };
 
@@ -88,9 +105,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
       {!isVerifying ? (
         <Tabs defaultValue="sms" className="w-full">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Connect to Wi-Fi</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">{t("connectToWifi")}</CardTitle>
             <CardDescription className="text-center">
-              Choose your preferred verification method
+              {t("chooseVerification")}
             </CardDescription>
             <TabsList className="grid w-full grid-cols-2 mt-4">
               <TabsTrigger value="sms">SMS</TabsTrigger>
@@ -101,7 +118,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             <TabsContent value="sms" className="animate-slide-in">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">{t("phoneNumber")}</Label>
                   <div className="flex space-x-2">
                     <Select value={countryCode} onValueChange={setCountryCode}>
                       <SelectTrigger className="w-[110px]">
@@ -121,7 +138,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                     <div className="relative flex-1">
                       <Input 
                         id="phone" 
-                        placeholder="77 123 45 67" 
+                        placeholder={formatPhoneExample()} 
                         className="pl-2" 
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
@@ -129,21 +146,21 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Example: {countryCode === '+221' ? '77 123 45 67' : 'your local format'}
+                    {t("example")}: {formatPhoneExample()}
                   </p>
                 </div>
                 <Button 
                   className="w-full" 
                   onClick={() => handleSendOtp('sms')}
                 >
-                  Send Code <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("sendCode")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </TabsContent>
             <TabsContent value="email" className="animate-slide-in">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">{t("emailAddress")}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                     <Input 
@@ -160,7 +177,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                   className="w-full" 
                   onClick={() => handleSendOtp('email')}
                 >
-                  Send Code <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("sendCode")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </TabsContent>
@@ -169,30 +186,35 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
       ) : (
         <div className="animate-fade-in">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Verify Code</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">{t("verificationCode")}</CardTitle>
             <CardDescription className="text-center">
-              Enter the verification code sent to your {phoneNumber ? `${countryCode} ${phoneNumber}` : email}
+              {authMethod === 'sms' 
+                ? `${t("enterCodeSentTo")} ${countryCode} ${phoneNumber}` 
+                : `${t("enterCodeSentTo")} ${email}`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="otp">Verification Code</Label>
-              <Input 
-                id="otp" 
-                placeholder="Enter code" 
-                className="text-center text-lg tracking-widest"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
+              <Label htmlFor="otp">{t("verificationCode")}</Label>
+              <div className="flex justify-center">
+                <InputOTP maxLength={4} value={otp} onChange={setOtp}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
               <p className="text-xs text-center text-muted-foreground">
-                Use code <span className="font-bold">1234</span> for demo
+                {t("useCodeForDemo")} <span className="font-bold">1234</span>
               </p>
             </div>
             <Button 
               className="w-full" 
               onClick={handleVerifyOtp}
             >
-              Verify <CheckCircle className="ml-2 h-4 w-4" />
+              {t("verify")} <CheckCircle className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
           <CardFooter>
@@ -201,7 +223,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
               className="w-full" 
               onClick={() => setIsVerifying(false)}
             >
-              Go Back
+              {t("goBack")}
             </Button>
           </CardFooter>
         </div>
