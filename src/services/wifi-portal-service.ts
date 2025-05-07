@@ -58,6 +58,27 @@ export const wifiPortalService = {
       return null;
     }
     
+    if (data) {
+      // Update the last_connection timestamp whenever we retrieve a user by MAC
+      await this.updateUser(data.id, { last_connection: new Date().toISOString() });
+    }
+    
+    return data;
+  },
+  
+  async updateUser(userId: string, updateData: Partial<WifiUser>): Promise<WifiUser | null> {
+    const { data, error } = await supabase
+      .from('wifi_users')
+      .update(updateData)
+      .eq('id', userId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error updating user:", error);
+      return null;
+    }
+    
     return data;
   },
   
