@@ -2,24 +2,34 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Wifi } from 'lucide-react';
+import { ArrowRight, Wifi, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AccessGrantedProps {
-  duration?: string;
+  duration?: number; // Duration in minutes
   downloadSpeed?: string;
   uploadSpeed?: string;
   onContinue?: () => void;
 }
 
 const AccessGranted: React.FC<AccessGrantedProps> = ({ 
-  duration = "2 hours", 
+  duration = 30, // Default 30 minutes
   downloadSpeed = "10 Mbps",
   uploadSpeed = "5 Mbps",
   onContinue 
 }) => {
   const [countdown, setCountdown] = useState(5);
+  const [sessionTime, setSessionTime] = useState(duration * 60); // Convert to seconds
+  const [sessionActive, setSessionActive] = useState(true);
   
-  // Simulate auto-redirect
+  // Format time as MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  
+  // Redirect countdown
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -34,6 +44,25 @@ const AccessGranted: React.FC<AccessGrantedProps> = ({
     
     return () => clearInterval(timer);
   }, [onContinue]);
+  
+  // Session time countdown
+  useEffect(() => {
+    if (!sessionActive) return;
+    
+    const sessionTimer = setInterval(() => {
+      setSessionTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(sessionTimer);
+          setSessionActive(false);
+          toast.warning("Your WiFi session has expired!");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(sessionTimer);
+  }, [sessionActive]);
 
   return (
     <Card className="w-full max-w-md mx-auto glass-card animate-fade-in text-center">
@@ -50,7 +79,7 @@ const AccessGranted: React.FC<AccessGrantedProps> = ({
         <div className="grid grid-cols-3 gap-4 py-4">
           <div className="text-center">
             <div className="text-sm text-muted-foreground">Duration</div>
-            <div className="font-medium mt-1">{duration}</div>
+            <div className="font-medium mt-1">{duration} minutes</div>
           </div>
           <div className="text-center">
             <div className="text-sm text-muted-foreground">Download</div>
@@ -60,6 +89,11 @@ const AccessGranted: React.FC<AccessGrantedProps> = ({
             <div className="text-sm text-muted-foreground">Upload</div>
             <div className="font-medium mt-1">{uploadSpeed}</div>
           </div>
+        </div>
+        
+        <div className="py-2 px-3 bg-primary/10 rounded-lg flex items-center justify-center">
+          <Clock className="mr-2 h-5 w-5 text-primary" />
+          <span className="font-semibold">Time remaining: {formatTime(sessionTime)}</span>
         </div>
         
         <p className="text-sm text-muted-foreground">

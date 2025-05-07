@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import AuthBox from "@/components/AuthBox";
 import VideoForWifi from "@/components/VideoForWifi";
@@ -7,12 +7,18 @@ import MarketingQuiz from "@/components/MarketingQuiz";
 import AccessGranted from "@/components/AccessGranted";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
+import ExtendTimeForWifi from "@/components/ExtendTimeForWifi";
+import LeadCollectionGame from "@/components/LeadCollectionGame";
+import { Button } from "@/components/ui/button";
+import { Timer, Trophy } from "lucide-react";
 
 // Portal access flow steps
 enum Step {
   AUTH,
   ENGAGEMENT,
-  SUCCESS
+  SUCCESS,
+  EXTEND_TIME,
+  LEAD_GAME
 }
 
 // Engagement types
@@ -21,10 +27,19 @@ enum EngagementType {
   QUIZ
 }
 
+interface UserData {
+  authMethod?: string;
+  timeRemainingMinutes?: number;
+  engagementData?: any;
+  [key: string]: any;
+}
+
 const Index = () => {
   const [currentStep, setCurrentStep] = useState<Step>(Step.AUTH);
   const [engagementType, setEngagementType] = useState<EngagementType>(EngagementType.VIDEO);
-  const [userData, setUserData] = useState<any>({});
+  const [userData, setUserData] = useState<UserData>({
+    timeRemainingMinutes: 30, // Default 30 minutes
+  });
   
   const handleAuth = (method: string, data: any) => {
     setUserData({...userData, authMethod: method, ...data});
@@ -58,6 +73,30 @@ const Index = () => {
     window.location.href = "https://www.google.com";
   };
   
+  const handleExtendTime = (additionalMinutes: number) => {
+    setUserData(prev => ({
+      ...prev,
+      timeRemainingMinutes: (prev.timeRemainingMinutes || 0) + additionalMinutes
+    }));
+    
+    setCurrentStep(Step.SUCCESS);
+    toast.success(`Great! You've earned ${additionalMinutes} more minutes of WiFi time.`);
+  };
+  
+  const handleLeadGameComplete = (leadData: any) => {
+    setUserData(prev => ({
+      ...prev,
+      leadData,
+      timeRemainingMinutes: (prev.timeRemainingMinutes || 0) + 15 // Default reward
+    }));
+    
+    setCurrentStep(Step.SUCCESS);
+    toast.success("Thanks for playing! You've earned 15 more minutes of WiFi time.");
+    
+    // In a real implementation, this would save the lead data to a database
+    console.log("Lead data collected:", leadData);
+  };
+  
   return (
     <Layout withGradientBg>
       <div className="flex flex-col items-center justify-center min-h-[80vh] py-8">
@@ -83,7 +122,40 @@ const Index = () => {
         )}
         
         {currentStep === Step.SUCCESS && (
-          <AccessGranted onContinue={handleContinue} />
+          <>
+            <AccessGranted 
+              duration={userData.timeRemainingMinutes} 
+              onContinue={handleContinue} 
+            />
+            
+            <div className="w-full max-w-md mt-6 flex flex-col md:flex-row gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(Step.EXTEND_TIME)}
+                className="flex-1"
+              >
+                <Timer className="mr-2 h-4 w-4" />
+                Watch Video for More Time
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(Step.LEAD_GAME)}
+                className="flex-1"
+              >
+                <Trophy className="mr-2 h-4 w-4" />
+                Play Game for Free WiFi
+              </Button>
+            </div>
+          </>
+        )}
+        
+        {currentStep === Step.EXTEND_TIME && (
+          <ExtendTimeForWifi onComplete={handleExtendTime} />
+        )}
+        
+        {currentStep === Step.LEAD_GAME && (
+          <LeadCollectionGame onComplete={handleLeadGameComplete} />
         )}
         
         <Card className="w-full max-w-md mt-8 p-4 glass-card">
