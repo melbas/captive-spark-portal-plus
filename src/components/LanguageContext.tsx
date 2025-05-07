@@ -179,6 +179,97 @@ export const translations: Translations = {
     en: "and",
     fr: "et",
     es: "y"
+  },
+  // New translations
+  continue: {
+    en: "Continue",
+    fr: "Continuer",
+    es: "Continuar"
+  },
+  extendTime: {
+    en: "Extend Time",
+    fr: "Prolonger le temps",
+    es: "Extender tiempo"
+  },
+  minutes: {
+    en: "minutes",
+    fr: "minutes",
+    es: "minutos"
+  },
+  remaining: {
+    en: "remaining",
+    fr: "restantes",
+    es: "restantes"
+  },
+  welcome: {
+    en: "Welcome",
+    fr: "Bienvenue",
+    es: "Bienvenido"
+  },
+  accessGranted: {
+    en: "Access Granted",
+    fr: "Accès accordé",
+    es: "Acceso concedido"
+  },
+  youHave: {
+    en: "You have",
+    fr: "Vous avez",
+    es: "Tiene"
+  },
+  ofWifiAccess: {
+    en: "of WiFi access",
+    fr: "d'accès WiFi",
+    es: "de acceso WiFi"
+  },
+  submitAnswer: {
+    en: "Submit Answer",
+    fr: "Soumettre la réponse",
+    es: "Enviar respuesta"
+  },
+  watchTheVideo: {
+    en: "Watch the video to continue",
+    fr: "Regardez la vidéo pour continuer",
+    es: "Ver el video para continuar"
+  },
+  selectCountry: {
+    en: "Select Country",
+    fr: "Sélectionner le pays",
+    es: "Seleccionar país"
+  },
+  countryCode: {
+    en: "Country Code",
+    fr: "Indicatif du pays",
+    es: "Código de país"
+  },
+  phoneVerification: {
+    en: "Phone Verification",
+    fr: "Vérification par téléphone",
+    es: "Verificación por teléfono"
+  },
+  emailVerification: {
+    en: "Email Verification",
+    fr: "Vérification par e-mail",
+    es: "Verificación por correo electrónico"
+  },
+  registerSuccess: {
+    en: "Registration successful",
+    fr: "Inscription réussie",
+    es: "Registro exitoso"
+  },
+  error: {
+    en: "Error",
+    fr: "Erreur",
+    es: "Error"
+  },
+  tryAgain: {
+    en: "Please try again",
+    fr: "Veuillez réessayer",
+    es: "Por favor, inténtelo de nuevo"
+  },
+  fillRequired: {
+    en: "Please fill in all required fields",
+    fr: "Veuillez remplir tous les champs obligatoires",
+    es: "Por favor, rellene todos los campos obligatorios"
   }
 };
 

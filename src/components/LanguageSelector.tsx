@@ -13,21 +13,34 @@ import { Button } from "@/components/ui/button";
 
 interface LanguageSelectorProps {
   variant?: "select" | "buttons";
+  className?: string;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = "select" }) => {
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = "select", className = "" }) => {
   const { language, setLanguage } = useLanguage();
+
+  const flags: Record<Language, string> = {
+    en: "🇬🇧",
+    fr: "🇫🇷",
+    es: "🇪🇸"
+  };
+  
+  const names: Record<Language, string> = {
+    en: "English",
+    fr: "Français",
+    es: "Español"
+  };
 
   if (variant === "buttons") {
     return (
-      <div className="flex space-x-2">
+      <div className={`flex space-x-2 ${className}`}>
         <Button
           variant={language === "en" ? "default" : "outline"} 
           size="sm"
           onClick={() => setLanguage("en")}
           className="min-w-[40px]"
         >
-          EN
+          <span className="mr-1">{flags.en}</span> EN
         </Button>
         <Button
           variant={language === "fr" ? "default" : "outline"}
@@ -35,7 +48,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = "select" 
           onClick={() => setLanguage("fr")}
           className="min-w-[40px]"
         >
-          FR
+          <span className="mr-1">{flags.fr}</span> FR
         </Button>
         <Button
           variant={language === "es" ? "default" : "outline"}
@@ -43,22 +56,34 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = "select" 
           onClick={() => setLanguage("es")}
           className="min-w-[40px]"
         >
-          ES
+          <span className="mr-1">{flags.es}</span> ES
         </Button>
       </div>
     );
   }
 
   return (
-    <Select value={language} onValueChange={(value) => setLanguage(value as Language)}>
-      <SelectTrigger className="w-[80px]">
-        <Globe className="mr-2 h-4 w-4" />
-        <SelectValue placeholder="Lang" />
+    <Select value={language} onValueChange={(value) => setLanguage(value as Language)} className={className}>
+      <SelectTrigger className="w-[130px]">
+        <span className="mr-2">{flags[language]}</span>
+        <SelectValue placeholder={names[language]} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="en">English</SelectItem>
-        <SelectItem value="fr">Français</SelectItem>
-        <SelectItem value="es">Español</SelectItem>
+        <SelectItem value="en">
+          <div className="flex items-center">
+            <span className="mr-2">{flags.en}</span> {names.en}
+          </div>
+        </SelectItem>
+        <SelectItem value="fr">
+          <div className="flex items-center">
+            <span className="mr-2">{flags.fr}</span> {names.fr}
+          </div>
+        </SelectItem>
+        <SelectItem value="es">
+          <div className="flex items-center">
+            <span className="mr-2">{flags.es}</span> {names.es}
+          </div>
+        </SelectItem>
       </SelectContent>
     </Select>
   );

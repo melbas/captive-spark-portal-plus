@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,27 +43,70 @@ const countryCodes: CountryCode[] = [
   { code: "+228", name: "Togo", flag: "🇹🇬" },
   { code: "+220", name: "Gambia", flag: "🇬🇲" },
   { code: "+245", name: "Guinea-Bissau", flag: "🇬🇼" },
+  { code: "+234", name: "Nigeria", flag: "🇳🇬" },
+  { code: "+233", name: "Ghana", flag: "🇬🇭" },
+  { code: "+237", name: "Cameroon", flag: "🇨🇲" },
+  { code: "+235", name: "Chad", flag: "🇹🇩" },
+  { code: "+241", name: "Gabon", flag: "🇬🇦" },
+  { code: "+240", name: "Equatorial Guinea", flag: "🇬🇶" },
+  { code: "+236", name: "Central African Republic", flag: "🇨🇫" },
 ];
 
 const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState("+221"); // Senegal as default
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [authMethod, setAuthMethod] = useState<'sms' | 'email'>('sms');
+  const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  
+  // Clear any error when the user types
+  useEffect(() => {
+    if (phoneNumber) setPhoneError('');
+  }, [phoneNumber]);
+  
+  useEffect(() => {
+    if (email) setEmailError('');
+  }, [email]);
+  
+  // Basic validation functions
+  const isValidPhoneNumber = (phone: string): boolean => {
+    // Simple validation - phone should be numbers only and at least 6 digits
+    return /^[0-9]{6,}$/.test(phone.replace(/\s/g, ''));
+  };
+  
+  const isValidEmail = (email: string): boolean => {
+    // Basic email validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
   
   const handleSendOtp = (method: 'sms' | 'email') => {
     // In a real implementation, this would call an API endpoint to send the OTP
-    if (method === 'sms' && !phoneNumber) {
-      toast.error("Please enter a valid phone number");
-      return;
+    if (method === 'sms') {
+      if (!phoneNumber) {
+        setPhoneError(t('fillRequired'));
+        return;
+      }
+      
+      if (!isValidPhoneNumber(phoneNumber)) {
+        setPhoneError(t('enterValidCode'));
+        return;
+      }
     }
     
-    if (method === 'email' && !email) {
-      toast.error("Please enter a valid email address");
-      return;
+    if (method === 'email') {
+      if (!email) {
+        setEmailError(t('fillRequired'));
+        return;
+      }
+      
+      if (!isValidEmail(email)) {
+        setEmailError(t('enterValidCode'));
+        return;
+      }
     }
     
     setAuthMethod(method);
@@ -96,6 +139,14 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
       case "+225": return "07 12 34 56"; // Côte d'Ivoire
       case "+223": return "76 12 34 56"; // Mali
       case "+224": return "62 12 34 56"; // Guinea
+      case "+229": return "97 12 34 56"; // Benin
+      case "+226": return "70 12 34 56"; // Burkina Faso
+      case "+227": return "90 12 34 56"; // Niger
+      case "+228": return "90 12 34 56"; // Togo
+      case "+220": return "7 123 45 67"; // Gambia
+      case "+245": return "95 567 89 01"; // Guinea-Bissau
+      case "+234": return "803 123 4567"; // Nigeria
+      case "+233": return "24 123 4567"; // Ghana
       default: return t("localFormat");
     }
   };
@@ -110,8 +161,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
               {t("chooseVerification")}
             </CardDescription>
             <TabsList className="grid w-full grid-cols-2 mt-4">
-              <TabsTrigger value="sms">SMS</TabsTrigger>
-              <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="sms" className="flex items-center gap-2">
+                <Phone className="h-4 w-4" /> SMS
+              </TabsTrigger>
+              <TabsTrigger value="email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" /> Email
+              </TabsTrigger>
             </TabsList>
           </CardHeader>
           <CardContent>
@@ -122,9 +177,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                   <div className="flex space-x-2">
                     <Select value={countryCode} onValueChange={setCountryCode}>
                       <SelectTrigger className="w-[110px]">
-                        <SelectValue placeholder="Code" />
+                        <SelectValue placeholder={t("countryCode")} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[300px]">
                         {countryCodes.map((country) => (
                           <SelectItem key={country.code} value={country.code}>
                             <div className="flex items-center">
@@ -139,12 +194,15 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                       <Input 
                         id="phone" 
                         placeholder={formatPhoneExample()} 
-                        className="pl-2" 
+                        className={`pl-2 ${phoneError ? 'border-red-500' : ''}`}
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                       />
                     </div>
                   </div>
+                  {phoneError && (
+                    <p className="text-xs text-red-500">{phoneError}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("example")}: {formatPhoneExample()}
                   </p>
@@ -167,11 +225,14 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                       id="email" 
                       type="email" 
                       placeholder="your@email.com" 
-                      className="pl-10"
+                      className={`pl-10 ${emailError ? 'border-red-500' : ''}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
+                  {emailError && (
+                    <p className="text-xs text-red-500">{emailError}</p>
+                  )}
                 </div>
                 <Button 
                   className="w-full" 
