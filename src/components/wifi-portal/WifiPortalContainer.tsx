@@ -1,0 +1,82 @@
+
+import React, { useState, useEffect } from "react";
+import Layout from "@/components/Layout";
+import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Timer, Trophy, ChevronLeft } from "lucide-react";
+import { useWifiPortal } from "./useWifiPortal";
+import { Step, EngagementType, UserData } from "./types";
+import WifiPortalContent from "./WifiPortalContent"; // Add this import
+
+const WifiPortalContainer = () => {
+  const {
+    currentStep,
+    setCurrentStep,
+    engagementType,
+    userData,
+    loading,
+    handleAuth,
+    handleEngagementComplete,
+    handleContinue,
+    handleExtendTime,
+    handleLeadGameComplete,
+    handleReset,
+    getMacAddress
+  } = useWifiPortal();
+  
+  return (
+    <Layout withGradientBg>
+      <div className="flex flex-col items-center justify-center min-h-[80vh] py-8">
+        <div className="w-full max-w-md mb-8">
+          <h1 className="text-4xl font-bold text-center mb-2 text-foreground">
+            SparkWiFi Portal
+          </h1>
+          <p className="text-center text-muted-foreground">
+            Connect to our high-speed WiFi network
+          </p>
+          
+          {/* For demo purposes - show the simulated MAC address */}
+          <p className="text-center text-xs text-muted-foreground mt-2">
+            Demo MAC: {getMacAddress()}
+            <Button variant="ghost" size="sm" className="ml-2 h-5 px-2" onClick={handleReset}>
+              <ChevronLeft className="h-3 w-3 mr-1" /> Reset
+            </Button>
+          </p>
+        </div>
+        
+        {loading ? (
+          <Card className="w-full max-w-md p-6">
+            <div className="flex flex-col items-center justify-center">
+              <div className="h-6 w-6 border-t-2 border-primary rounded-full animate-spin"></div>
+              <p className="mt-4 text-muted-foreground">Loading...</p>
+            </div>
+          </Card>
+        ) : (
+          <WifiPortalContent 
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+            engagementType={engagementType}
+            userData={userData}
+            handleAuth={handleAuth}
+            handleEngagementComplete={handleEngagementComplete}
+            handleContinue={handleContinue}
+            handleExtendTime={handleExtendTime}
+            handleLeadGameComplete={handleLeadGameComplete}
+          />
+        )}
+        
+        <Card className="w-full max-w-md mt-8 p-4 glass-card">
+          <p className="text-sm text-center text-muted-foreground">
+            By connecting to our network, you agree to our{" "}
+            <a href="#" className="text-primary hover:underline">Terms of Service</a>{" "}
+            and{" "}
+            <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+          </p>
+        </Card>
+      </div>
+    </Layout>
+  );
+};
+
+export default WifiPortalContainer;
