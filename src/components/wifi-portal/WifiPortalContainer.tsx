@@ -23,7 +23,9 @@ const WifiPortalContainer = () => {
     handleRedeemReward,
     handleInvite,
     handleReset,
-    getMacAddress
+    getMacAddress,
+    handleGameComplete,
+    handlePaymentComplete
   } = useWifiPortal();
   
   return (
@@ -67,6 +69,8 @@ const WifiPortalContainer = () => {
             handleNavigate={handleNavigate}
             handleRedeemReward={handleRedeemReward}
             handleInvite={handleInvite}
+            handleGameComplete={handleGameComplete}
+            handlePaymentComplete={handlePaymentComplete}
           />
         )}
         

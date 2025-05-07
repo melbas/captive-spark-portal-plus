@@ -2,7 +2,16 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { wifiPortalService, WifiUser, WifiSession } from "@/services/wifi-portal-service";
-import { Step, EngagementType, UserData, UserLevel, Reward, RewardType } from "./types";
+import { 
+  Step, 
+  EngagementType, 
+  UserData, 
+  UserLevel, 
+  Reward, 
+  RewardType,
+  MiniGameData,
+  GameType
+} from "./types";
 
 export const useWifiPortal = () => {
   const [currentStep, setCurrentStep] = useState<Step>(Step.AUTH);
@@ -12,6 +21,7 @@ export const useWifiPortal = () => {
     points: 0,
     level: UserLevel.BASIC,
     connectionHistory: [],
+    isAdmin: false, // Default to non-admin
   });
   const [loading, setLoading] = useState<boolean>(true);
   
@@ -84,7 +94,9 @@ export const useWifiPortal = () => {
                     duration: 60,
                     engagementType: 'quiz'
                   }
-                ]
+                ],
+                // Set admin status - in a real implementation, this would come from the database
+                isAdmin: existingUser.email === "admin@example.com"
               });
               
               setCurrentStep(Step.SUCCESS);
@@ -137,6 +149,7 @@ export const useWifiPortal = () => {
             points: 10, // Starting points for new users
             level: UserLevel.BASIC,
             referralCode: "WIFI" + Math.floor(Math.random() * 10000),
+            isAdmin: data.email === "admin@example.com", // Simple admin check
             ...data
           });
           
@@ -288,18 +301,6 @@ export const useWifiPortal = () => {
     }
   };
   
-  const handleViewDashboard = () => {
-    setCurrentStep(Step.DASHBOARD);
-  };
-  
-  const handleViewRewards = () => {
-    setCurrentStep(Step.REWARDS);
-  };
-  
-  const handleViewReferral = () => {
-    setCurrentStep(Step.REFERRAL);
-  };
-  
   const handleNavigate = (section: string) => {
     switch (section) {
       case "dashboard":
@@ -310,6 +311,15 @@ export const useWifiPortal = () => {
         break;
       case "referral":
         setCurrentStep(Step.REFERRAL);
+        break;
+      case "mini-games":
+        setCurrentStep(Step.MINI_GAMES);
+        break;
+      case "admin":
+        setCurrentStep(Step.ADMIN_STATS);
+        break;
+      case "payment":
+        setCurrentStep(Step.PAYMENT);
         break;
       default:
         setCurrentStep(Step.SUCCESS);
@@ -379,6 +389,42 @@ export const useWifiPortal = () => {
     }
   };
   
+  const handleGameComplete = (gameData: MiniGameData, score: number) => {
+    // Calculate rewards based on game type and score
+    const pointsEarned = Math.round(gameData.rewardPoints * (score / 100));
+    const minutesEarned = Math.round(gameData.rewardMinutes * (score / 100));
+    
+    // Update user data with rewards
+    setUserData(prev => ({
+      ...prev,
+      points: (prev.points || 0) + pointsEarned,
+      timeRemainingMinutes: (prev.timeRemainingMinutes || 0) + minutesEarned
+    }));
+    
+    // Show success message
+    toast.success(`Jeu terminé! Vous avez gagné ${pointsEarned} points et ${minutesEarned} minutes de WiFi`);
+    
+    // Increment game statistics in a real implementation
+    // For now just log it
+    console.log(`Game played: ${gameData.name}, Score: ${score}`);
+    
+    // Return to the mini-games hub
+    // The user can decide to play again or go back to the main screen
+  };
+  
+  const handlePaymentComplete = (packageId: string, minutes: number) => {
+    // In a real implementation, this would process the payment and update the user's time
+    // For demo purposes, we'll just update the user's time
+    
+    setUserData(prev => ({
+      ...prev,
+      timeRemainingMinutes: (prev.timeRemainingMinutes || 0) + minutes
+    }));
+    
+    // Return to the main screen
+    setCurrentStep(Step.SUCCESS);
+  };
+  
   const handleReset = () => {
     // For demo purposes - reset the MAC address to simulate a new device
     localStorage.removeItem('simulated_mac_address');
@@ -400,11 +446,10 @@ export const useWifiPortal = () => {
     handleLeadGameComplete,
     handleReset,
     getMacAddress,
-    handleViewDashboard,
-    handleViewRewards,
-    handleViewReferral,
     handleNavigate,
     handleRedeemReward,
-    handleInvite
+    handleInvite,
+    handleGameComplete,
+    handlePaymentComplete
   };
 };
