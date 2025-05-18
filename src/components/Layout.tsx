@@ -18,7 +18,7 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   return (
     <ThemeProvider defaultTheme="system">
-      <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''}`}>
+      <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''} pb-16`}>
         <header className="py-4 px-6 flex items-center justify-between">
           {showLogo && <Logo />}
           <div className="flex items-center gap-3">

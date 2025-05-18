@@ -17,7 +17,10 @@ interface LanguageSelectorProps {
   className?: string;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = "select", className = "" }) => {
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
+  variant = "select", 
+  className = "" 
+}) => {
   const { language, setLanguage } = useLanguage();
 
   const flags: Record<Language, string> = {

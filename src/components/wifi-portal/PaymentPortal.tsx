@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaymentMethod, PaymentPackage, UserData } from "./types";
 import { toast } from "sonner";
+import { useLanguage } from "../LanguageContext";
 
 interface PaymentPortalProps {
   userData: UserData;
@@ -19,6 +20,8 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
   const [selectedPackage, setSelectedPackage] = useState<PaymentPackage | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.MOBILE_MONEY);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedMobileOperator, setSelectedMobileOperator] = useState<string>("orange");
+  const { t } = useLanguage();
   
   // Mock payment packages
   const packages: PaymentPackage[] = [
@@ -65,9 +68,13 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
     setPaymentMethod(method);
   };
   
+  const handleOperatorChange = (operator: string) => {
+    setSelectedMobileOperator(operator);
+  };
+  
   const handleProcessPayment = () => {
     if (!selectedPackage) {
-      toast.error("Veuillez sélectionner un forfait");
+      toast.error(t("selectPackage"));
       return;
     }
     
@@ -76,11 +83,32 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
     // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false);
-      toast.success("Paiement réussi! Votre temps WiFi a été ajouté.");
+      toast.success(t("paymentSuccess"));
       
       // Call the onPaymentComplete function to update the user's time
       onPaymentComplete(selectedPackage.id, selectedPackage.minutes);
     }, 2000);
+  };
+
+  // Mobile payment provider logos
+  const paymentProviderLogos = {
+    orange: (
+      <div className="flex items-center justify-center bg-[#FF6600] text-white rounded-md px-3 py-1">
+        <span className="font-bold mr-1">Orange</span>
+        <span className="font-light">Money</span>
+      </div>
+    ),
+    free: (
+      <div className="flex items-center justify-center border border-[#FF0000] text-[#FF0000] rounded-md px-3 py-1">
+        <span className="font-bold mr-1">Free</span>
+        <span className="font-light">Money</span>
+      </div>
+    ),
+    wave: (
+      <div className="flex items-center justify-center bg-[#1DC8FF] text-white rounded-md px-3 py-1">
+        <span className="font-bold">Wave</span>
+      </div>
+    )
   };
   
   return (
@@ -92,13 +120,13 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
           className="absolute left-2 top-2"
           onClick={onBack}
         >
-          <ChevronLeft className="h-4 w-4 mr-1" /> Retour
+          <ChevronLeft className="h-4 w-4 mr-1" /> {t("goBack")}
         </Button>
         <CardTitle className="text-2xl font-bold text-center mt-4">
-          Acheter du temps WiFi
+          {t("buyWifiTime")}
         </CardTitle>
         <CardDescription className="text-center">
-          Choisissez un forfait et payez pour obtenir plus de temps WiFi
+          {t("choosePackageAndPay")}
         </CardDescription>
       </CardHeader>
       
@@ -113,7 +141,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
               >
                 {pkg.isPopular && (
                   <div className="bg-primary text-primary-foreground text-xs text-center py-1">
-                    Plus populaire
+                    {t("mostPopular")}
                   </div>
                 )}
                 <CardContent className="p-0">
@@ -140,7 +168,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
                       className="w-full" 
                       variant={pkg.isPopular ? "default" : "outline"}
                     >
-                      Sélectionner
+                      {t("select")}
                     </Button>
                   </div>
                 </CardContent>
@@ -150,7 +178,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
         ) : (
           <div className="space-y-6">
             <div className="bg-muted/30 p-4 rounded-lg">
-              <h3 className="font-medium mb-2">Forfait sélectionné</h3>
+              <h3 className="font-medium mb-2">{t("selectedPackage")}</h3>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{selectedPackage.name}</p>
@@ -177,46 +205,67 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
                 className="mt-2"
                 onClick={() => setSelectedPackage(null)}
               >
-                Changer de forfait
+                {t("changePackage")}
               </Button>
             </div>
             
             <div>
-              <h3 className="font-medium mb-4">Méthode de paiement</h3>
+              <h3 className="font-medium mb-4">{t("paymentMethod")}</h3>
               <Tabs defaultValue={paymentMethod} onValueChange={(value) => handlePaymentMethodChange(value as PaymentMethod)}>
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value={PaymentMethod.MOBILE_MONEY}>
-                    <Smartphone className="h-4 w-4 mr-2" /> Mobile Money
+                  <TabsTrigger value={PaymentMethod.MOBILE_MONEY} className="flex items-center">
+                    <Smartphone className="h-4 w-4 mr-2" /> {t("mobileMoney")}
                   </TabsTrigger>
-                  <TabsTrigger value={PaymentMethod.CREDIT_CARD}>
-                    <CreditCard className="h-4 w-4 mr-2" /> Carte bancaire
+                  <TabsTrigger value={PaymentMethod.CREDIT_CARD} className="flex items-center">
+                    <CreditCard className="h-4 w-4 mr-2" /> {t("creditCard")}
                   </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value={PaymentMethod.MOBILE_MONEY} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Numéro de téléphone</Label>
-                    <Input id="phone" placeholder="Entrez votre numéro de téléphone" />
-                    <p className="text-xs text-muted-foreground">Exemple: 77 123 45 67</p>
+                    <Label htmlFor="operator">{t("selectProvider")}</Label>
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className={`p-2 h-auto ${selectedMobileOperator === 'orange' ? 'border-[#FF6600] bg-[#FF6600]/10' : ''}`}
+                        onClick={() => handleOperatorChange('orange')}
+                      >
+                        {paymentProviderLogos.orange}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className={`p-2 h-auto ${selectedMobileOperator === 'wave' ? 'border-[#1DC8FF] bg-[#1DC8FF]/10' : ''}`}
+                        onClick={() => handleOperatorChange('wave')}
+                      >
+                        {paymentProviderLogos.wave}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className={`p-2 h-auto ${selectedMobileOperator === 'free' ? 'border-[#FF0000] bg-[#FF0000]/10' : ''}`}
+                        onClick={() => handleOperatorChange('free')}
+                      >
+                        {paymentProviderLogos.free}
+                      </Button>
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="operator">Opérateur</Label>
-                    <select className="w-full p-2 rounded-md border" id="operator">
-                      <option value="orange">Orange Money</option>
-                      <option value="free">Free Money</option>
-                      <option value="wave">Wave</option>
-                    </select>
+                    <Label htmlFor="phone">{t("phoneNumber")}</Label>
+                    <Input id="phone" placeholder={t("enterPhoneNumber")} />
+                    <p className="text-xs text-muted-foreground">{t("example")}: 77 123 45 67</p>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value={PaymentMethod.CREDIT_CARD} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Numéro de carte</Label>
+                    <Label htmlFor="cardNumber">{t("cardNumber")}</Label>
                     <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="expiry">Date d'expiration</Label>
+                      <Label htmlFor="expiry">{t("expiryDate")}</Label>
                       <Input id="expiry" placeholder="MM/AA" />
                     </div>
                     <div className="space-y-2">
@@ -225,8 +274,8 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cardName">Nom sur la carte</Label>
-                    <Input id="cardName" placeholder="Prénom NOM" />
+                    <Label htmlFor="cardName">{t("nameOnCard")}</Label>
+                    <Input id="cardName" placeholder={t("fullName")} />
                   </div>
                 </TabsContent>
               </Tabs>
@@ -240,19 +289,19 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
               {isProcessing ? (
                 <>
                   <div className="h-4 w-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>
-                  Traitement en cours...
+                  {t("processing")}
                 </>
               ) : (
-                `Payer ${selectedPackage.price} ${selectedPackage.currency}`
+                `${t("pay")} ${selectedPackage.price} ${selectedPackage.currency}`
               )}
             </Button>
           </div>
         )}
         
         <div className="bg-muted/30 p-4 rounded-lg text-sm">
-          <h4 className="font-medium mb-2">Paiement sécurisé</h4>
+          <h4 className="font-medium mb-2">{t("securePayment")}</h4>
           <p className="text-muted-foreground">
-            Toutes vos informations de paiement sont sécurisées. Nous ne stockons pas vos données de carte bancaire.
+            {t("paymentSecurityInfo")}
           </p>
         </div>
       </CardContent>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 
 // Define available languages
@@ -22,6 +21,9 @@ export enum TranslationCategory {
   GAMES = "games",
   PROFILE = "profile",
   LEGAL = "legal",
+  PAYMENT = "payment",
+  ADS = "ads",
+  SUPPORT = "support"
 }
 
 // Define grouped translations with categories
@@ -391,6 +393,158 @@ export const translations: Record<string, Translations> = {
       en: "By connecting to our network, you agree to our",
       fr: "En vous connectant à notre réseau, vous acceptez nos",
       es: "Al conectarse a nuestra red, acepta nuestros"
+    },
+  },
+  
+  // Payment related
+  [TranslationCategory.PAYMENT]: {
+    buyWifiTime: {
+      en: "Buy WiFi Time",
+      fr: "Acheter du temps WiFi",
+      es: "Comprar tiempo WiFi"
+    },
+    choosePackageAndPay: {
+      en: "Choose a package and pay to get more WiFi time",
+      fr: "Choisissez un forfait et payez pour obtenir plus de temps WiFi",
+      es: "Elija un paquete y pague para obtener más tiempo WiFi"
+    },
+    mostPopular: {
+      en: "Most Popular",
+      fr: "Plus populaire",
+      es: "Más popular"
+    },
+    select: {
+      en: "Select",
+      fr: "Sélectionner",
+      es: "Seleccionar"
+    },
+    selectedPackage: {
+      en: "Selected Package",
+      fr: "Forfait sélectionné",
+      es: "Paquete seleccionado"
+    },
+    changePackage: {
+      en: "Change Package",
+      fr: "Changer de forfait",
+      es: "Cambiar paquete"
+    },
+    paymentMethod: {
+      en: "Payment Method",
+      fr: "Méthode de paiement",
+      es: "Método de pago"
+    },
+    mobileMoney: {
+      en: "Mobile Money",
+      fr: "Mobile Money",
+      es: "Dinero Móvil"
+    },
+    creditCard: {
+      en: "Credit Card",
+      fr: "Carte bancaire",
+      es: "Tarjeta de crédito"
+    },
+    selectProvider: {
+      en: "Select Provider",
+      fr: "Sélectionner l'opérateur",
+      es: "Seleccionar proveedor"
+    },
+    enterPhoneNumber: {
+      en: "Enter your phone number",
+      fr: "Entrez votre numéro de téléphone",
+      es: "Ingrese su número de teléfono"
+    },
+    cardNumber: {
+      en: "Card Number",
+      fr: "Numéro de carte",
+      es: "Número de tarjeta"
+    },
+    expiryDate: {
+      en: "Expiry Date",
+      fr: "Date d'expiration",
+      es: "Fecha de vencimiento"
+    },
+    nameOnCard: {
+      en: "Name on Card",
+      fr: "Nom sur la carte",
+      es: "Nombre en la tarjeta"
+    },
+    fullName: {
+      en: "First Name LAST NAME",
+      fr: "Prénom NOM",
+      es: "Nombre APELLIDO"
+    },
+    pay: {
+      en: "Pay",
+      fr: "Payer",
+      es: "Pagar"
+    },
+    processing: {
+      en: "Processing...",
+      fr: "Traitement en cours...",
+      es: "Procesando..."
+    },
+    selectPackage: {
+      en: "Please select a package",
+      fr: "Veuillez sélectionner un forfait",
+      es: "Por favor seleccione un paquete"
+    },
+    paymentSuccess: {
+      en: "Payment successful! Your WiFi time has been added.",
+      fr: "Paiement réussi! Votre temps WiFi a été ajouté.",
+      es: "¡Pago exitoso! Se ha añadido su tiempo WiFi."
+    },
+    securePayment: {
+      en: "Secure Payment",
+      fr: "Paiement sécurisé",
+      es: "Pago seguro"
+    },
+    paymentSecurityInfo: {
+      en: "All your payment information is secure. We do not store your card details.",
+      fr: "Toutes vos informations de paiement sont sécurisées. Nous ne stockons pas vos données de carte bancaire.",
+      es: "Toda su información de pago está segura. No almacenamos los datos de su tarjeta."
+    },
+  },
+  
+  // Advertisement related
+  [TranslationCategory.ADS]: {
+    advertisement: {
+      en: "Advertisement",
+      fr: "Publicité",
+      es: "Publicidad"
+    },
+    learnMore: {
+      en: "Learn More",
+      fr: "En savoir plus",
+      es: "Más información"
+    },
+    sponsoredContent: {
+      en: "Sponsored Content",
+      fr: "Contenu sponsorisé",
+      es: "Contenido patrocinado"
+    },
+    specialOffer: {
+      en: "Special Offer",
+      fr: "Offre spéciale",
+      es: "Oferta especial"
+    },
+  },
+  
+  // Support related
+  [TranslationCategory.SUPPORT]: {
+    whatsappSupport: {
+      en: "WhatsApp Support",
+      fr: "Support WhatsApp",
+      es: "Soporte WhatsApp"
+    },
+    contactSupport: {
+      en: "Contact Support",
+      fr: "Contacter le support",
+      es: "Contactar soporte"
+    },
+    whatsappDefaultMessage: {
+      en: "Hello, I need help with my WiFi connection.",
+      fr: "Bonjour, j'ai besoin d'aide avec ma connexion WiFi.",
+      es: "Hola, necesito ayuda con mi conexión WiFi."
     },
   },
 };
