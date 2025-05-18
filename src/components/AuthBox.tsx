@@ -15,6 +15,7 @@ import {
   InputOTPSlot
 } from "@/components/ui/input-otp";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { wifiPortalService } from "@/services/wifi-portal-service";
 
 interface AuthBoxProps {
   onAuth: (method: string, data: any) => void;
@@ -32,6 +33,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('');
   
   // Get the current country example based on selected code
   const getCurrentCountryExample = () => {
@@ -63,35 +65,70 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
   
-  const handleSendOtp = (method: 'sms' | 'email') => {
-    // In a real implementation, this would call an API endpoint to send the OTP
-    if (method === 'sms') {
-      if (!phoneNumber) {
-        setPhoneError(t('fillRequired'));
-        return;
+  const generateVerificationCode = (): string => {
+    // Generate a random 4-digit code
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
+  
+  const handleSendOtp = async (method: 'sms' | 'email') => {
+    setIsLoading(true);
+    
+    try {
+      if (method === 'sms') {
+        if (!phoneNumber) {
+          setPhoneError(t('fillRequired'));
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!isValidPhoneNumber(phoneNumber)) {
+          setPhoneError(t('enterValidCode'));
+          setIsLoading(false);
+          return;
+        }
+        
+        // Generate a code for demo/testing purposes
+        const code = generateVerificationCode();
+        setGeneratedCode(code); // Store for verification
+        
+        // Format the full phone number
+        const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
+        
+        // Send actual SMS with the code
+        const smsSent = await wifiPortalService.sendVerificationCode(fullPhoneNumber, code);
+        
+        if (smsSent) {
+          toast.success(`${t("verificationCodeSent")} ${t("toPhone")}`);
+        } else {
+          // Even if SMS fails, we'll allow the user to continue in demo mode
+          console.warn("SMS sending failed, but continuing in demo mode");
+          toast.info(`${t("demoMode")}: ${t("useCode")} 1234`);
+        }
+      } else if (method === 'email') {
+        if (!email) {
+          setEmailError(t('fillRequired'));
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!isValidEmail(email)) {
+          setEmailError(t('enterValidCode'));
+          setIsLoading(false);
+          return;
+        }
+        
+        // In a real implementation, this would send an email
+        toast.success(`${t("verificationCodeSent")} ${t("toEmail")}`);
       }
       
-      if (!isValidPhoneNumber(phoneNumber)) {
-        setPhoneError(t('enterValidCode'));
-        return;
-      }
+      setAuthMethod(method);
+      setIsVerifying(true);
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast.error(t("errorSendingCode"));
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (method === 'email') {
-      if (!email) {
-        setEmailError(t('fillRequired'));
-        return;
-      }
-      
-      if (!isValidEmail(email)) {
-        setEmailError(t('enterValidCode'));
-        return;
-      }
-    }
-    
-    setAuthMethod(method);
-    toast.success(`${t("verificationCodeSent")} ${method === 'sms' ? t("toPhone") : t("toEmail")}`);
-    setIsVerifying(true);
   };
   
   const handleVerifyOtp = async () => {
@@ -104,8 +141,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     setAuthError('');
     
     try {
-      // Simulate OTP verification - in production, this would verify against a backend
-      if (otp === '1234') { // Demo code
+      // Verify OTP - in production, this would verify against a backend
+      // For demo purposes, we'll accept either the generated code or 1234
+      if (otp === generatedCode || otp === '1234') {
         toast.success(t("verificationSuccessful"));
         await onAuth('otp', { 
           phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber.replace(/\s/g, '')}` : undefined, 

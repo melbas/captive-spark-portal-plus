@@ -28,6 +28,12 @@ export interface PortalStatistic {
   leads_collected: number;
 }
 
+export interface SMSMessage {
+  to: string;
+  message: string;
+  type?: 'verification' | 'welcome' | 'notification';
+}
+
 export const wifiPortalService = {
   // User operations
   async createUser(userData: WifiUser): Promise<WifiUser | null> {
@@ -48,12 +54,60 @@ export const wifiPortalService = {
         throw error; // Throw error for better handling in UI
       }
       
+      // Send welcome SMS if phone number is provided
+      if (userData.phone && userData.auth_method === 'sms') {
+        await this.sendSMS({
+          to: userData.phone,
+          message: "Bienvenue sur notre réseau WiFi ! Vous êtes maintenant connecté.",
+          type: 'welcome'
+        });
+      }
+      
       await this.incrementStatistic('total_connections');
       return data;
     } catch (error) {
       console.error("Failed to create user:", error);
       throw error; // Re-throw to handle in the component
     }
+  },
+  
+  // SMS service
+  async sendSMS(smsData: SMSMessage): Promise<boolean> {
+    try {
+      console.log(`Sending SMS to ${smsData.to}: ${smsData.message}`);
+      
+      // In a real implementation, this would call an SMS API
+      // For now, we'll just log the message and simulate success
+      
+      // Example integration with an SMS API (commented out):
+      // const response = await fetch('https://your-sms-api.com/send', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${YOUR_SMS_API_KEY}`
+      //   },
+      //   body: JSON.stringify({
+      //     to: smsData.to,
+      //     message: smsData.message
+      //   })
+      // });
+      
+      // Track SMS sent in statistics (you might want to add this column to your statistics table)
+      // await this.incrementStatistic('sms_sent');
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to send SMS:", error);
+      return false;
+    }
+  },
+  
+  async sendVerificationCode(phoneNumber: string, code: string): Promise<boolean> {
+    return this.sendSMS({
+      to: phoneNumber,
+      message: `Votre code de vérification est: ${code}`,
+      type: 'verification'
+    });
   },
   
   async getUserByMac(macAddress: string): Promise<WifiUser | null> {
