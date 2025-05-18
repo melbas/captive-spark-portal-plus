@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
-import { CheckCircle, ArrowRight, Mail, Phone } from 'lucide-react';
+import { CheckCircle, ArrowRight, Mail, Phone, AlertCircle } from 'lucide-react';
 import { useLanguage } from "@/components/LanguageContext";
 import CountryCodeSelector, { countryCodes } from "@/components/CountryCodeSelector";
 import { 
@@ -13,6 +14,7 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from "@/components/ui/input-otp";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AuthBoxProps {
   onAuth: (method: string, data: any) => void;
@@ -28,6 +30,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [authMethod, setAuthMethod] = useState<'sms' | 'email'>('sms');
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
   
   // Get the current country example based on selected code
   const getCurrentCountryExample = () => {
@@ -38,10 +42,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   // Clear any error when the user types
   useEffect(() => {
     if (phoneNumber) setPhoneError('');
+    setAuthError('');
   }, [phoneNumber]);
   
   useEffect(() => {
     if (email) setEmailError('');
+    setAuthError('');
   }, [email]);
   
   // Basic validation functions
@@ -88,22 +94,33 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     setIsVerifying(true);
   };
   
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (!otp || otp.length < 4) {
       toast.error(t("enterValidCode"));
       return;
     }
     
-    // Simulate OTP verification - in production, this would verify against a backend
-    if (otp === '1234') { // Demo code
-      toast.success(t("verificationSuccessful"));
-      onAuth('otp', { 
-        phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber.replace(/\s/g, '')}` : undefined, 
-        email: authMethod === 'email' ? email : undefined, 
-        otp 
-      });
-    } else {
-      toast.error(t("invalidCode"));
+    setIsLoading(true);
+    setAuthError('');
+    
+    try {
+      // Simulate OTP verification - in production, this would verify against a backend
+      if (otp === '1234') { // Demo code
+        toast.success(t("verificationSuccessful"));
+        await onAuth('otp', { 
+          phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber.replace(/\s/g, '')}` : undefined, 
+          email: authMethod === 'email' ? email : undefined, 
+          otp 
+        });
+      } else {
+        toast.error(t("invalidCode"));
+      }
+    } catch (error) {
+      console.error("Authentication error:", error);
+      setAuthError(t("authError"));
+      toast.error(t("authError"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -126,6 +143,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             </TabsList>
           </CardHeader>
           <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
             <TabsContent value="sms" className="animate-slide-in">
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -200,6 +223,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label htmlFor="otp">{t("verificationCode")}</Label>
               <div className="flex justify-center">
@@ -217,17 +246,23 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
               </p>
             </div>
             <Button 
-              className="w-full" 
+              className="w-full"
               onClick={handleVerifyOtp}
+              disabled={isLoading}
             >
-              {t("verify")} <CheckCircle className="ml-2 h-4 w-4" />
+              {isLoading ? t("verifying") : t("verify")}
+              {!isLoading && <CheckCircle className="ml-2 h-4 w-4" />}
             </Button>
           </CardContent>
           <CardFooter>
             <Button 
               variant="link" 
               className="w-full" 
-              onClick={() => setIsVerifying(false)}
+              onClick={() => {
+                setIsVerifying(false);
+                setAuthError('');
+              }}
+              disabled={isLoading}
             >
               {t("goBack")}
             </Button>

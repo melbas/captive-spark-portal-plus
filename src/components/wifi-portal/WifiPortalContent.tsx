@@ -1,4 +1,3 @@
-
 import React from "react";
 import AuthBox from "@/components/AuthBox";
 import VideoForWifi from "@/components/VideoForWifi";
@@ -7,7 +6,7 @@ import AccessGranted from "@/components/AccessGranted";
 import ExtendTimeForWifi from "@/components/ExtendTimeForWifi";
 import LeadCollectionGame from "@/components/LeadCollectionGame";
 import { Button } from "@/components/ui/button";
-import { Timer, Trophy, Award, Users } from "lucide-react";
+import { Timer, Trophy, Award, Users, AlertTriangle } from 'lucide-react';
 import { Step, EngagementType, UserData, Reward, MiniGameData } from "./types";
 import UserDashboard from "./UserDashboard";
 import RewardSystem from "./RewardSystem";
@@ -17,6 +16,7 @@ import AdminDashboard from "./AdminDashboard";
 import PaymentPortal from "./PaymentPortal";
 import { useLanguage } from "../LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface WifiPortalContentProps {
   currentStep: Step;
@@ -33,6 +33,8 @@ interface WifiPortalContentProps {
   handleInvite: (email: string) => void;
   handleGameComplete: (gameData: MiniGameData, score: number) => void;
   handlePaymentComplete: (packageId: string, minutes: number) => void;
+  loading?: boolean;
+  error?: string | null;
 }
 
 const WifiPortalContent = ({
@@ -50,6 +52,8 @@ const WifiPortalContent = ({
   handleInvite,
   handleGameComplete,
   handlePaymentComplete,
+  loading,
+  error
 }: WifiPortalContentProps) => {
   const { t } = useLanguage();
   
@@ -159,6 +163,40 @@ const WifiPortalContent = ({
       </CardContent>
     </Card>
   );
+
+  // Display error message if any
+  if (error) {
+    return (
+      <Card className="w-full max-w-md mx-auto glass-card animate-fade-in">
+        <CardContent className="p-6">
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertDescription className="font-medium">{error}</AlertDescription>
+          </Alert>
+          <div className="text-center">
+            <Button 
+              className="mt-4" 
+              onClick={() => window.location.reload()}
+            >
+              {t("retry")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <Card className="w-full max-w-md mx-auto glass-card animate-fade-in">
+        <CardContent className="p-6 text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">{t("loading")}</p>
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
     <>

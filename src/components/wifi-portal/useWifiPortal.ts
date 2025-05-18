@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { wifiPortalService, WifiUser, WifiSession } from "@/services/wifi-portal-service";
@@ -24,6 +23,7 @@ export const useWifiPortal = () => {
     isAdmin: false, // Default to non-admin
   });
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Get MAC address - in a real implementation this would be provided by the captive portal
   const getMacAddress = (): string | null => {
@@ -49,6 +49,7 @@ export const useWifiPortal = () => {
     const checkExistingUser = async () => {
       try {
         setLoading(true);
+        setError(null);
         const macAddress = getMacAddress();
         
         if (macAddress) {
@@ -106,6 +107,7 @@ export const useWifiPortal = () => {
         }
       } catch (error) {
         console.error("Error checking existing user:", error);
+        setError("Failed to check existing user.");
       } finally {
         setLoading(false);
       }
@@ -117,6 +119,8 @@ export const useWifiPortal = () => {
   const handleAuth = async (method: string, data: any) => {
     try {
       setLoading(true);
+      setError(null);
+      
       // Create new user in database
       const user: WifiUser = {
         auth_method: method,
@@ -128,48 +132,61 @@ export const useWifiPortal = () => {
         user.mac_address = macAddress;
       }
       
-      const createdUser = await wifiPortalService.createUser(user);
-      
-      if (createdUser) {
-        // Create a new session
-        const sessionData: WifiSession = {
-          user_id: createdUser.id!,
-          duration_minutes: 30,
-        };
-        
-        const session = await wifiPortalService.createSession(sessionData);
-        
-        if (session) {
-          setUserData({
-            ...userData, 
-            id: createdUser.id,
-            sessionId: session.id,
-            authMethod: method,
-            macAddress: macAddress,
-            points: 10, // Starting points for new users
-            level: UserLevel.BASIC,
-            referralCode: "WIFI" + Math.floor(Math.random() * 10000),
-            isAdmin: data.email === "admin@example.com", // Simple admin check
-            ...data
-          });
-          
-          // Randomly choose engagement type (video or quiz)
-          // In a real implementation, this could be configured by the admin
-          const randomEngagement = Math.random() > 0.5 
-            ? EngagementType.VIDEO 
-            : EngagementType.QUIZ;
-          
-          setEngagementType(randomEngagement);
-          setCurrentStep(Step.ENGAGEMENT);
-          
-          toast.success(`Authentication successful via ${method}`);
-        }
-      } else {
-        toast.error("Error creating user account. Please try again.");
+      // Directly create user with error handling
+      let createdUser;
+      try {
+        createdUser = await wifiPortalService.createUser(user);
+      } catch (err: any) {
+        console.error("Error creating user:", err);
+        toast.error(`Authentication failed: ${err.message || "Unknown error"}`);
+        throw err;
       }
-    } catch (error) {
+      
+      if (!createdUser) {
+        toast.error("Error creating user account. Please try again.");
+        throw new Error("Failed to create user");
+      }
+      
+      // Create a new session
+      const sessionData: WifiSession = {
+        user_id: createdUser.id!,
+        duration_minutes: 30,
+      };
+      
+      const session = await wifiPortalService.createSession(sessionData);
+      
+      if (session) {
+        // In a real implementation, we would fetch the user's points, level, history from the database
+        setUserData({
+          ...userData, 
+          id: createdUser.id,
+          sessionId: session.id,
+          authMethod: method,
+          macAddress: macAddress,
+          points: 10, // Starting points for new users
+          level: UserLevel.BASIC,
+          referralCode: "WIFI" + Math.floor(Math.random() * 10000),
+          isAdmin: data.email === "admin@example.com", // Simple admin check
+          ...data
+        });
+        
+        // Randomly choose engagement type (video or quiz)
+        // In a real implementation, this could be configured by the admin
+        const randomEngagement = Math.random() > 0.5 
+          ? EngagementType.VIDEO 
+          : EngagementType.QUIZ;
+        
+        setEngagementType(randomEngagement);
+        setCurrentStep(Step.ENGAGEMENT);
+        
+        toast.success(`Authentication successful via ${method}`);
+      } else {
+        throw new Error("Failed to create session");
+      }
+    } catch (error: any) {
       console.error("Error during authentication:", error);
-      toast.error("Authentication failed. Please try again.");
+      setError(error?.message || "Authentication failed. Please try again.");
+      // Keep at AUTH step to let user try again
     } finally {
       setLoading(false);
     }
@@ -439,6 +456,7 @@ export const useWifiPortal = () => {
     userData,
     setUserData,
     loading,
+    error,
     handleAuth,
     handleEngagementComplete,
     handleContinue,
