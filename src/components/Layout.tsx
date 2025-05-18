@@ -4,6 +4,7 @@ import Logo from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { ThemeProvider } from './ThemeProvider';
 import LanguageSelector from './LanguageSelector';
+import { LanguageProvider } from './LanguageContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,21 +19,23 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   return (
     <ThemeProvider defaultTheme="system">
-      <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''} pb-16`}>
-        <header className="py-4 px-6 flex items-center justify-between">
-          {showLogo && <Logo />}
-          <div className="flex items-center gap-3">
-            <LanguageSelector />
-            <ThemeToggle />
-          </div>
-        </header>
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
-        <footer className="container mx-auto p-4 text-center text-sm text-foreground/70">
-          <p>© 2025 SparkWiFi Portal. All rights reserved.</p>
-        </footer>
-      </div>
+      <LanguageProvider>
+        <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''} pb-16`}>
+          <header className="py-4 px-6 flex items-center justify-between">
+            {showLogo && <Logo />}
+            <div className="flex items-center gap-3">
+              <LanguageSelector />
+              <ThemeToggle />
+            </div>
+          </header>
+          <main className="container mx-auto px-4 py-8">
+            {children}
+          </main>
+          <footer className="container mx-auto p-4 text-center text-sm text-foreground/70">
+            <p>© 2025 SparkWiFi Portal. All rights reserved.</p>
+          </footer>
+        </div>
+      </LanguageProvider>
     </ThemeProvider>
   );
 };

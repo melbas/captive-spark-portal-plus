@@ -12,6 +12,7 @@ import AdCarousel from "../ads/AdCarousel";
 import VideoAd from "../ads/VideoAd";
 import AudioPromo from "../ads/AudioPromo";
 import WhatsAppSupport from "../support/WhatsAppSupport";
+import { Step } from "./types";
 
 // Mock advertisements for demonstration
 const adSlides = [
@@ -140,7 +141,7 @@ const WifiPortalContainer = () => {
         )}
         
         {/* Video or Audio Ad - Shown conditionally */}
-        {showAds && currentStep !== 'auth' && (
+        {showAds && currentStep !== Step.AUTH && (
           <div className="w-full max-w-md mt-8">
             <VideoAd
               videoUrl="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
