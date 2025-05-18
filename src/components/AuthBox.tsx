@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
-import { CheckCircle, ArrowRight, Mail, Phone, AlertCircle } from 'lucide-react';
+import { CheckCircle, ArrowRight, Mail, Phone, AlertCircle, Loader2 } from 'lucide-react';
 import { useLanguage } from "@/components/LanguageContext";
 import CountryCodeSelector, { countryCodes } from "@/components/CountryCodeSelector";
 import { 
@@ -32,8 +32,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   
   // Get the current country example based on selected code
   const getCurrentCountryExample = () => {
@@ -52,6 +56,20 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     setAuthError('');
   }, [email]);
   
+  // Handle countdown for resend code
+  useEffect(() => {
+    if (resendCountdown <= 0) {
+      setResendDisabled(false);
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      setResendCountdown(resendCountdown - 1);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
+  
   // Basic validation functions
   const isValidPhoneNumber = (phone: string): boolean => {
     // Simple validation - phone should be numbers only and at least 6 digits
@@ -65,70 +83,92 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
   
-  const generateVerificationCode = (): string => {
-    // Generate a random 4-digit code
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  };
-  
   const handleSendOtp = async (method: 'sms' | 'email') => {
-    setIsLoading(true);
-    
-    try {
-      if (method === 'sms') {
+    if (method === 'sms') {
+      setIsSendingCode(true);
+      
+      try {
         if (!phoneNumber) {
           setPhoneError(t('fillRequired'));
-          setIsLoading(false);
           return;
         }
         
         if (!isValidPhoneNumber(phoneNumber)) {
           setPhoneError(t('enterValidCode'));
-          setIsLoading(false);
           return;
         }
-        
-        // Generate a code for demo/testing purposes
-        const code = generateVerificationCode();
-        setGeneratedCode(code); // Store for verification
         
         // Format the full phone number
         const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
         
-        // Send actual SMS with the code
-        const smsSent = await wifiPortalService.sendVerificationCode(fullPhoneNumber, code);
+        // Send the verification code
+        const result = await wifiPortalService.sendVerificationCode(fullPhoneNumber);
         
-        if (smsSent) {
+        if (result.success) {
           toast.success(`${t("verificationCodeSent")} ${t("toPhone")}`);
+          // Store the code for debug purposes
+          setVerificationCode(result.code);
+          setAuthMethod(method);
+          setIsVerifying(true);
+          
+          // Start the countdown for resend
+          setResendDisabled(true);
+          setResendCountdown(60); // 60 seconds
         } else {
-          // Even if SMS fails, we'll allow the user to continue in demo mode
+          // Even if SMS fails in development, allow continuing
           console.warn("SMS sending failed, but continuing in demo mode");
           toast.info(`${t("demoMode")}: ${t("useCode")} 1234`);
+          setVerificationCode('1234'); // Fallback code
+          setAuthMethod(method);
+          setIsVerifying(true);
         }
-      } else if (method === 'email') {
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        toast.error(t("errorSendingCode"));
+        setAuthError(t("errorSendingCode"));
+      } finally {
+        setIsSendingCode(false);
+      }
+    } else if (method === 'email') {
+      setIsSendingCode(true);
+      
+      try {
         if (!email) {
           setEmailError(t('fillRequired'));
-          setIsLoading(false);
           return;
         }
         
         if (!isValidEmail(email)) {
           setEmailError(t('enterValidCode'));
-          setIsLoading(false);
           return;
         }
         
         // In a real implementation, this would send an email
-        toast.success(`${t("verificationCodeSent")} ${t("toEmail")}`);
+        // For now, simulate email sending
+        setTimeout(() => {
+          toast.success(`${t("verificationCodeSent")} ${t("toEmail")}`);
+          // For demo, use a fixed code
+          setVerificationCode('1234');
+          setAuthMethod(method);
+          setIsVerifying(true);
+          
+          // Start the countdown for resend
+          setResendDisabled(true);
+          setResendCountdown(60); // 60 seconds
+        }, 1000);
+      } catch (error) {
+        console.error("Error sending email:", error);
+        toast.error(t("errorSendingCode"));
+        setAuthError(t("errorSendingCode"));
+      } finally {
+        setIsSendingCode(false);
       }
-      
-      setAuthMethod(method);
-      setIsVerifying(true);
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      toast.error(t("errorSendingCode"));
-    } finally {
-      setIsLoading(false);
     }
+  };
+  
+  const handleResendCode = () => {
+    if (resendDisabled) return;
+    handleSendOtp(authMethod);
   };
   
   const handleVerifyOtp = async () => {
@@ -137,28 +177,43 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
       return;
     }
     
-    setIsLoading(true);
+    setIsVerifyingCode(true);
     setAuthError('');
     
     try {
-      // Verify OTP - in production, this would verify against a backend
-      // For demo purposes, we'll accept either the generated code or 1234
-      if (otp === generatedCode || otp === '1234') {
-        toast.success(t("verificationSuccessful"));
-        await onAuth('otp', { 
-          phoneNumber: authMethod === 'sms' ? `${countryCode}${phoneNumber.replace(/\s/g, '')}` : undefined, 
-          email: authMethod === 'email' ? email : undefined, 
-          otp 
-        });
+      if (authMethod === 'sms') {
+        // Format the full phone number
+        const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
+        
+        // Verify the code - in development, accept demo code or the actual sent code
+        if (otp === verificationCode || otp === '1234' || 
+            wifiPortalService.verifyCode(fullPhoneNumber, otp)) {
+          toast.success(t("verificationSuccessful"));
+          await onAuth('sms', { 
+            phoneNumber: fullPhoneNumber
+          });
+        } else {
+          toast.error(t("invalidCode"));
+          setAuthError(t("invalidCode"));
+        }
       } else {
-        toast.error(t("invalidCode"));
+        // For email, in this demo we just check against the fixed code
+        if (otp === verificationCode || otp === '1234') {
+          toast.success(t("verificationSuccessful"));
+          await onAuth('email', { 
+            email: email
+          });
+        } else {
+          toast.error(t("invalidCode"));
+          setAuthError(t("invalidCode"));
+        }
       }
     } catch (error) {
       console.error("Authentication error:", error);
       setAuthError(t("authError"));
       toast.error(t("authError"));
     } finally {
-      setIsLoading(false);
+      setIsVerifyingCode(false);
     }
   };
 
@@ -203,6 +258,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                         className={`pl-2 ${phoneError ? 'border-red-500' : ''}`}
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
+                        disabled={isSendingCode}
                       />
                     </div>
                   </div>
@@ -216,8 +272,13 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                 <Button 
                   className="w-full" 
                   onClick={() => handleSendOtp('sms')}
+                  disabled={isSendingCode}
                 >
-                  {t("sendCode")} <ArrowRight className="ml-2 h-4 w-4" />
+                  {isSendingCode ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("sending")}</>
+                  ) : (
+                    <>{t("sendCode")} <ArrowRight className="ml-2 h-4 w-4" /></>
+                  )}
                 </Button>
               </div>
             </TabsContent>
@@ -234,6 +295,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                       className={`pl-10 ${emailError ? 'border-red-500' : ''}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSendingCode}
                     />
                   </div>
                   {emailError && (
@@ -243,8 +305,13 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                 <Button 
                   className="w-full" 
                   onClick={() => handleSendOtp('email')}
+                  disabled={isSendingCode}
                 >
-                  {t("sendCode")} <ArrowRight className="ml-2 h-4 w-4" />
+                  {isSendingCode ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("sending")}</>
+                  ) : (
+                    <>{t("sendCode")} <ArrowRight className="ml-2 h-4 w-4" /></>
+                  )}
                 </Button>
               </div>
             </TabsContent>
@@ -279,17 +346,32 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
-              <p className="text-xs text-center text-muted-foreground">
-                {t("useCodeForDemo")} <span className="font-bold">1234</span>
-              </p>
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-xs text-muted-foreground">
+                  {t("useCodeForDemo")} <span className="font-bold">1234</span>
+                </p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleResendCode}
+                  disabled={resendDisabled || isSendingCode}
+                >
+                  {resendDisabled 
+                    ? `${t("resendIn")} ${resendCountdown}s` 
+                    : t("resendCode")}
+                </Button>
+              </div>
             </div>
             <Button 
               className="w-full"
               onClick={handleVerifyOtp}
-              disabled={isLoading}
+              disabled={isVerifyingCode || !otp || otp.length < 4}
             >
-              {isLoading ? t("verifying") : t("verify")}
-              {!isLoading && <CheckCircle className="ml-2 h-4 w-4" />}
+              {isVerifyingCode ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("verifying")}</>
+              ) : (
+                <>{t("verify")} <CheckCircle className="ml-2 h-4 w-4" /></>
+              )}
             </Button>
           </CardContent>
           <CardFooter>
@@ -299,8 +381,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
               onClick={() => {
                 setIsVerifying(false);
                 setAuthError('');
+                setOtp('');
               }}
-              disabled={isLoading}
+              disabled={isVerifyingCode}
             >
               {t("goBack")}
             </Button>
