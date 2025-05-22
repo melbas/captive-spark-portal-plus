@@ -1,8 +1,12 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+// Define language type
+export type LanguageType = 'en' | 'fr';
+
 interface LanguageContextProps {
-  language: string;
-  setLanguage: (lang: string) => void;
+  language: LanguageType;
+  setLanguage: (lang: LanguageType) => void;
   t: (key: string) => string;
 }
 
@@ -76,7 +80,7 @@ const translations = {
     referralSystem: "Referral System",
     inviteFriendsAndEarn: "Invite friends and earn points!",
     yourReferralCode: "Your Referral Code:",
-    inviteFriends: "Invite Friends",
+    inviteFriends1: "Invite Friends",
     enterFriendEmail: "Enter your friend's email",
     inviteSuccess: "Invitation sent successfully!",
     miniGames: "Mini Games",
@@ -272,13 +276,7 @@ const translations = {
     expires: "Expires",
     addMember: "Add Member",
     noFamilyMembers: "No family members yet",
-    name: "Name",
-    email: "Email",
-    phone: "Phone",
     macAddress: "MAC Address",
-    enterName: "Enter name",
-    enterEmail: "Enter email",
-    enterPhone: "Enter phone",
     enterMacAddress: "Enter MAC address",
     addMemberButton: "Add Member",
     memberNameRequired: "Member name is required",
@@ -294,7 +292,7 @@ const translations = {
     maxMembersReached: "Maximum number of members reached",
     noContactInfo: "No contact info",
     createFamilyPlan: "Create Family Plan",
-    errorLoadingFamilyProfile: "Error loading family profile",
+    errorLoadingFamilyProfile: "Error loading family profile"
   },
   fr: {
     portal: "Portail WiFi",
@@ -359,7 +357,7 @@ const translations = {
     referralSystem: "Système de Parrainage",
     inviteFriendsAndEarn: "Invitez des amis et gagnez des points!",
     yourReferralCode: "Votre Code de Parrainage:",
-    inviteFriends: "Inviter des Amis",
+    inviteFriends1: "Inviter des Amis",
     enterFriendEmail: "Entrez l'email de votre ami",
     inviteSuccess: "Invitation envoyée avec succès!",
     miniGames: "Mini-Jeux",
@@ -555,13 +553,7 @@ const translations = {
     expires: "Expire",
     addMember: "Ajouter un Membre",
     noFamilyMembers: "Aucun membre de la famille pour le moment",
-    name: "Nom",
-    email: "Email",
-    phone: "Téléphone",
     macAddress: "Adresse MAC",
-    enterName: "Entrez le nom",
-    enterEmail: "Entrez l'email",
-    enterPhone: "Entrez le téléphone",
     enterMacAddress: "Entrez l'adresse MAC",
     addMemberButton: "Ajouter un Membre",
     memberNameRequired: "Le nom du membre est requis",
@@ -577,19 +569,19 @@ const translations = {
     maxMembersReached: "Nombre maximum de membres atteint",
     noContactInfo: "Aucune information de contact",
     createFamilyPlan: "Créer un Forfait Familial",
-    errorLoadingFamilyProfile: "Erreur lors du chargement du profil familial",
+    errorLoadingFamilyProfile: "Erreur lors du chargement du profil familial"
   },
 };
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language, setLanguage] = useState(localStorage.getItem('language') || 'fr');
+  const [language, setLanguage] = useState<LanguageType>(localStorage.getItem('language') as LanguageType || 'fr');
 
   useEffect(() => {
     localStorage.setItem('language', language);
   }, [language]);
 
   const t = useCallback((key: string) => {
-    return translations[language as keyof typeof translations][key] || key;
+    return translations[language][key as keyof typeof translations[typeof language]] || key;
   }, [language]);
 
   return (

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,6 +76,7 @@ const adSlides = [
 const WifiPortalContainer = () => {
   const [showAds, setShowAds] = useState(true);
   
+  const wifiPortal = useWifiPortal();
   const {
     currentStep,
     setCurrentStep,
@@ -90,13 +91,34 @@ const WifiPortalContainer = () => {
     handleNavigate,
     handleRedeemReward,
     handleInvite,
-    handleReset,
-    getMacAddress,
     handleGameComplete,
     handlePaymentComplete
-  } = useWifiPortal();
+  } = wifiPortal;
   
   const { t, language } = useLanguage();
+  
+  // Add the missing functions
+  const handleReset = useCallback(() => {
+    localStorage.removeItem('wifi_user_data');
+    localStorage.removeItem('wifi_mac_address');
+    window.location.reload();
+  }, []);
+
+  const getMacAddress = useCallback(() => {
+    const storedMac = localStorage.getItem('wifi_mac_address');
+    if (storedMac) return storedMac;
+    
+    // Generate a random MAC address for demo purposes
+    const hexDigits = '0123456789ABCDEF';
+    let mac = '';
+    for (let i = 0; i < 6; i++) {
+      mac += hexDigits.charAt(Math.floor(Math.random() * 16));
+      mac += hexDigits.charAt(Math.floor(Math.random() * 16));
+      if (i < 5) mac += ':';
+    }
+    localStorage.setItem('wifi_mac_address', mac);
+    return mac;
+  }, []);
   
   const handleAdSlideChange = (index: number) => {
     console.log(`Ad changed to slide ${index}`);
