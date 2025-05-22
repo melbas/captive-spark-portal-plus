@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PortalStatistic } from "./types";
 import { GameCategory } from "@/components/wifi-portal/types/game-categories";
-import { GameType } from "../wifi/types";
+import { GameType } from "@/components/wifi-portal/types"; // Fixed import path
 
 export interface GameStatistic {
   game_id: string;

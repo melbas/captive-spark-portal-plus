@@ -22,6 +22,7 @@ export enum EngagementType {
 
 export enum UserLevel {
   BASIC = "basic",
+  BRONZE = "bronze", // Added BRONZE level
   SILVER = "silver",
   GOLD = "gold",
   PLATINUM = "platinum"
@@ -38,6 +39,23 @@ export enum RewardType {
   WIFI_TIME = "wifi_time",
   PREMIUM_ACCESS = "premium_access",
   DISCOUNT = "discount"
+}
+
+// Added PaymentMethod enum
+export enum PaymentMethod {
+  CREDIT_CARD = "credit_card",
+  MOBILE_MONEY = "mobile_money"
+}
+
+// Added PaymentPackage interface
+export interface PaymentPackage {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  minutes: number;
+  isPopular?: boolean;
 }
 
 export interface ConnectionRecord {
