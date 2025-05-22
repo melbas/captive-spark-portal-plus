@@ -221,7 +221,7 @@ export const familyService = {
     }
   },
   
-  async addFamilyMember(familyId: string, userData: { id: string; name?: string; email?: string; phone?: string }, role: FamilyRole = 'member'): Promise<FamilyMember | null> {
+  async addFamilyMember(familyId: string, userData: { id: string; name?: string; email?: string; phone?: string }, role: FamilyRole = FamilyRole.MEMBER): Promise<FamilyMember | null> {
     try {
       // Vérifier si la famille existe et a de la place
       const family = await this.getFamilyProfile(familyId);
@@ -486,7 +486,7 @@ export const familyService = {
     }
   },
   
-  async createFamilyInvite(familyId: string, contactInfo: { email?: string; phone?: string; name?: string }, role: FamilyRole = 'member'): Promise<FamilyInvite | null> {
+  async createFamilyInvite(familyId: string, contactInfo: { email?: string; phone?: string; name?: string }, role: FamilyRole = FamilyRole.MEMBER): Promise<FamilyInvite | null> {
     try {
       const inviteId = `inv-${Math.random().toString(36).substring(2, 8)}`;
       const token = Math.random().toString(36).substring(2, 15);
