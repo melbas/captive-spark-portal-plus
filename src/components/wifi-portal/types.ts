@@ -12,6 +12,7 @@ export enum Step {
   REFERRAL = "referral",
   MINI_GAMES = "mini-games",
   ADMIN_STATS = "admin-stats",
+  FAMILY_MANAGEMENT = "family-management",
   PAYMENT = "payment"
 }
 
@@ -41,6 +42,12 @@ export enum RewardType {
   DISCOUNT = "discount"
 }
 
+export enum FamilyRole {
+  OWNER = "owner",
+  MEMBER = "member",
+  CHILD = "child"
+}
+
 // Added PaymentMethod enum
 export enum PaymentMethod {
   CREDIT_CARD = "credit_card",
@@ -64,6 +71,16 @@ export interface ConnectionRecord {
   engagementType: string;
 }
 
+export interface FamilyMemberData {
+  id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  role: FamilyRole;
+  active: boolean;
+  lastConnection?: string;
+}
+
 export interface UserData {
   id?: string;
   authMethod?: string;
@@ -81,6 +98,11 @@ export interface UserData {
   engagementData?: any; 
   leadData?: any;
   isAdmin?: boolean;
+  family?: string; // ID de la famille à laquelle appartient l'utilisateur
+  familyName?: string;
+  familyRole?: FamilyRole;
+  familyMembers?: FamilyMemberData[];
+  familyOwner?: boolean;
 }
 
 export interface MiniGameData {

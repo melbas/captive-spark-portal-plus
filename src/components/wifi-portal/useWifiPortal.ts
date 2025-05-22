@@ -387,6 +387,9 @@ export const useWifiPortal = () => {
       case "payment":
         setCurrentStep(Step.PAYMENT);
         break;
+      case "family-management":
+        setCurrentStep(Step.FAMILY_MANAGEMENT);
+        break;
       default:
         setCurrentStep(Step.SUCCESS);
     }

@@ -13,6 +13,7 @@ import RewardSystem from "./RewardSystem";
 import ReferralSystem from "./ReferralSystem";
 import MiniGamesHub from "./MiniGamesHub";
 import AdminDashboard from "./AdminDashboard";
+import FamilyManagement from "./FamilyManagement";
 import PaymentPortal from "./PaymentPortal";
 import { useLanguage } from "../LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -110,7 +111,20 @@ const WifiPortalContent = ({
           <span className="text-center sm:text-left">{t("buyTime")}</span>
         </Button>
         
-        {userData.isAdmin ? (
+        <Button 
+          variant="outline" 
+          onClick={() => handleNavigate("family-management")}
+          className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
+        >
+          <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+          </svg>
+          <span className="text-center sm:text-left">{t("familyPlan")}</span>
+        </Button>
+      </div>
+      
+      <div className="w-full max-w-md mt-3 grid grid-cols-1 gap-3">
+        {userData.isAdmin && (
           <Button 
             variant="outline" 
             onClick={() => handleNavigate("admin")}
@@ -122,7 +136,9 @@ const WifiPortalContent = ({
             </svg>
             <span className="text-center sm:text-left">{t("administration")}</span>
           </Button>
-        ) : (
+        )}
+        
+        {!userData.isAdmin && (
           <Button 
             variant="outline" 
             onClick={() => handleNavigate("referral")}
@@ -267,6 +283,13 @@ const WifiPortalContent = ({
       
       {currentStep === Step.ADMIN_STATS && (
         <AdminDashboard 
+          userData={userData}
+          onBack={() => setCurrentStep(Step.SUCCESS)}
+        />
+      )}
+      
+      {currentStep === Step.FAMILY_MANAGEMENT && (
+        <FamilyManagement
           userData={userData}
           onBack={() => setCurrentStep(Step.SUCCESS)}
         />
