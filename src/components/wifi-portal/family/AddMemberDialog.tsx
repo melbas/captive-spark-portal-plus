@@ -35,7 +35,7 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
   const [newMemberEmail, setNewMemberEmail] = useState<string>("");
   const [newMemberName, setNewMemberName] = useState<string>("");
   const [newMemberPhone, setNewMemberPhone] = useState<string>("");
-  const [newMemberRole, setNewMemberRole] = useState<FamilyRole>("MEMBER");
+  const [newMemberRole, setNewMemberRole] = useState<FamilyRole>(FamilyRole.MEMBER);
   const [inviteProcessing, setInviteProcessing] = useState<boolean>(false);
 
   const handleAddMember = async () => {
@@ -133,8 +133,8 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
-                variant={newMemberRole === "MEMBER" ? "default" : "outline"}
-                onClick={() => setNewMemberRole("MEMBER")}
+                variant={newMemberRole === FamilyRole.MEMBER ? "default" : "outline"}
+                onClick={() => setNewMemberRole(FamilyRole.MEMBER)}
                 className="justify-start"
               >
                 <Users className="h-4 w-4 mr-2" />
@@ -142,8 +142,8 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
               </Button>
               <Button
                 type="button"
-                variant={newMemberRole === "CHILD" ? "default" : "outline"}
-                onClick={() => setNewMemberRole("CHILD")}
+                variant={newMemberRole === FamilyRole.CHILD ? "default" : "outline"}
+                onClick={() => setNewMemberRole(FamilyRole.CHILD)}
                 className="justify-start"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
@@ -153,7 +153,7 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {newMemberRole === "CHILD" 
+              {newMemberRole === FamilyRole.CHILD 
                 ? t("childRoleExplanation") 
                 : t("memberRoleExplanation")}
             </p>

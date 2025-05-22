@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { FamilyMember } from "../types";
+import { FamilyMember, FamilyProfile } from "../types";
 import { FamilyRole } from "@/components/wifi-portal/types";
 import { familyProfileService } from "./family-profile-service";
 import { familyActivityService } from "./family-activity-service";
@@ -75,7 +75,7 @@ export const familyMemberService = {
   async addFamilyMember(
     familyId: string, 
     userData: { id: string; name?: string; email?: string; phone?: string }, 
-    role: FamilyRole = "MEMBER"
+    role: FamilyRole = FamilyRole.MEMBER
   ): Promise<FamilyMember | null> {
     try {
       // Check if the family exists and has space
@@ -91,7 +91,7 @@ export const familyMemberService = {
       const now = new Date().toISOString();
       
       // Map FamilyRole enum to string role for database
-      const dbRole = role === "OWNER" ? "owner" : role === "MEMBER" ? "member" : "child";
+      const dbRole = role === FamilyRole.OWNER ? "owner" : role === FamilyRole.MEMBER ? "member" : "child";
       
       const newMember: FamilyMember = {
         id: memberId,
@@ -259,9 +259,9 @@ export const familyMemberService = {
       if (!member) return null;
       
       // Convert string role to enum
-      if (member.role === 'owner') return "OWNER";
-      if (member.role === 'member') return "MEMBER";
-      if (member.role === 'child') return "CHILD";
+      if (member.role === 'owner') return FamilyRole.OWNER;
+      if (member.role === 'member') return FamilyRole.MEMBER;
+      if (member.role === 'child') return FamilyRole.CHILD;
       
       return null;
     } catch (error) {

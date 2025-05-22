@@ -16,7 +16,7 @@ export const familyInviteService = {
   async createFamilyInvite(
     familyId: string, 
     contactInfo: { email?: string; phone?: string; name?: string }, 
-    role: FamilyRole = "MEMBER"
+    role: FamilyRole = FamilyRole.MEMBER
   ): Promise<FamilyInvite | null> {
     try {
       const inviteId = `inv-${Math.random().toString(36).substring(2, 8)}`;
@@ -26,7 +26,7 @@ export const familyInviteService = {
       expiresAt.setDate(expiresAt.getDate() + 7); // Expires after 7 days
       
       // Map FamilyRole enum to string role for database
-      const dbRole = role === "MEMBER" ? "member" : "child";
+      const dbRole = role === FamilyRole.MEMBER ? "member" : "child";
       
       const newInvite: FamilyInvite = {
         id: inviteId,

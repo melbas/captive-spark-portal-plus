@@ -42,7 +42,7 @@ const CreateFamilyCard: React.FC<CreateFamilyCardProps> = ({ userData, onBack, o
         // Update user data with new family
         userData.family = result.id;
         userData.familyName = result.name;
-        userData.familyRole = "OWNER" as FamilyRole;
+        userData.familyRole = FamilyRole.OWNER;
         await onFamilyCreated();
       } else {
         throw new Error("Failed to create family");

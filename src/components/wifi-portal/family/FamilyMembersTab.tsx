@@ -72,11 +72,11 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
 
   const getRoleBadge = (role: FamilyRole) => {
     switch (role) {
-      case "OWNER":
+      case FamilyRole.OWNER:
         return <Badge variant="default">{t("owner")}</Badge>;
-      case "MEMBER":
+      case FamilyRole.MEMBER:
         return <Badge variant="outline">{t("member")}</Badge>;
-      case "CHILD":
+      case FamilyRole.CHILD:
         return <Badge variant="secondary">{t("child")}</Badge>;
       default:
         return null;
@@ -137,7 +137,7 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                     <Badge variant="outline" className="bg-red-100">{t("suspended")}</Badge>
                   )}
                 </TableCell>
-                {isOwner && member.role !== "OWNER" && (
+                {isOwner && member.role !== FamilyRole.OWNER && (
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button 
@@ -157,7 +157,7 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                     </div>
                   </TableCell>
                 )}
-                {(isOwner && member.role === "OWNER") && (
+                {(isOwner && member.role === FamilyRole.OWNER) && (
                   <TableCell className="text-right">
                     <span className="text-xs text-muted-foreground">{t("owner")}</span>
                   </TableCell>
