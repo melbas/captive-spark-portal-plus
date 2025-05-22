@@ -13,7 +13,8 @@ interface LayoutProps {
   showLogo?: boolean;
 }
 
-const LayoutContent: React.FC<Omit<LayoutProps, 'children'>> & { children: ReactNode } = ({ 
+// Fix: Properly type LayoutContent component
+const LayoutContent: React.FC<LayoutProps> = ({ 
   children, 
   withGradientBg = true,
   showLogo = true
