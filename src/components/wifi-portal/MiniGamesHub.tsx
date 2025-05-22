@@ -1,14 +1,18 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Award, Timer, Brain, Trophy } from "lucide-react";
+import { ChevronLeft, Award, Timer, Brain, Trophy, Gamepad2, Lightbulb, Zap } from "lucide-react";
 import { MiniGameData, GameType, UserData } from "./types";
+import { GameCategory, GAME_CATEGORIES, getGameCategory } from "./types/game-categories";
+import { analyticsService } from "@/services/analytics-service";
+import { Badge } from "@/components/ui/badge";
 import MemoryGame from "./games/MemoryGame";
 import QuizGame from "./games/QuizGame";
 import PuzzleGame from "./games/PuzzleGame";
 import TapGame from "./games/TapGame";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface MiniGamesHubProps {
   userData: UserData;
@@ -19,6 +23,7 @@ interface MiniGamesHubProps {
 const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) => {
   const [selectedGame, setSelectedGame] = useState<MiniGameData | null>(null);
   const [activeTab, setActiveTab] = useState("available");
+  const [selectedCategory, setSelectedCategory] = useState<GameCategory | "all">("all");
 
   // Sample games - in a real implementation, these would come from the database
   const availableGames: MiniGameData[] = [
@@ -28,7 +33,8 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
       type: GameType.MEMORY,
       description: "Retrouvez les paires de cartes identiques",
       rewardMinutes: 10,
-      rewardPoints: 25
+      rewardPoints: 25,
+      category: GameCategory.COGNITIVE
     },
     {
       id: "quiz-game",
@@ -36,7 +42,8 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
       type: GameType.QUIZ,
       description: "Testez vos connaissances générales",
       rewardMinutes: 15,
-      rewardPoints: 35
+      rewardPoints: 35,
+      category: GameCategory.EDUCATIONAL
     },
     {
       id: "puzzle-game",
@@ -44,7 +51,8 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
       type: GameType.PUZZLE,
       description: "Reconstituez l'image en déplaçant les pièces",
       rewardMinutes: 20,
-      rewardPoints: 40
+      rewardPoints: 40,
+      category: GameCategory.COGNITIVE
     },
     {
       id: "tap-game",
@@ -52,39 +60,99 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
       type: GameType.TAP,
       description: "Tapez sur les étoiles le plus vite possible",
       rewardMinutes: 5,
-      rewardPoints: 15
+      rewardPoints: 15,
+      category: GameCategory.CHALLENGE
     }
   ];
 
   const handleStartGame = (game: MiniGameData) => {
+    analyticsService.startGameSession(game.id);
     setSelectedGame(game);
   };
 
   const handleCompleteGame = (score: number) => {
     if (selectedGame) {
+      // Calculer la durée de la session
+      const timeSpent = analyticsService.getSessionDuration(selectedGame.id);
+      
+      // Tracker l'événement de jeu
+      analyticsService.trackGameEvent({
+        gameId: selectedGame.id,
+        gameType: selectedGame.type,
+        gameCategory: selectedGame.category || getGameCategory(selectedGame.type),
+        score,
+        timeSpentSeconds: timeSpent,
+        completionStatus: 'completed',
+        userId: userData.id
+      });
+      
       onGameComplete(selectedGame, score);
       setSelectedGame(null);
     }
   };
 
   const handleCancelGame = () => {
+    if (selectedGame) {
+      // Tracker l'abandon du jeu
+      const timeSpent = analyticsService.getSessionDuration(selectedGame.id);
+      
+      analyticsService.trackGameEvent({
+        gameId: selectedGame.id,
+        gameType: selectedGame.type,
+        gameCategory: selectedGame.category || getGameCategory(selectedGame.type),
+        score: 0,
+        timeSpentSeconds: timeSpent,
+        completionStatus: 'abandoned',
+        userId: userData.id
+      });
+    }
+    
     setSelectedGame(null);
   };
 
   const renderGame = () => {
     if (!selectedGame) return null;
 
-    switch (selectedGame.type) {
-      case GameType.MEMORY:
-        return <MemoryGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
-      case GameType.QUIZ:
-        return <QuizGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
-      case GameType.PUZZLE:
-        return <PuzzleGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
-      case GameType.TAP:
-        return <TapGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
+    return (
+      <ErrorBoundary>
+        {(() => {
+          switch (selectedGame.type) {
+            case GameType.MEMORY:
+              return <MemoryGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
+            case GameType.QUIZ:
+              return <QuizGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
+            case GameType.PUZZLE:
+              return <PuzzleGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
+            case GameType.TAP:
+              return <TapGame onComplete={handleCompleteGame} onCancel={handleCancelGame} />;
+            default:
+              return <div>Jeu non disponible</div>;
+          }
+        })()}
+      </ErrorBoundary>
+    );
+  };
+
+  // Filtrer les jeux par catégorie
+  const filteredGames = selectedCategory === "all" 
+    ? availableGames 
+    : availableGames.filter(game => game.category === selectedCategory);
+
+  // Rendu d'une icône basée sur la catégorie de jeu
+  const renderCategoryIcon = (category?: GameCategory) => {
+    if (!category) return <Gamepad2 className="h-4 w-4 mr-2 text-primary" />;
+    
+    switch (category) {
+      case GameCategory.EDUCATIONAL:
+        return <Brain className="h-4 w-4 mr-2 text-blue-500" />;
+      case GameCategory.ENTERTAINMENT:
+        return <Gamepad2 className="h-4 w-4 mr-2 text-purple-500" />;
+      case GameCategory.COGNITIVE:
+        return <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />;
+      case GameCategory.CHALLENGE:
+        return <Zap className="h-4 w-4 mr-2 text-green-500" />;
       default:
-        return null;
+        return <Trophy className="h-4 w-4 mr-2 text-primary" />;
     }
   };
 
@@ -153,18 +221,45 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
           </TabsList>
           
           <TabsContent value="available">
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button 
+                variant={selectedCategory === "all" ? "default" : "outline"} 
+                size="sm" 
+                onClick={() => setSelectedCategory("all")}
+              >
+                Tous
+              </Button>
+              
+              {GAME_CATEGORIES.map(category => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category.id)}
+                  className="flex items-center"
+                >
+                  {renderCategoryIcon(category.id)}
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {availableGames.map(game => (
+              {filteredGames.map(game => (
                 <Card key={game.id} className="overflow-hidden hover:border-primary transition-all">
                   <CardContent className="p-0">
                     <div className="p-4 space-y-2">
-                      <h3 className="font-medium flex items-center">
-                        {game.type === GameType.MEMORY && <Brain className="h-4 w-4 mr-2 text-primary" />}
-                        {game.type === GameType.QUIZ && <Award className="h-4 w-4 mr-2 text-primary" />}
-                        {game.type === GameType.PUZZLE && <Trophy className="h-4 w-4 mr-2 text-primary" />}
-                        {game.type === GameType.TAP && <Timer className="h-4 w-4 mr-2 text-primary" />}
-                        {game.name}
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium flex items-center">
+                          {renderCategoryIcon(game.category)}
+                          {game.name}
+                        </h3>
+                        
+                        <Badge variant="outline" className="text-xs">
+                          {GAME_CATEGORIES.find(c => c.id === game.category)?.name || "Jeu"}
+                        </Badge>
+                      </div>
+                      
                       <p className="text-sm text-muted-foreground">{game.description}</p>
                       
                       <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
@@ -200,33 +295,17 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
               </p>
               
               <div className="space-y-3 mt-4">
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h4 className="font-medium">Jeu de Mémoire</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Gagnez jusqu'à 10 minutes et 25 points en retrouvant toutes les paires de cartes
-                  </p>
-                </div>
-                
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h4 className="font-medium">Quiz de Culture Générale</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Gagnez jusqu'à 15 minutes et 35 points en répondant correctement aux questions
-                  </p>
-                </div>
-                
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h4 className="font-medium">Puzzle Glissant</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Gagnez jusqu'à 20 minutes et 40 points en complétant le puzzle
-                  </p>
-                </div>
-                
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h4 className="font-medium">Tap Challenge</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Gagnez jusqu'à 5 minutes et 15 points en tapant sur les étoiles
-                  </p>
-                </div>
+                {GAME_CATEGORIES.map(category => (
+                  <div key={category.id} className={`bg-muted/30 p-3 rounded-lg border-l-4 border-${category.color}-500`}>
+                    <div className="flex items-center">
+                      {renderCategoryIcon(category.id)}
+                      <h4 className="font-medium">{category.name}</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {category.description}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </TabsContent>

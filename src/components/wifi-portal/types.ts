@@ -1,26 +1,32 @@
 
-// Define the steps for the WiFi portal flow
+import { GameCategory } from "./types/game-categories";
+
 export enum Step {
-  AUTH,
-  ENGAGEMENT,
-  SUCCESS,
-  EXTEND_TIME,
-  LEAD_GAME,
-  DASHBOARD,
-  REWARDS,
-  REFERRAL,
-  MINI_GAMES,
-  ADMIN_STATS,
-  PAYMENT
+  AUTH = "auth",
+  ENGAGEMENT = "engagement",
+  SUCCESS = "success",
+  EXTEND_TIME = "extend-time",
+  LEAD_GAME = "lead-game",
+  DASHBOARD = "dashboard",
+  REWARDS = "rewards",
+  REFERRAL = "referral",
+  MINI_GAMES = "mini-games",
+  ADMIN_STATS = "admin-stats",
+  PAYMENT = "payment"
 }
 
-// Define the engagement types
 export enum EngagementType {
-  VIDEO,
-  QUIZ
+  VIDEO = "video",
+  QUIZ = "quiz"
 }
 
-// Define game types for mini-games
+export enum UserLevel {
+  BASIC = "basic",
+  SILVER = "silver",
+  GOLD = "gold",
+  PLATINUM = "platinum"
+}
+
 export enum GameType {
   MEMORY = "memory",
   QUIZ = "quiz",
@@ -28,76 +34,37 @@ export enum GameType {
   TAP = "tap"
 }
 
-// Define payment methods
-export enum PaymentMethod {
-  CREDIT_CARD = "credit_card",
-  MOBILE_MONEY = "mobile_money",
-  PAYPAL = "paypal"
+export enum RewardType {
+  WIFI_TIME = "wifi_time",
+  PREMIUM_ACCESS = "premium_access",
+  DISCOUNT = "discount"
 }
 
-// Define user level types based on points
-export enum UserLevel {
-  BASIC = "Basic",
-  BRONZE = "Bronze",
-  SILVER = "Silver",
-  GOLD = "Gold",
-  PLATINUM = "Platinum"
+export interface ConnectionRecord {
+  date: string;
+  duration: number;
+  engagementType: string;
 }
 
-// Define the user data structure
 export interface UserData {
   id?: string;
   authMethod?: string;
-  timeRemainingMinutes?: number;
-  engagementData?: any;
+  timeRemainingMinutes: number;
   sessionId?: string;
   email?: string;
   phone?: string;
   name?: string;
   macAddress?: string;
-  leadData?: any;
   points?: number;
   level?: UserLevel;
-  connectionHistory?: ConnectionRecord[];
   referralCode?: string;
+  connectionHistory?: ConnectionRecord[];
   referredUsers?: string[];
+  engagementData?: any; 
+  leadData?: any;
   isAdmin?: boolean;
-  [key: string]: any;
 }
 
-// Define a connection record for history
-export interface ConnectionRecord {
-  date: string;
-  duration: number;
-  engagementType?: string;
-}
-
-// Define a reward structure
-export interface Reward {
-  id: string;
-  name: string;
-  description: string;
-  pointsCost: number;
-  type: RewardType;
-  value: number; // e.g., minutes of WiFi time or discount percentage
-}
-
-// Define reward types
-export enum RewardType {
-  WIFI_TIME = "wifi_time",
-  DISCOUNT = "discount",
-  PREMIUM_ACCESS = "premium_access"
-}
-
-// Define referral data structure
-export interface ReferralData {
-  code: string;
-  referrerId: string;
-  rewardMinutes: number;
-  usedBy?: string[];
-}
-
-// Define mini-game data structure
 export interface MiniGameData {
   id: string;
   name: string;
@@ -105,9 +72,19 @@ export interface MiniGameData {
   description: string;
   rewardMinutes: number;
   rewardPoints: number;
+  category?: GameCategory;
 }
 
-// Define statistics data structure
+export interface Reward {
+  id: string;
+  name: string;
+  description: string;
+  type: RewardType;
+  value: number;
+  pointsCost: number;
+  imageUrl?: string;
+}
+
 export interface StatisticsData {
   totalConnections: number;
   videoViews: number;
@@ -115,11 +92,10 @@ export interface StatisticsData {
   gamesPlayed: number;
   leadsCollected: number;
   dailyStats: DailyStatistics[];
-  userGrowth: number;
-  averageSessionDuration: number;
+  userGrowth: number; // percentage
+  averageSessionDuration: number; // minutes
 }
 
-// Define daily statistics structure
 export interface DailyStatistics {
   date: string;
   connections: number;
@@ -127,15 +103,4 @@ export interface DailyStatistics {
   quizCompletions: number;
   gamesPlayed: number;
   leadsCollected: number;
-}
-
-// Define payment package structure
-export interface PaymentPackage {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  minutes: number;
-  isPopular?: boolean;
 }

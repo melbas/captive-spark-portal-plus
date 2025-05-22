@@ -25,6 +25,26 @@ export const useWifiPortal = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Logger les transitions d'état pour le débogage
+  useEffect(() => {
+    console.log(`État actuel: ${currentStep}`);
+  }, [currentStep]);
+  
+  // Ajouter un gestionnaire d'erreurs global pour capturer les erreurs non détectées
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      console.error("Erreur non captée:", event.error);
+      setError(`Une erreur s'est produite: ${event.message}`);
+      toast.error("Une erreur s'est produite. Veuillez réessayer.");
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+    };
+  }, []);
+  
   // Get MAC address - in a real implementation this would be provided by the captive portal
   const getMacAddress = (): string | null => {
     // This is a mock implementation - in a real captive portal, this would be provided
@@ -53,9 +73,11 @@ export const useWifiPortal = () => {
         const macAddress = getMacAddress();
         
         if (macAddress) {
+          console.log("Vérification de l'utilisateur avec MAC:", macAddress);
           const existingUser = await wifiPortalService.getUserByMac(macAddress);
           
           if (existingUser) {
+            console.log("Utilisateur existant trouvé:", existingUser);
             // Auto-login returning user
             const sessionData: WifiSession = {
               user_id: existingUser.id!,
@@ -65,6 +87,7 @@ export const useWifiPortal = () => {
             const session = await wifiPortalService.createSession(sessionData);
             
             if (session) {
+              console.log("Session créée avec succès:", session);
               // In a real implementation, we would fetch the user's points, level, history from the database
               setUserData({
                 id: existingUser.id,
@@ -102,7 +125,12 @@ export const useWifiPortal = () => {
               
               setCurrentStep(Step.SUCCESS);
               toast.success("Welcome back! You've been automatically connected.");
+            } else {
+              console.error("Échec de la création de session");
+              throw new Error("Failed to create session");
             }
+          } else {
+            console.log("Aucun utilisateur existant trouvé, affichage de l'écran de connexion");
           }
         }
       } catch (error) {
@@ -118,6 +146,7 @@ export const useWifiPortal = () => {
   
   const handleAuth = async (method: string, data: any) => {
     try {
+      console.log(`Authentification avec méthode: ${method}`, data);
       setLoading(true);
       setError(null);
       
@@ -136,6 +165,7 @@ export const useWifiPortal = () => {
       let createdUser;
       try {
         createdUser = await wifiPortalService.createUser(user);
+        console.log("Utilisateur créé:", createdUser);
       } catch (err: any) {
         console.error("Error creating user:", err);
         toast.error(`Authentication failed: ${err.message || "Unknown error"}`);
@@ -143,6 +173,7 @@ export const useWifiPortal = () => {
       }
       
       if (!createdUser) {
+        console.error("Utilisateur non créé");
         toast.error("Error creating user account. Please try again.");
         throw new Error("Failed to create user");
       }
@@ -153,9 +184,11 @@ export const useWifiPortal = () => {
         duration_minutes: 30,
       };
       
+      console.log("Création de session pour l'utilisateur:", sessionData);
       const session = await wifiPortalService.createSession(sessionData);
       
       if (session) {
+        console.log("Session créée avec succès:", session);
         // In a real implementation, we would fetch the user's points, level, history from the database
         setUserData({
           ...userData, 
@@ -176,11 +209,13 @@ export const useWifiPortal = () => {
           ? EngagementType.VIDEO 
           : EngagementType.QUIZ;
         
+        console.log(`Type d'engagement choisi: ${randomEngagement}`);
         setEngagementType(randomEngagement);
         setCurrentStep(Step.ENGAGEMENT);
         
         toast.success(`Authentication successful via ${method}`);
       } else {
+        console.error("Échec de la création de session");
         throw new Error("Failed to create session");
       }
     } catch (error: any) {
@@ -194,6 +229,7 @@ export const useWifiPortal = () => {
   
   const handleEngagementComplete = async (data?: any) => {
     try {
+      console.log("Engagement complété:", data);
       setLoading(true);
       if (userData.sessionId && data) {
         // Update session with engagement data
@@ -235,12 +271,23 @@ export const useWifiPortal = () => {
   };
   
   const handleContinue = () => {
-    // In a real implementation, this would redirect to the requested URL
-    window.location.href = "https://www.google.com";
+    // Dans une implémentation réelle, rediriger vers l'URL demandée
+    // Utiliser un état React plutôt qu'une redirection de page complète
+    console.log("Redirection vers l'URL demandée");
+    toast.info("Redirection vers la page demandée...");
+    
+    // Simulation de redirection pour la démo
+    setTimeout(() => {
+      toast.success("Vous êtes maintenant connecté à Internet!");
+    }, 1500);
+    
+    // IMPORTANT: Ne pas utiliser window.location.href pour éviter les problèmes d'écran blanc
+    // window.location.href = "https://www.google.com";
   };
   
   const handleExtendTime = async (additionalMinutes: number) => {
     try {
+      console.log(`Extension du temps de ${additionalMinutes} minutes`);
       setLoading(true);
       const newDuration = (userData.timeRemainingMinutes || 0) + additionalMinutes;
       
@@ -273,6 +320,7 @@ export const useWifiPortal = () => {
   
   const handleLeadGameComplete = async (leadData: any) => {
     try {
+      console.log("Jeu de collecte de leads terminé:", leadData);
       setLoading(true);
       const additionalMinutes = 15; // Default reward
       const newDuration = (userData.timeRemainingMinutes || 0) + additionalMinutes;
@@ -319,6 +367,7 @@ export const useWifiPortal = () => {
   };
   
   const handleNavigate = (section: string) => {
+    console.log(`Navigation vers: ${section}`);
     switch (section) {
       case "dashboard":
         setCurrentStep(Step.DASHBOARD);
@@ -346,6 +395,8 @@ export const useWifiPortal = () => {
   const handleRedeemReward = (reward: Reward) => {
     const pointsCost = reward.pointsCost;
     const currentPoints = userData.points || 0;
+    
+    console.log(`Tentative d'échange de récompense: ${reward.name}, coût: ${pointsCost}, points actuels: ${currentPoints}`);
     
     if (currentPoints < pointsCost) {
       toast.error("Vous n'avez pas assez de points");
@@ -389,6 +440,7 @@ export const useWifiPortal = () => {
   const handleInvite = (email: string) => {
     // In a real implementation, this would send an invitation email
     // For now, just simulate adding a referred user
+    console.log(`Invitation envoyée à: ${email}`);
     const referredUsers = userData.referredUsers || [];
     
     if (!referredUsers.includes(email)) {
@@ -408,6 +460,7 @@ export const useWifiPortal = () => {
   
   const handleGameComplete = (gameData: MiniGameData, score: number) => {
     // Calculate rewards based on game type and score
+    console.log(`Jeu terminé: ${gameData.name}, Score: ${score}`);
     const pointsEarned = Math.round(gameData.rewardPoints * (score / 100));
     const minutesEarned = Math.round(gameData.rewardMinutes * (score / 100));
     
@@ -432,6 +485,7 @@ export const useWifiPortal = () => {
   const handlePaymentComplete = (packageId: string, minutes: number) => {
     // In a real implementation, this would process the payment and update the user's time
     // For demo purposes, we'll just update the user's time
+    console.log(`Paiement complété pour le paquet: ${packageId}, minutes: ${minutes}`);
     
     setUserData(prev => ({
       ...prev,
@@ -444,8 +498,25 @@ export const useWifiPortal = () => {
   
   const handleReset = () => {
     // For demo purposes - reset the MAC address to simulate a new device
+    console.log("Réinitialisation complète");
     localStorage.removeItem('simulated_mac_address');
-    window.location.reload();
+    
+    // Utiliser un état React pour éviter une redirection de page complète
+    setLoading(true);
+    setUserData({
+      timeRemainingMinutes: 30,
+      points: 0,
+      level: UserLevel.BASIC,
+      connectionHistory: [],
+      isAdmin: false
+    });
+    
+    setCurrentStep(Step.AUTH);
+    
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Session réinitialisée");
+    }, 500);
   };
 
   return {

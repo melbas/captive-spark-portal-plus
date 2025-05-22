@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, Users, Video, Brain, Award, Calendar } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 import { StatisticsData, DailyStatistics, UserData } from "./types";
+import GameAnalytics from "./dashboard/GameAnalytics";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { statisticsService } from "@/services/wifi/statistics-service";
 
 interface AdminDashboardProps {
   userData: UserData;
@@ -149,10 +152,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onBack }) => 
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
               <TabsTrigger value="engagement">Engagement</TabsTrigger>
               <TabsTrigger value="leads">Leads</TabsTrigger>
+              <TabsTrigger value="games">Jeux</TabsTrigger>
             </TabsList>
             
             <CardContent className="pt-4">
@@ -423,6 +427,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onBack }) => 
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+              
+              <TabsContent value="games" className="space-y-4">
+                <ErrorBoundary>
+                  <GameAnalytics dateRange={dateRange} />
+                </ErrorBoundary>
               </TabsContent>
             </CardContent>
           </Tabs>
