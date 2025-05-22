@@ -9,8 +9,16 @@ import { useLanguage } from "../LanguageContext";
 export interface AdSlide {
   id: string;
   imageUrl: string;
-  title?: string;
-  description?: string;
+  title?: string | {
+    en: string;
+    fr: string;
+    es?: string;
+  };
+  description?: string | {
+    en: string;
+    fr: string;
+    es?: string;
+  };
   link?: string;
   language?: string;
 }
@@ -39,6 +47,13 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
   const filteredSlides = slides.filter(slide => 
     !slide.language || slide.language === language || slide.language === 'all'
   );
+  
+  // Helper to get localized content
+  const getLocalizedContent = (content: string | Record<string, string> | undefined): string => {
+    if (!content) return '';
+    if (typeof content === 'string') return content;
+    return content[language as keyof typeof content] || content['en'] || '';
+  };
   
   // Handle auto-rotation
   useEffect(() => {
@@ -84,14 +99,18 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
             >
               <img 
                 src={slide.imageUrl} 
-                alt={slide.title || `Advertisement ${index + 1}`}
+                alt={getLocalizedContent(slide.title) || `Advertisement ${index + 1}`}
                 className="object-cover w-full h-full cursor-pointer" 
               />
               
               {(slide.title || slide.description) && (
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm">
-                  {slide.title && <h3 className="font-medium text-lg">{slide.title}</h3>}
-                  {slide.description && <p className="text-sm text-muted-foreground">{slide.description}</p>}
+                  {slide.title && (
+                    <h3 className="font-medium text-lg">{getLocalizedContent(slide.title)}</h3>
+                  )}
+                  {slide.description && (
+                    <p className="text-sm text-muted-foreground">{getLocalizedContent(slide.description)}</p>
+                  )}
                 </div>
               )}
             </div>

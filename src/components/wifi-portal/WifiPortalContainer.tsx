@@ -7,35 +7,52 @@ import { ChevronLeft } from "lucide-react";
 import { useWifiPortal } from "./useWifiPortal";
 import WifiPortalContent from "./WifiPortalContent";
 import { useLanguage } from "../LanguageContext";
-import LanguageSelector from "../LanguageSelector";
 import AdCarousel from "../ads/AdCarousel";
 import VideoAd from "../ads/VideoAd";
 import AudioPromo from "../ads/AudioPromo";
 import WhatsAppSupport from "../support/WhatsAppSupport";
 import { Step } from "./types";
 
-// Mock advertisements for demonstration
+// West African themed advertisement slides
 const adSlides = [
   {
     id: "ad1",
-    imageUrl: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=800&h=400",
-    title: "Premium WiFi Plans",
-    description: "Get high-speed internet for your business",
-    link: "#premium-plans"
+    imageUrl: "https://images.unsplash.com/photo-1580522154071-c6ca47a859ad?auto=format&fit=crop&w=800&h=400",
+    title: {
+      en: "Student WiFi Plans",
+      fr: "Forfaits WiFi Étudiants"
+    },
+    description: {
+      en: "Special internet rates for students",
+      fr: "Tarifs internet spéciaux pour étudiants"
+    },
+    link: "#student-wifi"
   },
   {
     id: "ad2",
-    imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&h=400",
-    title: "Work From Anywhere",
-    description: "Reliable WiFi for remote workers",
-    link: "#remote-work"
+    imageUrl: "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&w=800&h=400",
+    title: {
+      en: "Market Vendor Connectivity",
+      fr: "Connectivité pour Commerçants"
+    },
+    description: {
+      en: "Stay connected at your market stall",
+      fr: "Restez connecté à votre étal de marché"
+    },
+    link: "#market-wifi"
   },
   {
     id: "ad3",
-    imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=400",
-    title: "Student Discount",
-    description: "Special rates for students",
-    link: "#student-discount"
+    imageUrl: "https://images.unsplash.com/photo-1605800565939-0a87518f57f2?auto=format&fit=crop&w=800&h=400",
+    title: {
+      en: "Café WiFi Access",
+      fr: "Accès WiFi dans les Cafés"
+    },
+    description: {
+      en: "Enjoy WiFi while sipping coffee",
+      fr: "Profitez du WiFi tout en dégustant un café"
+    },
+    link: "#cafe-wifi"
   }
 ];
 
@@ -62,7 +79,7 @@ const WifiPortalContainer = () => {
     handlePaymentComplete
   } = useWifiPortal();
   
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const handleAdSlideChange = (index: number) => {
     console.log(`Ad changed to slide ${index}`);
@@ -70,7 +87,7 @@ const WifiPortalContainer = () => {
   };
   
   const handleAdSlideClick = (slide: any) => {
-    console.log(`Ad clicked: ${slide.title}`);
+    console.log(`Ad clicked: ${slide.title[language]}`);
     // Track ad clicks or implement other analytics here
   };
   
@@ -82,7 +99,7 @@ const WifiPortalContainer = () => {
             <h1 className="text-4xl font-bold text-center md:text-left text-foreground">
               {t("portal")}
             </h1>
-            <LanguageSelector variant="select" />
+            {/* Removed duplicate language selector here */}
           </div>
           
           <p className="text-center md:text-left text-muted-foreground mt-2">
@@ -145,18 +162,18 @@ const WifiPortalContainer = () => {
           <div className="w-full max-w-md mt-8">
             <VideoAd
               videoUrl="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
-              title="Upgrade Your WiFi Experience"
-              description="Faster speeds, better coverage"
-              poster="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&h=450"
+              title={language === 'en' ? "Upgrade Your WiFi Experience" : "Améliorez votre expérience WiFi"}
+              description={language === 'en' ? "Faster speeds, better coverage" : "Vitesses plus rapides, meilleure couverture"}
+              poster="https://images.unsplash.com/photo-1605800565939-0a87518f57f2?auto=format&fit=crop&w=800&h=450"
               autoPlay={false}
               className="mb-4"
             />
             
             <AudioPromo
               audioUrl="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-              title="Special WiFi Offer"
-              subtitle="Listen to learn about our latest deals"
-              coverImage="https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=200&h=200"
+              title={language === 'en' ? "Special WiFi Offer" : "Offre WiFi Spéciale"}
+              subtitle={language === 'en' ? "Listen to learn about our latest deals" : "Écoutez pour découvrir nos dernières offres"}
+              coverImage="https://images.unsplash.com/photo-1627916607164-7b20241db798?auto=format&fit=crop&w=200&h=200"
             />
           </div>
         )}

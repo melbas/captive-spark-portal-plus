@@ -100,6 +100,16 @@ export const translations: Record<string, Translations> = {
       fr: "MAC de démo:",
       es: "MAC de demostración:"
     },
+    retry: {
+      en: "Retry",
+      fr: "Réessayer",
+      es: "Reintentar"
+    },
+    allRightsReserved: {
+      en: "All rights reserved.",
+      fr: "Tous droits réservés.",
+      es: "Todos los derechos reservados."
+    },
   },
 
   // Authentication related
