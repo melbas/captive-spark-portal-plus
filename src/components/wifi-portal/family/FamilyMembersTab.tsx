@@ -88,6 +88,14 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
       {isOwner && (
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-medium">{t("familyMembers")}</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInviteDialog(true)}
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            {t("addMember")}
+          </Button>
           <AddMemberDialog 
             showDialog={showInviteDialog} 
             setShowDialog={setShowInviteDialog}
