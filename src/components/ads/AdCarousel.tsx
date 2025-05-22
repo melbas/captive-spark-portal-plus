@@ -83,9 +83,9 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
     else if (slide.link) window.open(slide.link, '_blank');
   };
   
-  // Handle image error
+  // Handle image error avec traçage supplémentaire
   const handleImageError = (slideId: string) => {
-    console.log(`Image error for slide ${slideId}`);
+    console.log(`Erreur d'image pour la diapositive ${slideId}`);
     setImageErrors(prev => ({ ...prev, [slideId]: true }));
   };
   
@@ -95,7 +95,7 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
     <Card className={cn("relative overflow-hidden rounded-lg", className)}>
       <div className="relative w-full h-full">
         {/* Slides */}
-        <div className="relative w-full overflow-hidden aspect-[21/9]">
+        <div className="relative w-full overflow-hidden aspect-[16/9]">
           {filteredSlides.map((slide, index) => (
             <div 
               key={slide.id}
@@ -110,13 +110,13 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
                   src={slide.fallbackUrl} 
                   alt={getLocalizedContent(slide.title) || `Advertisement ${index + 1}`}
                   className="object-cover w-full h-full cursor-pointer" 
-                  onError={() => console.log(`Fallback image also failed for slide ${slide.id}`)}
+                  onError={() => console.log(`L'image de fallback a également échoué pour ${slide.id}`)}
                 />
               ) : (
                 <img 
                   src={slide.imageUrl} 
                   alt={getLocalizedContent(slide.title) || `Advertisement ${index + 1}`}
-                  className="object-cover w-full h-full cursor-pointer"
+                  className="object-contain w-full h-full cursor-pointer"
                   onError={() => handleImageError(slide.id)}
                 />
               )}
