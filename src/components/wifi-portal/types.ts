@@ -1,102 +1,24 @@
-
-import { GameCategory } from "./types/game-categories";
-
 export enum Step {
   AUTH = "auth",
   ENGAGEMENT = "engagement",
-  SUCCESS = "success",
-  EXTEND_TIME = "extend-time",
-  LEAD_GAME = "lead-game",
-  DASHBOARD = "dashboard",
-  REWARDS = "rewards",
-  REFERRAL = "referral",
-  MINI_GAMES = "mini-games",
-  ADMIN_STATS = "admin-stats",
+  EXTEND_TIME = "extend_time",
+  POST_ENGAGEMENT = "post_engagement",
+  REDEEM_REWARD = "redeem_reward",
+  INVITE = "invite",
+  LEAD_GAME = "lead_game",
   PAYMENT = "payment",
-  FAMILY_MANAGEMENT = "family-management" // Ajout d'une nouvelle étape pour la gestion familiale
+  SUCCESS = "success",
+  ERROR = "error"
 }
 
-export enum EngagementType {
-  VIDEO = "video",
-  QUIZ = "quiz"
-}
+export type EngagementType =
+  | "none"
+  | "video"
+  | "quiz"
+  | "game"
+  | "lead_game"
+  | "invite";
 
-export enum UserLevel {
-  BASIC = "basic",
-  BRONZE = "bronze", // Added BRONZE level
-  SILVER = "silver",
-  GOLD = "gold",
-  PLATINUM = "platinum"
-}
-
-export enum GameType {
-  MEMORY = "memory",
-  QUIZ = "quiz",
-  PUZZLE = "puzzle",
-  TAP = "tap"
-}
-
-export enum RewardType {
-  WIFI_TIME = "wifi_time",
-  PREMIUM_ACCESS = "premium_access",
-  DISCOUNT = "discount"
-}
-
-// Added PaymentMethod enum
-export enum PaymentMethod {
-  CREDIT_CARD = "credit_card",
-  MOBILE_MONEY = "mobile_money"
-}
-
-// Added PaymentPackage interface
-export interface PaymentPackage {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  minutes: number;
-  isPopular?: boolean;
-}
-
-// Role utilisateur pour les profils familiaux
-export enum UserRole {
-  OWNER = "owner",           // Responsable du profil familial
-  MEMBER = "member",         // Membre d'un profil familial
-  INDIVIDUAL = "individual"  // Utilisateur individuel
-}
-
-export interface ConnectionRecord {
-  date: string;
-  duration: number;
-  engagementType: string;
-}
-
-export interface UserData {
-  id?: string;
-  authMethod?: string;
-  timeRemainingMinutes: number;
-  sessionId?: string;
-  email?: string;
-  phone?: string;
-  name?: string;
-  macAddress?: string;
-  points?: number;
-  level?: UserLevel;
-  referralCode?: string;
-  connectionHistory?: ConnectionRecord[];
-  referredUsers?: string[];
-  engagementData?: any; 
-  leadData?: any;
-  isAdmin?: boolean;
-  // Nouveaux champs pour les profils familiaux
-  role?: UserRole;
-  familyId?: string;
-  familyName?: string;
-  familyOwnerId?: string;
-}
-
-// Interface pour les profils familiaux
 export interface FamilyProfile {
   id: string;
   name: string;
@@ -112,7 +34,6 @@ export interface FamilyProfile {
   members: FamilyMember[];
 }
 
-// Interface pour les membres d'un profil familial
 export interface FamilyMember {
   id: string;
   name: string;
@@ -125,47 +46,12 @@ export interface FamilyMember {
   timeUsedMinutes: number;
 }
 
-export interface MiniGameData {
-  id: string;
-  name: string;
-  type: GameType;
-  description: string;
-  rewardMinutes: number;
-  rewardPoints: number;
-  category?: GameCategory;
+export enum UserRole {
+  OWNER = "owner",
+  MEMBER = "member",
+  INDIVIDUAL = "individual"
 }
 
-export interface Reward {
-  id: string;
-  name: string;
-  description: string;
-  type: RewardType;
-  value: number;
-  pointsCost: number;
-  imageUrl?: string;
-}
-
-export interface StatisticsData {
-  totalConnections: number;
-  videoViews: number;
-  quizCompletions: number;
-  gamesPlayed: number;
-  leadsCollected: number;
-  dailyStats: DailyStatistics[];
-  userGrowth: number; // percentage
-  averageSessionDuration: number; // minutes
-}
-
-export interface DailyStatistics {
-  date: string;
-  connections: number;
-  videoViews: number;
-  quizCompletions: number;
-  gamesPlayed: number;
-  leadsCollected: number;
-}
-
-// Interface pour les clients RADIUS
 export interface RadiusClient {
   id: string;
   name: string;
@@ -177,7 +63,6 @@ export interface RadiusClient {
   isActive: boolean;
 }
 
-// Interface pour les journaux d'authentification RADIUS
 export interface RadiusAuthLog {
   id: string;
   username: string;
@@ -188,14 +73,13 @@ export interface RadiusAuthLog {
   failureReason?: string;
 }
 
-// Interface pour les journaux de comptabilité RADIUS
 export interface RadiusAccountingLog {
   id: string;
   username: string;
   acctSessionId: string;
-  acctSessionTime: number;
-  acctInputOctets: number;
-  acctOutputOctets: number;
+  acctSessionTime?: number;
+  acctInputOctets?: number;
+  acctOutputOctets?: number;
   nasipaddress: string;
   startTime: string;
   stopTime?: string;

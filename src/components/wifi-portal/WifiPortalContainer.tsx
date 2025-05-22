@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
@@ -97,7 +96,7 @@ const WifiPortalContainer = () => {
   
   const { t, language } = useLanguage();
   
-  // Add the missing functions
+  // Add these handlers directly within the component
   const handleReset = useCallback(() => {
     localStorage.removeItem('wifi_user_data');
     localStorage.removeItem('wifi_mac_address');

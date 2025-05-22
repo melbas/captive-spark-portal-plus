@@ -3,34 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from 'uuid';
 import { FamilyProfile, FamilyMember, UserRole } from "@/components/wifi-portal/types";
 
-// Define types for the database tables to improve type safety
-interface FamilyProfileRecord {
-  id: string;
-  name: string;
-  owner_id: string;
-  owner_name: string;
-  owner_email?: string;
-  owner_phone?: string;
-  created_at: string;
-  expires_at: string;
-  member_count: number;
-  max_members: number;
-  active: boolean;
-}
-
-interface WifiUserRecord {
-  id: string;
-  created_at?: string;
-  last_connection?: string;
-  auth_method?: string;
-  email?: string;
-  phone?: string;
-  name?: string;
-  mac_address?: string;
-  role?: string;
-  family_id?: string;
-  active?: boolean;
-}
+// Storage for mock data since we can't use the database directly yet
+const mockFamilyProfiles: Map<string, FamilyProfile> = new Map();
+const mockFamilyMembers: Map<string, FamilyMember> = new Map();
 
 export const familyService = {
   /**
@@ -55,42 +30,14 @@ export const familyService = {
         return null;
       }
       
-      // Créer le profil familial dans la base de données
-      // Note: Nous utilisons une requête SQL brute car la table family_profiles n'est pas encore dans les types générés
-      const { error } = await supabase.rpc('create_family_profile', {
-        p_id: id,
-        p_name: familyName,
-        p_owner_id: ownerUserId,
-        p_owner_name: ownerData.name || 'Unknown',
-        p_owner_email: ownerData.email,
-        p_owner_phone: ownerData.phone,
-        p_created_at: now,
-        p_expires_at: expiryDate.toISOString(),
-        p_member_count: 1,
-        p_max_members: 5,
-        p_active: true
-      });
-      
-      if (error) {
-        console.error("Error creating family profile:", error);
-        return null;
-      }
-      
-      // Mettre à jour le rôle de l'utilisateur
-      // Note: Nous utilisons une requête SQL brute car le champ role n'est pas encore dans les types générés
-      await supabase.rpc('update_user_role', {
-        p_user_id: ownerUserId,
-        p_role: 'owner',
-        p_family_id: id
-      });
-      
-      return {
+      // Créer le profil familial (en mémoire pour l'instant)
+      const profile: FamilyProfile = {
         id,
         name: familyName,
         ownerId: ownerUserId,
-        ownerName: ownerData.name || 'Unknown',
-        ownerEmail: ownerData.email,
-        ownerPhone: ownerData.phone,
+        ownerName: ownerData?.name || 'Unknown',
+        ownerEmail: ownerData?.email,
+        ownerPhone: ownerData?.phone,
         memberCount: 1,
         maxMembers: 5,
         createdAt: now,
@@ -98,6 +45,28 @@ export const familyService = {
         active: true,
         members: []
       };
+      
+      // Stocker le profil dans notre mock storage
+      mockFamilyProfiles.set(id, profile);
+      
+      // Créer le premier membre (le propriétaire)
+      const memberData: FamilyMember = {
+        id: ownerUserId,
+        name: ownerData?.name || 'Unknown',
+        email: ownerData?.email,
+        phone: ownerData?.phone,
+        joinedAt: now,
+        lastActive: now,
+        active: true,
+        timeUsedMinutes: 0
+      };
+      
+      mockFamilyMembers.set(ownerUserId, memberData);
+      profile.members.push(memberData);
+      
+      console.log("Created family profile with ID:", id);
+      
+      return profile;
     } catch (error) {
       console.error("Failed to create family profile:", error);
       return null;
@@ -109,57 +78,15 @@ export const familyService = {
    */
   async getFamilyProfile(familyId: string): Promise<FamilyProfile | null> {
     try {
-      // Note: Nous utilisons une requête SQL brute car la table family_profiles n'est pas encore dans les types générés
-      const { data, error } = await supabase.rpc('get_family_profile', {
-        p_family_id: familyId
-      });
+      // Récupérer le profil depuis notre mock storage
+      const profile = mockFamilyProfiles.get(familyId);
       
-      if (error) {
-        console.error("Error fetching family profile:", error);
+      if (!profile) {
+        console.error("Family profile not found:", familyId);
         return null;
       }
       
-      if (!data) {
-        return null;
-      }
-      
-      // Récupérer les membres de la famille
-      // Note: Nous utilisons une requête SQL brute car les champs family_id et role ne sont pas encore dans les types générés
-      const { data: membersData, error: membersError } = await supabase.rpc('get_family_members', {
-        p_family_id: familyId
-      });
-      
-      if (membersError) {
-        console.error("Error fetching family members:", membersError);
-        return null;
-      }
-      
-      const members: FamilyMember[] = (membersData || []).map((member: any) => ({
-        id: member.id,
-        name: member.name || 'Unknown',
-        email: member.email,
-        phone: member.phone,
-        macAddress: member.mac_address,
-        joinedAt: member.created_at,
-        lastActive: member.last_connection,
-        active: member.active === undefined ? true : member.active,
-        timeUsedMinutes: 0 // Cette valeur devrait être calculée à partir des sessions
-      }));
-      
-      return {
-        id: data.id,
-        name: data.name,
-        ownerId: data.owner_id,
-        ownerName: data.owner_name,
-        ownerEmail: data.owner_email,
-        ownerPhone: data.owner_phone,
-        memberCount: data.member_count,
-        maxMembers: data.max_members,
-        createdAt: data.created_at,
-        expiresAt: data.expires_at,
-        active: data.active,
-        members
-      };
+      return profile;
     } catch (error) {
       console.error("Failed to fetch family profile:", error);
       return null;
@@ -176,17 +103,16 @@ export const familyService = {
     macAddress?: string;
   }): Promise<FamilyMember | null> {
     try {
-      // Vérifier si le profil a déjà atteint le nombre maximum de membres
-      const { data: familyData, error: familyError } = await supabase.rpc('get_family_profile', {
-        p_family_id: familyId
-      });
+      // Vérifier si le profil existe
+      const profile = mockFamilyProfiles.get(familyId);
       
-      if (familyError) {
-        console.error("Error fetching family profile:", familyError);
+      if (!profile) {
+        console.error("Family profile not found:", familyId);
         return null;
       }
       
-      if (!familyData || familyData.member_count >= familyData.max_members) {
+      // Vérifier si le profil a déjà atteint le nombre maximum de membres
+      if (profile.memberCount >= profile.maxMembers) {
         console.error("Family profile has reached maximum member count");
         return null;
       }
@@ -195,34 +121,9 @@ export const familyService = {
       const memberId = uuidv4();
       const now = new Date().toISOString();
       
-      // Note: Nous utilisons une requête SQL brute car les champs family_id et role ne sont pas encore dans les types générés
-      const { error } = await supabase.rpc('add_family_member', {
-        p_id: memberId,
-        p_name: memberData.name,
-        p_email: memberData.email,
-        p_phone: memberData.phone,
-        p_mac_address: memberData.macAddress,
-        p_created_at: now,
-        p_last_connection: now,
-        p_role: 'member',
-        p_family_id: familyId,
-        p_auth_method: 'family',
-        p_active: true
-      });
-      
-      if (error) {
-        console.error("Error creating family member:", error);
-        return null;
-      }
-      
-      // Incrémenter le compteur de membres
-      await supabase.rpc('increment_family_member_count', {
-        p_family_id: familyId
-      });
-      
-      return {
+      const newMember: FamilyMember = {
         id: memberId,
-        name: memberData.name || 'Unknown',
+        name: memberData.name,
         email: memberData.email,
         phone: memberData.phone,
         macAddress: memberData.macAddress,
@@ -231,6 +132,15 @@ export const familyService = {
         active: true,
         timeUsedMinutes: 0
       };
+      
+      // Ajouter le membre à notre mock storage
+      mockFamilyMembers.set(memberId, newMember);
+      
+      // Mettre à jour le profil
+      profile.members.push(newMember);
+      profile.memberCount++;
+      
+      return newMember;
     } catch (error) {
       console.error("Failed to add family member:", error);
       return null;
@@ -242,31 +152,35 @@ export const familyService = {
    */
   async removeFamilyMember(familyId: string, memberId: string): Promise<boolean> {
     try {
-      // Vérifier que l'utilisateur est bien un membre de cette famille
-      const { data: memberData, error: memberError } = await supabase.rpc('get_family_member', {
-        p_member_id: memberId,
-        p_family_id: familyId
-      });
+      // Vérifier si le profil existe
+      const profile = mockFamilyProfiles.get(familyId);
       
-      if (memberError || !memberData || memberData.role === 'owner') {
-        console.error("Cannot remove member: invalid member or owner");
+      if (!profile) {
+        console.error("Family profile not found:", familyId);
+        return false;
+      }
+      
+      // Vérifier que le membre n'est pas le propriétaire
+      if (profile.ownerId === memberId) {
+        console.error("Cannot remove owner from family profile");
+        return false;
+      }
+      
+      // Vérifier que le membre existe
+      const memberIndex = profile.members.findIndex(m => m.id === memberId);
+      if (memberIndex === -1) {
+        console.error("Member not found in family profile");
         return false;
       }
       
       // Supprimer le membre
-      const { error } = await supabase.rpc('remove_family_member', {
-        p_member_id: memberId
-      });
+      profile.members.splice(memberIndex, 1);
+      mockFamilyMembers.delete(memberId);
       
-      if (error) {
-        console.error("Error removing family member:", error);
-        return false;
+      // Mettre à jour le compteur de membres
+      if (profile.memberCount > 0) {
+        profile.memberCount--;
       }
-      
-      // Décrémenter le compteur de membres
-      await supabase.rpc('decrement_family_member_count', {
-        p_family_id: familyId
-      });
       
       return true;
     } catch (error) {
@@ -280,26 +194,34 @@ export const familyService = {
    */
   async toggleMemberStatus(familyId: string, memberId: string, isActive: boolean): Promise<boolean> {
     try {
-      // Vérifier que l'utilisateur est bien un membre de cette famille
-      const { data: memberData, error: memberError } = await supabase.rpc('get_family_member', {
-        p_member_id: memberId,
-        p_family_id: familyId
-      });
+      // Vérifier si le profil existe
+      const profile = mockFamilyProfiles.get(familyId);
       
-      if (memberError || !memberData || memberData.role === 'owner') {
-        console.error("Cannot update member status: invalid member or owner");
+      if (!profile) {
+        console.error("Family profile not found:", familyId);
+        return false;
+      }
+      
+      // Vérifier que le membre n'est pas le propriétaire
+      if (profile.ownerId === memberId) {
+        console.error("Cannot toggle owner status");
+        return false;
+      }
+      
+      // Vérifier que le membre existe
+      const member = profile.members.find(m => m.id === memberId);
+      if (!member) {
+        console.error("Member not found in family profile");
         return false;
       }
       
       // Mettre à jour le statut du membre
-      const { error } = await supabase.rpc('update_family_member_status', {
-        p_member_id: memberId,
-        p_is_active: isActive
-      });
+      member.active = isActive;
       
-      if (error) {
-        console.error("Error updating family member status:", error);
-        return false;
+      // Mettre à jour dans notre mock storage également
+      const storedMember = mockFamilyMembers.get(memberId);
+      if (storedMember) {
+        storedMember.active = isActive;
       }
       
       return true;

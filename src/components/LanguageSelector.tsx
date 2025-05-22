@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { LanguageType, useLanguage } from './LanguageContext';
+import { useLanguage } from './LanguageContext';
 
 export interface LanguageSelectorProps {
   className?: string;

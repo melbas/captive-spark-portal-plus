@@ -51,7 +51,7 @@ export const radiusService = {
         nasipaddress: `192.168.1.${i % 3 + 1}`,
         nasportid: `port-${i}`,
         authDate: new Date(Date.now() - i * 3600000).toISOString(),
-        authStatus: i % 5 === 0 ? "reject" : "accept" as "accept" | "reject",
+        authStatus: i % 5 === 0 ? "reject" : "accept",
         failureReason: i % 5 === 0 ? "Invalid credentials" : undefined
       }));
       
