@@ -1,3 +1,4 @@
+
 export enum Step {
   AUTH = "auth",
   ENGAGEMENT = "engagement",
@@ -8,16 +9,52 @@ export enum Step {
   LEAD_GAME = "lead_game",
   PAYMENT = "payment",
   SUCCESS = "success",
-  ERROR = "error"
+  ERROR = "error",
+  // Add the missing steps
+  DASHBOARD = "dashboard",
+  REWARDS = "rewards",
+  REFERRAL = "referral",
+  MINI_GAMES = "mini_games",
+  ADMIN_STATS = "admin_stats",
+  FAMILY_MANAGEMENT = "family_management"
 }
 
-export type EngagementType =
-  | "none"
-  | "video"
-  | "quiz"
-  | "game"
-  | "lead_game"
-  | "invite";
+export enum EngagementType {
+  NONE = "none",
+  VIDEO = "video",
+  QUIZ = "quiz", 
+  GAME = "game",
+  LEAD_GAME = "lead_game",
+  INVITE = "invite"
+}
+
+export enum UserLevel {
+  BASIC = "basic",
+  BRONZE = "bronze",
+  SILVER = "silver",
+  GOLD = "gold",
+  PLATINUM = "platinum"
+}
+
+export enum GameType {
+  MEMORY = "memory",
+  QUIZ = "quiz",
+  PUZZLE = "puzzle",
+  TAP = "tap"
+}
+
+export enum RewardType {
+  WIFI_TIME = "wifi_time",
+  PREMIUM_ACCESS = "premium_access",
+  DISCOUNT = "discount",
+  VOUCHER = "voucher"
+}
+
+export enum PaymentMethod {
+  MOBILE_MONEY = "mobile_money",
+  CREDIT_CARD = "credit_card",
+  BANK_TRANSFER = "bank_transfer"
+}
 
 export interface FamilyProfile {
   id: string;
@@ -44,6 +81,90 @@ export interface FamilyMember {
   lastActive?: string;
   active: boolean;
   timeUsedMinutes: number;
+}
+
+export interface UserData {
+  id?: string;
+  authMethod?: string;
+  timeRemainingMinutes: number;
+  sessionId?: string;
+  email?: string;
+  phone?: string;
+  name?: string;
+  macAddress?: string;
+  engagementData?: any;
+  leadData?: any;
+  points?: number;
+  level?: UserLevel;
+  referralCode?: string;
+  referredUsers?: string[];
+  connectionHistory?: ConnectionHistory[];
+  isAdmin?: boolean;
+  family?: FamilyProfile;
+}
+
+export interface ConnectionHistory {
+  date: string;
+  duration: number;
+  engagementType: string;
+}
+
+export interface Reward {
+  id: string;
+  name: string;
+  description: string;
+  type: RewardType;
+  value: number;
+  pointsCost: number;
+  imageUrl?: string;
+}
+
+export interface MiniGameData {
+  id: string;
+  name: string;
+  type: GameType;
+  description: string;
+  rewardMinutes: number;
+  rewardPoints: number;
+  category?: GameCategory;
+}
+
+export interface GameEvent {
+  gameId: string;
+  gameType: GameType;
+  gameCategory?: string;
+  score: number;
+  timeSpentSeconds: number;
+  completionStatus: 'completed' | 'abandoned';
+  userId?: string;
+}
+
+export interface PaymentPackage {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  minutes: number;
+  isPopular?: boolean;
+}
+
+export interface StatisticsData {
+  totalConnections: number;
+  videoViews: number;
+  quizCompletions: number;
+  gamesPlayed: number;
+  leadsCollected: number;
+  dailyStats: DailyStatistics[];
+}
+
+export interface DailyStatistics {
+  date: string;
+  connections: number;
+  videoViews: number;
+  quizCompletions: number;
+  gamesPlayed: number;
+  leadsCollected: number;
 }
 
 export enum UserRole {

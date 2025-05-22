@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "sonner";
@@ -27,26 +28,6 @@ export const useWifiPortal = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Logger les transitions d'état pour le débogage
-  useEffect(() => {
-    console.log(`État actuel: ${currentStep}`);
-  }, [currentStep]);
-  
-  // Ajouter un gestionnaire d'erreurs global pour capturer les erreurs non détectées
-  useEffect(() => {
-    const handleGlobalError = (event: ErrorEvent) => {
-      console.error("Erreur non captée:", event.error);
-      setError(`Une erreur s'est produite: ${event.message}`);
-      toast.error("Une erreur s'est produite. Veuillez réessayer.");
-    };
-
-    window.addEventListener('error', handleGlobalError);
-    
-    return () => {
-      window.removeEventListener('error', handleGlobalError);
-    };
-  }, []);
-  
   // Get MAC address - in a real implementation this would be provided by the captive portal
   const getMacAddress = (): string | null => {
     // This is a mock implementation - in a real captive portal, this would be provided
@@ -66,6 +47,26 @@ export const useWifiPortal = () => {
     
     return simulatedMac;
   };
+  
+  // Logger les transitions d'état pour le débogage
+  useEffect(() => {
+    console.log(`État actuel: ${currentStep}`);
+  }, [currentStep]);
+  
+  // Ajouter un gestionnaire d'erreurs global pour capturer les erreurs non détectées
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      console.error("Erreur non captée:", event.error);
+      setError(`Une erreur s'est produite: ${event.message}`);
+      toast.error("Une erreur s'est produite. Veuillez réessayer.");
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+    };
+  }, []);
   
   useEffect(() => {
     const checkExistingUser = async () => {
@@ -541,6 +542,8 @@ export const useWifiPortal = () => {
     handleRedeemReward,
     handleInvite,
     handleGameComplete,
-    handlePaymentComplete
+    handlePaymentComplete,
+    handleReset,
+    getMacAddress
   };
 };
