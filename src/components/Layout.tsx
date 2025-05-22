@@ -23,14 +23,14 @@ const LayoutContent: React.FC<LayoutProps> = ({
   
   return (
     <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''} pb-16`}>
-      <header className="py-4 px-6 flex items-center justify-between">
+      <header className="py-4 px-6 flex items-center justify-between shadow-sm bg-background/80 backdrop-blur-sm">
         {showLogo && <Logo />}
         <div className="flex items-center gap-3">
           <LanguageSelector />
           <ThemeToggle />
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 fade-in">
         {children}
       </main>
       <footer className="container mx-auto p-4 text-center text-sm text-foreground/70">

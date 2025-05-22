@@ -5,6 +5,7 @@
 
 @layer base {
   :root {
+    /* Primary colors - Blue theme for WIFI Senegal */
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
 
@@ -14,10 +15,12 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Primary: Deeper blue for WIFI Senegal brand */
+    --primary: 220 70% 20%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    /* Secondary: Lighter blue */
+    --secondary: 215 65% 92%;
     --secondary-foreground: 222 47% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -37,7 +40,7 @@
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 220 70% 20%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
@@ -55,7 +58,8 @@
     --popover: 222 47% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    /* Dark mode primary adjusted for WIFI Senegal */
+    --primary: 210 70% 70%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -120,4 +124,27 @@
   .btn-outline {
     @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-lg font-medium transition-colors;
   }
+  
+  /* Adding new animation classes for subtle UI enhancements */
+  .fade-in {
+    @apply opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards];
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  /* Styling specifically for the WIFI portal */
+  .wifi-card {
+    @apply rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .wifi-heading {
+    @apply text-2xl font-bold tracking-tight text-primary;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

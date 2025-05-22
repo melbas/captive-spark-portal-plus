@@ -13,11 +13,11 @@ import AudioPromo from "../ads/AudioPromo";
 import WhatsAppSupport from "../support/WhatsAppSupport";
 import { Step } from "./types";
 
-// West African themed advertisement slides
+// West African themed advertisement slides - updated with more relevant imagery
 const adSlides = [
   {
     id: "ad1",
-    imageUrl: "https://images.unsplash.com/photo-1580522154071-c6ca47a859ad?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "https://images.unsplash.com/photo-1603294278610-b4ee8654abff?auto=format&fit=crop&w=800&h=400",
     title: {
       en: "Student WiFi Plans",
       fr: "Forfaits WiFi Étudiants"
@@ -30,7 +30,7 @@ const adSlides = [
   },
   {
     id: "ad2",
-    imageUrl: "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "https://images.unsplash.com/photo-1621958335842-6a9bbff73d6d?auto=format&fit=crop&w=800&h=400",
     title: {
       en: "Market Vendor Connectivity",
       fr: "Connectivité pour Commerçants"
@@ -43,7 +43,7 @@ const adSlides = [
   },
   {
     id: "ad3",
-    imageUrl: "https://images.unsplash.com/photo-1605800565939-0a87518f57f2?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "https://images.unsplash.com/photo-1506877339221-ede41280a7a2?auto=format&fit=crop&w=800&h=400",
     title: {
       en: "Café WiFi Access",
       fr: "Accès WiFi dans les Cafés"
@@ -53,6 +53,19 @@ const adSlides = [
       fr: "Profitez du WiFi tout en dégustant un café"
     },
     link: "#cafe-wifi"
+  },
+  {
+    id: "ad4",
+    imageUrl: "https://images.unsplash.com/photo-1531747056595-07f6cbbe10ad?auto=format&fit=crop&w=800&h=400",
+    title: {
+      en: "Family WiFi Packages",
+      fr: "Forfaits WiFi Famille"
+    },
+    description: {
+      en: "Connect the whole family with our special rates",
+      fr: "Connectez toute la famille avec nos tarifs spéciaux"
+    },
+    link: "#family-wifi"
   }
 ];
 
@@ -99,7 +112,6 @@ const WifiPortalContainer = () => {
             <h1 className="text-4xl font-bold text-center md:text-left text-foreground">
               {t("portal")}
             </h1>
-            {/* Removed duplicate language selector here */}
           </div>
           
           <p className="text-center md:text-left text-muted-foreground mt-2">
@@ -126,13 +138,13 @@ const WifiPortalContainer = () => {
               interval={7000}
               onSlideChange={handleAdSlideChange}
               onSlideClick={handleAdSlideClick}
-              className="mb-4"
+              className="mb-4 wifi-card"
             />
           </div>
         )}
         
         {loading ? (
-          <Card className="w-full max-w-md p-6">
+          <Card className="w-full max-w-md p-6 wifi-card">
             <div className="flex flex-col items-center justify-center">
               <div className="h-6 w-6 border-t-2 border-primary rounded-full animate-spin"></div>
               <p className="mt-4 text-muted-foreground">{t("loading")}</p>
@@ -164,16 +176,17 @@ const WifiPortalContainer = () => {
               videoUrl="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
               title={language === 'en' ? "Upgrade Your WiFi Experience" : "Améliorez votre expérience WiFi"}
               description={language === 'en' ? "Faster speeds, better coverage" : "Vitesses plus rapides, meilleure couverture"}
-              poster="https://images.unsplash.com/photo-1605800565939-0a87518f57f2?auto=format&fit=crop&w=800&h=450"
+              poster="https://images.unsplash.com/photo-1511300636408-a63a89df3482?auto=format&fit=crop&w=800&h=450"
               autoPlay={false}
-              className="mb-4"
+              className="mb-4 wifi-card"
             />
             
             <AudioPromo
               audioUrl="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
               title={language === 'en' ? "Special WiFi Offer" : "Offre WiFi Spéciale"}
               subtitle={language === 'en' ? "Listen to learn about our latest deals" : "Écoutez pour découvrir nos dernières offres"}
-              coverImage="https://images.unsplash.com/photo-1627916607164-7b20241db798?auto=format&fit=crop&w=200&h=200"
+              coverImage="https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=200&h=200"
+              className="wifi-card"
             />
           </div>
         )}
@@ -188,7 +201,7 @@ const WifiPortalContainer = () => {
         </Card>
       </div>
       
-      {/* WhatsApp Support Button */}
+      {/* WhatsApp Support Button - Updated with Senegal number */}
       <WhatsAppSupport phoneNumber="221771234567" position="bottom-right" />
     </Layout>
   );

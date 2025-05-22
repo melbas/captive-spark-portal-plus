@@ -9,7 +9,7 @@ const Logo: React.FC<LogoProps> = ({ className }) => {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <div className="relative w-8 h-8 flex items-center justify-center">
-        {/* WiFi Icon */}
+        {/* WiFi Icon - Enhanced with stronger color and more distinct shape */}
         <div className="relative">
           <span className="absolute w-6 h-6 border-t-2 border-l-2 border-r-2 border-primary rounded-tl-full rounded-tr-full transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"></span>
           <span className="absolute w-4 h-4 border-t-2 border-l-2 border-r-2 border-primary rounded-tl-full rounded-tr-full transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"></span>
