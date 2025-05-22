@@ -5,87 +5,90 @@
 
 @layer base {
   :root {
-    /* Primary colors - Blue theme for WIFI Senegal */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    /* Primary colors - Frandroid inspired theme */
+    --background: 220 14% 97%; /* #F5F6FA */
+    --foreground: 0 0% 10%; /* #1A1A1A */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 0 0% 10%;
 
-    /* Primary: Deeper blue for WIFI Senegal brand */
-    --primary: 220 70% 20%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Bleu-violet */
+    --primary: 248 100% 65%; /* #5B4DFF */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    /* Secondary: Lighter blue */
-    --secondary: 215 65% 92%;
-    --secondary-foreground: 222 47% 11.2%;
+    /* Secondary: Rose-rouge */
+    --secondary: 350 100% 65%; /* #FF4D6A */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 97%; /* #F5F6FA */
+    --muted-foreground: 220 9% 46%; /* #6B7280 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 248 100% 95%;
+    --accent-foreground: 248 100% 65%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 47.4% 11.2%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 248 100% 65%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 220 70% 20%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Sidebar colors */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 248 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 248 100% 97%;
+    --sidebar-accent-foreground: 248 100% 65%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 248 100% 65%;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
 
-    --card: 222 47% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Dark mode primary adjusted for WIFI Senegal */
-    --primary: 210 70% 70%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Dark mode primary adjusted for Frandroid theme */
+    --primary: 248 100% 75%;
+    --primary-foreground: 0 0% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Dark mode secondary */
+    --secondary: 350 100% 75%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 248 100% 20%;
+    --accent-foreground: 248 100% 75%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 248 100% 75%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Dark mode sidebar */
+    --sidebar-background: 0 0% 15%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 248 100% 75%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 248 100% 20%;
+    --sidebar-accent-foreground: 248 100% 75%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 248 100% 75%;
   }
 }
 
@@ -96,7 +99,37 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
+
+  h1 {
+    @apply text-4xl text-primary;
+  }
+
+  h2 {
+    @apply text-3xl text-primary;
+  }
+
+  h3 {
+    @apply text-2xl text-primary;
+  }
+
+  h4 {
+    @apply text-xl text-primary;
+  }
+
+  h5 {
+    @apply text-lg text-primary;
+  }
+
+  h6 {
+    @apply text-base text-primary;
   }
 }
 
@@ -105,8 +138,12 @@
     @apply bg-gradient-to-br from-primary/20 via-primary/10 to-background;
   }
   
+  .gradient-header-bg {
+    @apply bg-gradient-to-r from-primary to-secondary;
+  }
+
   .glass-card {
-    @apply backdrop-blur-md bg-white/50 dark:bg-black/30 border border-white/20 dark:border-white/10;
+    @apply backdrop-blur-md bg-white/50 dark:bg-black/30 border border-white/20 dark:border-white/10 shadow-md;
   }
   
   .auth-input {
@@ -125,7 +162,7 @@
     @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-lg font-medium transition-colors;
   }
   
-  /* Adding new animation classes for subtle UI enhancements */
+  /* Animation classes */
   .fade-in {
     @apply opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards];
   }
@@ -134,13 +171,25 @@
     @apply transition-transform duration-200 hover:scale-105;
   }
   
-  /* Styling specifically for the WIFI portal */
+  /* Frandroid-inspired elements */
+  .frandroid-link {
+    @apply text-primary hover:underline hover:text-secondary transition-colors;
+  }
+  
+  .frandroid-nav-item {
+    @apply relative px-3 py-2 text-white font-medium hover:text-white/80 transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-secondary after:scale-x-0 after:origin-bottom-right after:transition-transform hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  
   .wifi-card {
-    @apply rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md;
+    @apply rounded-xl border bg-card p-6 shadow-md transition-all hover:shadow-lg;
   }
   
   .wifi-heading {
     @apply text-2xl font-bold tracking-tight text-primary;
+  }
+  
+  .frandroid-badge {
+    @apply inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground;
   }
 }
 

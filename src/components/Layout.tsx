@@ -23,17 +23,28 @@ const LayoutContent: React.FC<LayoutProps> = ({
   
   return (
     <div className={`min-h-screen ${withGradientBg ? 'gradient-bg' : ''} pb-16`}>
-      <header className="py-4 px-6 flex items-center justify-between shadow-sm bg-background/80 backdrop-blur-sm">
-        {showLogo && <Logo />}
+      <header className="gradient-header-bg py-4 px-6 flex items-center justify-between shadow-md">
+        {showLogo && <Logo variant="light" />}
         <div className="flex items-center gap-3">
+          <nav className="hidden md:flex items-center space-x-1">
+            <a href="#" className="frandroid-nav-item">
+              {t("home")}
+            </a>
+            <a href="#" className="frandroid-nav-item">
+              {t("services")}
+            </a>
+            <a href="#" className="frandroid-nav-item">
+              {t("support")}
+            </a>
+          </nav>
           <LanguageSelector />
           <ThemeToggle />
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8 fade-in">
+      <main className="container mx-auto px-4 py-8 fade-in max-w-[1200px]">
         {children}
       </main>
-      <footer className="container mx-auto p-4 text-center text-sm text-foreground/70">
+      <footer className="container mx-auto p-4 text-center text-sm text-muted-foreground max-w-[1200px]">
         <p>© 2025 WIFI Senegal. {t("allRightsReserved")}</p>
       </footer>
     </div>
