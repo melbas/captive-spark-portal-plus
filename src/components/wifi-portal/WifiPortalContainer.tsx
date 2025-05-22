@@ -13,11 +13,12 @@ import AudioPromo from "../ads/AudioPromo";
 import WhatsAppSupport from "../support/WhatsAppSupport";
 import { Step } from "./types";
 
-// Updated with user-provided images
+// Updated with user-provided images and fallback paths
 const adSlides = [
   {
     id: "ad1",
     imageUrl: "/image-1.jpg", // First uploaded image
+    fallbackUrl: "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=800&h=400", // Fallback image
     title: {
       en: "High-Speed WiFi Access",
       fr: "Accès WiFi Haut Débit"
@@ -31,6 +32,7 @@ const adSlides = [
   {
     id: "ad2",
     imageUrl: "/image-2.jpg", // Second uploaded image
+    fallbackUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=400", // Fallback image
     title: {
       en: "WiFi for Business",
       fr: "WiFi pour Entreprises"
@@ -44,6 +46,7 @@ const adSlides = [
   {
     id: "ad3",
     imageUrl: "/image-3.jpg", // Third uploaded image
+    fallbackUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=400", // Fallback image
     title: {
       en: "Home WiFi Solutions",
       fr: "Solutions WiFi Domicile"
@@ -57,6 +60,7 @@ const adSlides = [
   {
     id: "ad4",
     imageUrl: "/image-4.jpg", // Fourth uploaded image
+    fallbackUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&h=400", // Fallback image
     title: {
       en: "Mobile WiFi Access",
       fr: "Accès WiFi Mobile"

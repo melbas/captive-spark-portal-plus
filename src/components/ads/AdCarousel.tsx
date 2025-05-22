@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "../LanguageContext";
 
 export interface AdSlide {
   id: string;
   imageUrl: string;
+  fallbackUrl?: string;
   title?: string | {
     en: string;
     fr: string;
@@ -42,6 +43,7 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { language } = useLanguage();
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   
   // Filter slides by language or show all if no language is specified
   const filteredSlides = slides.filter(slide => 
@@ -81,6 +83,12 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
     else if (slide.link) window.open(slide.link, '_blank');
   };
   
+  // Handle image error
+  const handleImageError = (slideId: string) => {
+    console.log(`Image error for slide ${slideId}`);
+    setImageErrors(prev => ({ ...prev, [slideId]: true }));
+  };
+  
   if (filteredSlides.length === 0) return null;
   
   return (
@@ -97,11 +105,21 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
               )}
               onClick={() => handleSlideClick(slide)}
             >
-              <img 
-                src={slide.imageUrl} 
-                alt={getLocalizedContent(slide.title) || `Advertisement ${index + 1}`}
-                className="object-cover w-full h-full cursor-pointer" 
-              />
+              {imageErrors[slide.id] && slide.fallbackUrl ? (
+                <img 
+                  src={slide.fallbackUrl} 
+                  alt={getLocalizedContent(slide.title) || `Advertisement ${index + 1}`}
+                  className="object-cover w-full h-full cursor-pointer" 
+                  onError={() => console.log(`Fallback image also failed for slide ${slide.id}`)}
+                />
+              ) : (
+                <img 
+                  src={slide.imageUrl} 
+                  alt={getLocalizedContent(slide.title) || `Advertisement ${index + 1}`}
+                  className="object-cover w-full h-full cursor-pointer"
+                  onError={() => handleImageError(slide.id)}
+                />
+              )}
               
               {(slide.title || slide.description) && (
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm">
