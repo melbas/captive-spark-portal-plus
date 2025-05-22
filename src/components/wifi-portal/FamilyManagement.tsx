@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,10 +34,10 @@ const FamilyManagement: React.FC<FamilyManagementProps> = ({ userData, onBack })
   // Charger le profil familial s'il existe
   useEffect(() => {
     const loadFamilyProfile = async () => {
-      if (userData.familyId) {
+      if (userData.family?.id) {
         setLoading(true);
         try {
-          const profile = await familyService.getFamilyProfile(userData.familyId);
+          const profile = await familyService.getFamilyProfile(userData.family.id);
           setFamilyProfile(profile);
         } catch (error) {
           console.error("Error loading family profile:", error);
@@ -50,7 +49,7 @@ const FamilyManagement: React.FC<FamilyManagementProps> = ({ userData, onBack })
     };
     
     loadFamilyProfile();
-  }, [userData.familyId, t]);
+  }, [userData.family?.id, t]);
   
   const handleCreateFamily = async () => {
     if (!newFamilyName.trim()) {
@@ -157,7 +156,7 @@ const FamilyManagement: React.FC<FamilyManagementProps> = ({ userData, onBack })
     
     setLoading(true);
     try {
-      const success = await familyService.toggleMemberStatus(familyProfile.id, memberId, isActive);
+      const success = await familyService.updateFamilyMember(familyProfile.id, memberId, { active: isActive });
       if (success) {
         // Rafraîchir le profil familial
         const updatedProfile = await familyService.getFamilyProfile(familyProfile.id);

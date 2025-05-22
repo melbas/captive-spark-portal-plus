@@ -1,4 +1,3 @@
-
 export enum Step {
   AUTH = "auth",
   ENGAGEMENT = "engagement",
@@ -42,6 +41,10 @@ export enum GameType {
   PUZZLE = "puzzle",
   TAP = "tap"
 }
+
+// Import the GameCategory from its module to fix the reference
+import { GameCategory } from "./types/game-categories";
+export { GameCategory };
 
 export enum RewardType {
   WIFI_TIME = "wifi_time",
@@ -156,6 +159,8 @@ export interface StatisticsData {
   gamesPlayed: number;
   leadsCollected: number;
   dailyStats: DailyStatistics[];
+  userGrowth: number; // Adding the missing property
+  averageSessionDuration: number; // Adding the missing property
 }
 
 export interface DailyStatistics {

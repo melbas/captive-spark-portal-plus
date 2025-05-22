@@ -1,138 +1,124 @@
 
-import { FamilyProfile, FamilyMember, UserData, UserRole } from '@/components/wifi-portal/types';
+import { supabase } from "@/integrations/supabase/client";
+import { FamilyProfile, FamilyMember, UserRole } from "@/components/wifi-portal/types";
 import { v4 as uuidv4 } from 'uuid';
 
-// Mock data for family profiles
+// Mock data for development
 const mockFamilyProfiles: FamilyProfile[] = [
   {
-    id: "1",
-    name: "Doe Family",
-    ownerId: "user1",
-    ownerName: "John Doe",
-    ownerEmail: "john.doe@example.com",
+    id: "f1",
+    name: "Smith Family",
+    ownerId: "u1",
+    ownerName: "John Smith",
+    ownerEmail: "john@example.com",
     ownerPhone: "+1234567890",
     memberCount: 3,
     maxMembers: 5,
-    createdAt: new Date(Date.now() - 30 * 24 * 3600000).toISOString(),
-    expiresAt: new Date(Date.now() + 60 * 24 * 3600000).toISOString(),
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     active: true,
     members: [
       {
-        id: "member1",
-        name: "John Doe",
-        email: "john.doe@example.com",
+        id: "u1",
+        name: "John Smith",
+        email: "john@example.com",
         phone: "+1234567890",
-        macAddress: "00:11:22:33:44:55",
-        joinedAt: new Date(Date.now() - 30 * 24 * 3600000).toISOString(),
+        macAddress: "00:1A:2B:3C:4D:5E",
+        joinedAt: new Date().toISOString(),
         lastActive: new Date().toISOString(),
         active: true,
         timeUsedMinutes: 120
       },
       {
-        id: "member2",
-        name: "Jane Doe",
-        email: "jane.doe@example.com",
-        phone: "+1234567891",
-        macAddress: "00:11:22:33:44:56",
-        joinedAt: new Date(Date.now() - 25 * 24 * 3600000).toISOString(),
-        lastActive: new Date(Date.now() - 2 * 3600000).toISOString(),
+        id: "u2",
+        name: "Jane Smith",
+        email: "jane@example.com",
+        joinedAt: new Date().toISOString(),
         active: true,
-        timeUsedMinutes: 90
+        timeUsedMinutes: 85
       },
       {
-        id: "member3",
-        name: "Jimmy Doe",
-        email: "jimmy.doe@example.com",
-        joinedAt: new Date(Date.now() - 20 * 24 * 3600000).toISOString(),
-        active: true,
+        id: "u3",
+        name: "Billy Smith",
+        joinedAt: new Date().toISOString(),
+        active: false,
         timeUsedMinutes: 45
       }
     ]
   }
 ];
 
-// Family profile service
+// Family service implementation
 export const familyService = {
-  // Get all family profiles
   getFamilyProfiles: async (): Promise<FamilyProfile[]> => {
-    console.log('Getting family profiles');
+    // In a real implementation, we would call the database
+    // const { data, error } = await supabase.from("family_profiles").select("*");
+    
     return mockFamilyProfiles;
   },
-
-  // Get a family profile by ID
-  getFamilyProfile: async (id: string): Promise<FamilyProfile | null> => {
-    console.log(`Getting family profile with ID: ${id}`);
+  
+  getFamilyProfile: async (id: string): Promise<FamilyProfile> => {
+    // In a real implementation, we would call the database
+    // const { data, error } = await supabase.from("family_profiles").select("*").eq("id", id).single();
+    
     const profile = mockFamilyProfiles.find(p => p.id === id);
+    if (!profile) throw new Error("Family profile not found");
+    
+    return profile;
+  },
+  
+  getUserFamily: async (userId: string): Promise<FamilyProfile | null> => {
+    // In a real implementation, we would call the database to find the user's family
+    // const { data, error } = await supabase.rpc("get_user_family", { user_id: userId });
+    
+    const profile = mockFamilyProfiles.find(p => p.members.some(m => m.id === userId));
     return profile || null;
   },
-
-  // Get a user's family profile (by user ID)
-  getUserFamily: async (userId: string): Promise<FamilyProfile | null> => {
-    console.log(`Getting family profile for user with ID: ${userId}`);
-    // Check if user is an owner
-    const ownerProfile = mockFamilyProfiles.find(p => p.ownerId === userId);
-    if (ownerProfile) return ownerProfile;
+  
+  createFamilyProfile: async (userId: string, name: string): Promise<FamilyProfile> => {
+    // In a real implementation, we would create a family profile in the database
+    // const { data, error } = await supabase.rpc("create_family_profile", { owner_id: userId, name });
     
-    // Check if user is a member
-    for (const profile of mockFamilyProfiles) {
-      const isMember = profile.members.some(m => m.id === userId);
-      if (isMember) return profile;
-    }
+    const newId = uuidv4();
     
-    return null;
-  },
-
-  // Create a new family profile
-  createFamilyProfile: async (
-    ownerData: { id: string; name: string; email?: string; phone?: string },
-    familyName: string
-  ): Promise<FamilyProfile> => {
-    console.log('Creating new family profile', { ownerData, familyName });
+    const mockUser = {
+      id: userId,
+      name: "Mock User",
+      email: "user@example.com",
+      active: true,
+      joinedAt: new Date().toISOString(),
+      timeUsedMinutes: 0
+    };
+    
     const newProfile: FamilyProfile = {
-      id: uuidv4(),
-      name: familyName,
-      ownerId: ownerData.id,
-      ownerName: ownerData.name,
-      ownerEmail: ownerData.email,
-      ownerPhone: ownerData.phone,
+      id: newId,
+      name,
+      ownerId: userId,
+      ownerName: mockUser.name,
+      ownerEmail: mockUser.email,
       memberCount: 1,
       maxMembers: 5,
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 90 * 24 * 3600000).toISOString(), // 90 days
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       active: true,
-      members: [
-        {
-          id: ownerData.id,
-          name: ownerData.name,
-          email: ownerData.email,
-          phone: ownerData.phone,
-          joinedAt: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-          active: true,
-          timeUsedMinutes: 0
-        }
-      ]
+      members: [mockUser]
     };
     
     mockFamilyProfiles.push(newProfile);
+    
     return newProfile;
   },
-
-  // Add a member to a family profile
-  addFamilyMember: async (
-    familyId: string,
-    memberData: { name: string; email?: string; phone?: string; macAddress?: string }
-  ): Promise<FamilyMember | null> => {
-    console.log(`Adding member to family with ID: ${familyId}`, memberData);
-    const familyIndex = mockFamilyProfiles.findIndex(p => p.id === familyId);
+  
+  addFamilyMember: async (familyId: string, memberData: { name: string; email?: string; phone?: string; macAddress?: string }): Promise<FamilyMember | null> => {
+    // In a real implementation, we would add a member to the family in the database
+    // const { data, error } = await supabase.rpc("add_family_member", { family_id: familyId, member_data });
     
+    const familyIndex = mockFamilyProfiles.findIndex(p => p.id === familyId);
     if (familyIndex === -1) return null;
     
     const family = mockFamilyProfiles[familyIndex];
     
-    // Check if family has reached max members
     if (family.memberCount >= family.maxMembers) {
-      console.error('Family has reached maximum members limit');
       return null;
     }
     
@@ -150,94 +136,66 @@ export const familyService = {
     family.members.push(newMember);
     family.memberCount = family.members.length;
     
-    // Update the mock data
-    mockFamilyProfiles[familyIndex] = family;
-    
     return newMember;
   },
-
-  // Remove a member from a family profile
+  
   removeFamilyMember: async (familyId: string, memberId: string): Promise<boolean> => {
-    console.log(`Removing member ${memberId} from family ${familyId}`);
-    const familyIndex = mockFamilyProfiles.findIndex(p => p.id === familyId);
+    // In a real implementation, we would remove the member from the family in the database
+    // const { data, error } = await supabase.rpc("remove_family_member", { family_id: familyId, member_id: memberId });
     
+    const familyIndex = mockFamilyProfiles.findIndex(p => p.id === familyId);
     if (familyIndex === -1) return false;
     
     const family = mockFamilyProfiles[familyIndex];
     
-    // Check if member exists
-    const memberIndex = family.members.findIndex(m => m.id === memberId);
-    if (memberIndex === -1) return false;
-    
-    // Check if member is the owner
-    if (family.members[memberIndex].id === family.ownerId) {
-      console.error('Cannot remove the owner from the family');
+    // Cannot remove the owner
+    if (memberId === family.ownerId) {
       return false;
     }
     
-    // Remove member
-    family.members.splice(memberIndex, 1);
+    const initialLength = family.members.length;
+    family.members = family.members.filter(m => m.id !== memberId);
     family.memberCount = family.members.length;
     
-    // Update the mock data
-    mockFamilyProfiles[familyIndex] = family;
+    return family.members.length < initialLength;
+  },
+  
+  updateFamilyMember: async (familyId: string, memberId: string, updates: Partial<FamilyMember>): Promise<boolean> => {
+    // In a real implementation, we would update the member in the database
+    // const { data, error } = await supabase.rpc("update_family_member", { family_id: familyId, member_id: memberId, updates });
+    
+    const familyIndex = mockFamilyProfiles.findIndex(p => p.id === familyId);
+    if (familyIndex === -1) return false;
+    
+    const family = mockFamilyProfiles[familyIndex];
+    const memberIndex = family.members.findIndex(m => m.id === memberId);
+    
+    if (memberIndex === -1) return false;
+    
+    family.members[memberIndex] = {
+      ...family.members[memberIndex],
+      ...updates
+    };
     
     return true;
   },
-
-  // Update a family member
-  updateFamilyMember: async (
-    familyId: string,
-    memberId: string,
-    updateData: Partial<FamilyMember>
-  ): Promise<FamilyMember | null> => {
-    console.log(`Updating member ${memberId} in family ${familyId}`, updateData);
-    const familyIndex = mockFamilyProfiles.findIndex(p => p.id === familyId);
-    
-    if (familyIndex === -1) return null;
-    
-    const family = mockFamilyProfiles[familyIndex];
-    
-    // Find the member
-    const memberIndex = family.members.findIndex(m => m.id === memberId);
-    if (memberIndex === -1) return null;
-    
-    // Update member data
-    family.members[memberIndex] = {
-      ...family.members[memberIndex],
-      ...updateData
-    };
-    
-    // Update the mock data
-    mockFamilyProfiles[familyIndex] = family;
-    
-    return family.members[memberIndex];
-  },
-
-  // Get a user's role in a family
+  
   getUserFamilyRole: async (userId: string, familyId?: string): Promise<UserRole> => {
-    console.log(`Getting role for user ${userId} in family ${familyId || 'any'}`);
-    let family: FamilyProfile | undefined;
+    // In a real implementation, we would query the database to determine the user's role
+    // const { data, error } = await supabase.rpc("get_user_family_role", { user_id: userId, family_id: familyId });
     
-    if (familyId) {
-      // Find the specific family
-      family = mockFamilyProfiles.find(p => p.id === familyId);
-      if (!family) return UserRole.INDIVIDUAL;
-    } else {
-      // Find any family with this user
-      family = mockFamilyProfiles.find(p => 
-        p.ownerId === userId || p.members.some(m => m.id === userId)
-      );
-      if (!family) return UserRole.INDIVIDUAL;
+    if (!familyId) {
+      const userFamily = await familyService.getUserFamily(userId);
+      if (!userFamily) return UserRole.INDIVIDUAL;
+      familyId = userFamily.id;
     }
     
-    // Check if user is the owner
+    const family = mockFamilyProfiles.find(p => p.id === familyId);
+    if (!family) return UserRole.INDIVIDUAL;
+    
     if (family.ownerId === userId) return UserRole.OWNER;
     
-    // Check if user is a member
-    const isMember = family.members.some(m => m.id === userId && m.id !== family?.ownerId);
-    if (isMember) return UserRole.MEMBER;
-    
-    return UserRole.INDIVIDUAL;
+    const isMember = family.members.some(m => m.id === userId);
+    return isMember ? UserRole.MEMBER : UserRole.INDIVIDUAL;
   }
 };
