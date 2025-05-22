@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
 import { useLanguage } from "../../LanguageContext";
 import { FamilyMemberData, FamilyRole } from "../types";
-import { familyService } from "@/services/wifi/family-service";
+import { familyService } from "@/services/wifi/family";
 import AddMemberDialog from "./AddMemberDialog";
 
 interface FamilyMembersTabProps {
@@ -32,11 +32,17 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
   const { t } = useLanguage();
   const [showInviteDialog, setShowInviteDialog] = useState<boolean>(false);
   
-  const handleToggleMemberStatus = async (memberId: string, active: boolean) => {
+  const handleToggleMemberStatus = async (memberId: string) => {
     try {
-      const result = await familyService.toggleMemberStatus(memberId);
+      // Find the current member's status to toggle it
+      const member = familyMembers.find(m => m.id === memberId);
+      if (!member) return;
+      
+      const newStatus = !member.active;
+      const result = await familyService.toggleMemberStatus(memberId, newStatus);
+      
       if (result) {
-        toast.success(active ? t("memberReactivated") : t("memberSuspended"));
+        toast.success(newStatus ? t("memberReactivated") : t("memberSuspended"));
         await onUpdate();
       } else {
         throw new Error("Failed to update member status");
@@ -66,11 +72,11 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
 
   const getRoleBadge = (role: FamilyRole) => {
     switch (role) {
-      case "owner":
+      case "OWNER":
         return <Badge variant="default">{t("owner")}</Badge>;
-      case "member":
+      case "MEMBER":
         return <Badge variant="outline">{t("member")}</Badge>;
-      case "child":
+      case "CHILD":
         return <Badge variant="secondary">{t("child")}</Badge>;
       default:
         return null;
@@ -131,13 +137,13 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                     <Badge variant="outline" className="bg-red-100">{t("suspended")}</Badge>
                   )}
                 </TableCell>
-                {isOwner && member.role !== "owner" && (
+                {isOwner && member.role !== "OWNER" && (
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleToggleMemberStatus(member.id, !member.active)}
+                        onClick={() => handleToggleMemberStatus(member.id)}
                       >
                         {member.active ? t("suspend") : t("activate")}
                       </Button>
@@ -151,7 +157,7 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                     </div>
                   </TableCell>
                 )}
-                {(isOwner && member.role === "owner") && (
+                {(isOwner && member.role === "OWNER") && (
                   <TableCell className="text-right">
                     <span className="text-xs text-muted-foreground">{t("owner")}</span>
                   </TableCell>

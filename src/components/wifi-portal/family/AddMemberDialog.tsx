@@ -7,7 +7,7 @@ import { UserPlus, Users } from "lucide-react";
 import { useLanguage } from "../../LanguageContext";
 import { FamilyRole } from "../types";
 import { toast } from "sonner";
-import { familyService } from "@/services/wifi/family-service";
+import { familyService } from "@/services/wifi/family";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,7 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
   const [newMemberEmail, setNewMemberEmail] = useState<string>("");
   const [newMemberName, setNewMemberName] = useState<string>("");
   const [newMemberPhone, setNewMemberPhone] = useState<string>("");
-  const [newMemberRole, setNewMemberRole] = useState<FamilyRole>("member");
+  const [newMemberRole, setNewMemberRole] = useState<FamilyRole>("MEMBER");
   const [inviteProcessing, setInviteProcessing] = useState<boolean>(false);
 
   const handleAddMember = async () => {
@@ -46,8 +46,8 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
 
     setInviteProcessing(true);
     try {
-      // Pour cette démo, nous allons simuler l'ajout direct d'un utilisateur
-      // sans passer par le processus d'invitation
+      // For this demo, we'll simulate adding a user directly
+      // without going through the invitation process
 
       const mockUserData = {
         id: `usr-${Math.random().toString(36).substring(2, 8)}`,
@@ -133,8 +133,8 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
-                variant={newMemberRole === "member" ? "default" : "outline"}
-                onClick={() => setNewMemberRole("member")}
+                variant={newMemberRole === "MEMBER" ? "default" : "outline"}
+                onClick={() => setNewMemberRole("MEMBER")}
                 className="justify-start"
               >
                 <Users className="h-4 w-4 mr-2" />
@@ -142,8 +142,8 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
               </Button>
               <Button
                 type="button"
-                variant={newMemberRole === "child" ? "default" : "outline"}
-                onClick={() => setNewMemberRole("child")}
+                variant={newMemberRole === "CHILD" ? "default" : "outline"}
+                onClick={() => setNewMemberRole("CHILD")}
                 className="justify-start"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
@@ -153,7 +153,7 @@ const AddMemberDialog: React.FC<AddMemberDialogProps> = ({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {newMemberRole === "child" 
+              {newMemberRole === "CHILD" 
                 ? t("childRoleExplanation") 
                 : t("memberRoleExplanation")}
             </p>

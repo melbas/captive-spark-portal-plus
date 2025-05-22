@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { ChevronLeft, Users, Settings, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../../LanguageContext";
-import { familyService } from "@/services/wifi/family-service";
-import { UserData } from "../types";
+import { familyService } from "@/services/wifi/family";
+import { UserData, FamilyRole } from "../types";
 
 interface CreateFamilyCardProps {
   userData: UserData;
@@ -39,10 +39,10 @@ const CreateFamilyCard: React.FC<CreateFamilyCardProps> = ({ userData, onBack, o
       
       if (result) {
         toast.success(t("familyCreated"));
-        // Mettre à jour les données utilisateur avec la nouvelle famille
+        // Update user data with new family
         userData.family = result.id;
         userData.familyName = result.name;
-        userData.familyRole = "owner";
+        userData.familyRole = "OWNER" as FamilyRole;
         await onFamilyCreated();
       } else {
         throw new Error("Failed to create family");

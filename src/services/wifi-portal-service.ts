@@ -13,7 +13,7 @@ import { userService } from "./wifi/user-service";
 import { sessionService } from "./wifi/session-service";
 import { statisticsService } from "./wifi/statistics-service";
 import { smsService } from "./wifi/sms-service";
-import { familyService } from "./wifi/family-service";
+import { familyService } from "./wifi/family";
 
 // Re-export all types and services
 export type { 
