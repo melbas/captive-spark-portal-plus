@@ -1,3 +1,4 @@
+
 import React from "react";
 import AuthBox from "@/components/AuthBox";
 import VideoForWifi from "@/components/VideoForWifi";
@@ -14,6 +15,7 @@ import ReferralSystem from "./ReferralSystem";
 import MiniGamesHub from "./MiniGamesHub";
 import AdminDashboard from "./AdminDashboard";
 import PaymentPortal from "./PaymentPortal";
+import FamilyManagement from "./FamilyManagement";
 import { useLanguage } from "../LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -125,14 +127,13 @@ const WifiPortalContent = ({
         ) : (
           <Button 
             variant="outline" 
-            onClick={() => handleNavigate("referral")}
+            onClick={() => handleNavigate("family")}
             className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
           >
             <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-              <path d="M6 1v3M10 1v3M14 1v3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
             </svg>
-            <span className="text-center sm:text-left">{t("inviteFriends")}</span>
+            <span className="text-center sm:text-left">{t("familyManagement")}</span>
           </Button>
         )}
       </div>
@@ -277,6 +278,13 @@ const WifiPortalContent = ({
           userData={userData}
           onBack={() => setCurrentStep(Step.SUCCESS)}
           onPaymentComplete={handlePaymentComplete}
+        />
+      )}
+      
+      {currentStep === Step.FAMILY_MANAGEMENT && (
+        <FamilyManagement 
+          userData={userData}
+          onBack={() => setCurrentStep(Step.SUCCESS)}
         />
       )}
     </>

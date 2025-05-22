@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,40 +22,40 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
   const [selectedMobileOperator, setSelectedMobileOperator] = useState<string>("orange");
   const { t } = useLanguage();
   
-  // Mock payment packages
+  // Mise à jour des forfaits avec les nouveaux tarifs
   const packages: PaymentPackage[] = [
     {
-      id: "basic",
-      name: "Basique",
-      description: "1 heure de WiFi haute vitesse",
-      price: 500,
+      id: "daily",
+      name: t("daily"),
+      description: t("dailyWifiAccess"),
+      price: 300,
       currency: "FCFA",
-      minutes: 60
+      minutes: 1440
     },
     {
-      id: "standard",
-      name: "Standard",
-      description: "3 heures de WiFi haute vitesse",
+      id: "weekly",
+      name: t("weekly"),
+      description: t("weeklyWifiAccess"),
       price: 1000,
       currency: "FCFA",
-      minutes: 180,
+      minutes: 10080
+    },
+    {
+      id: "monthly",
+      name: t("monthly"),
+      description: t("monthlyWifiAccess"),
+      price: 3000,
+      currency: "FCFA",
+      minutes: 43200,
       isPopular: true
     },
     {
-      id: "premium",
-      name: "Premium",
-      description: "6 heures de WiFi haute vitesse",
-      price: 1500,
+      id: "family",
+      name: t("familyPlan"),
+      description: t("familyPlanDescription"),
+      price: 10000,
       currency: "FCFA",
-      minutes: 360
-    },
-    {
-      id: "daily",
-      name: "Journalier",
-      description: "24 heures de WiFi haute vitesse",
-      price: 2500,
-      currency: "FCFA",
-      minutes: 1440
+      minutes: 43200 * 5 // Équivalent à 5 forfaits mensuels
     }
   ];
   
@@ -90,7 +89,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
     }, 2000);
   };
 
-  // Mobile payment provider logos
+  // Mise à jour pour ajouter Wave comme option de paiement
   const paymentProviderLogos = {
     orange: (
       <div className="flex items-center justify-center bg-[#FF6600] text-white rounded-md px-3 py-1">
@@ -98,15 +97,15 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
         <span className="font-light">Money</span>
       </div>
     ),
+    wave: (
+      <div className="flex items-center justify-center bg-[#1DC8FF] text-white rounded-md px-3 py-1">
+        <span className="font-bold">Wave</span>
+      </div>
+    ),
     free: (
       <div className="flex items-center justify-center border border-[#FF0000] text-[#FF0000] rounded-md px-3 py-1">
         <span className="font-bold mr-1">Free</span>
         <span className="font-light">Money</span>
-      </div>
-    ),
-    wave: (
-      <div className="flex items-center justify-center bg-[#1DC8FF] text-white rounded-md px-3 py-1">
-        <span className="font-bold">Wave</span>
       </div>
     )
   };
@@ -154,11 +153,11 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
                       <Clock className="h-3 w-3 mr-1" />
                       {pkg.minutes >= 60 ? (
                         <>
-                          {Math.floor(pkg.minutes / 60)} heure{pkg.minutes >= 120 ? 's' : ''}
-                          {pkg.minutes % 60 > 0 ? ` ${pkg.minutes % 60} min` : ''}
+                          {Math.floor(pkg.minutes / 60 / 24)} {pkg.id === 'daily' ? t("day") : pkg.id === 'weekly' ? t("week") : pkg.id === 'monthly' ? t("month") : t("familyPlanDuration")}
+                          {pkg.id === 'family' && <span className="ml-1">({t("upTo5Users")})</span>}
                         </>
                       ) : (
-                        <>{pkg.minutes} minutes</>
+                        <>{pkg.minutes} {t("minutes")}</>
                       )}
                     </div>
                   </div>
@@ -190,11 +189,11 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
                     <Clock className="h-3 w-3 inline mr-1" />
                     {selectedPackage.minutes >= 60 ? (
                       <>
-                        {Math.floor(selectedPackage.minutes / 60)} heure{selectedPackage.minutes >= 120 ? 's' : ''}
-                        {selectedPackage.minutes % 60 > 0 ? ` ${selectedPackage.minutes % 60} min` : ''}
+                        {Math.floor(selectedPackage.minutes / 60 / 24)} {selectedPackage.id === 'daily' ? t("day") : selectedPackage.id === 'weekly' ? t("week") : selectedPackage.id === 'monthly' ? t("month") : t("familyPlanDuration")}
+                        {selectedPackage.id === 'family' && <span className="ml-1">({t("upTo5Users")})</span>}
                       </>
                     ) : (
-                      <>{selectedPackage.minutes} minutes</>
+                      <>{selectedPackage.minutes} {t("minutes")}</>
                     )}
                   </p>
                 </div>

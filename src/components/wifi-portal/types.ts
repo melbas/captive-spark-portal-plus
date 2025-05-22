@@ -12,7 +12,8 @@ export enum Step {
   REFERRAL = "referral",
   MINI_GAMES = "mini-games",
   ADMIN_STATS = "admin-stats",
-  PAYMENT = "payment"
+  PAYMENT = "payment",
+  FAMILY_MANAGEMENT = "family-management" // Ajout d'une nouvelle étape pour la gestion familiale
 }
 
 export enum EngagementType {
@@ -58,6 +59,13 @@ export interface PaymentPackage {
   isPopular?: boolean;
 }
 
+// Role utilisateur pour les profils familiaux
+export enum UserRole {
+  OWNER = "owner",           // Responsable du profil familial
+  MEMBER = "member",         // Membre d'un profil familial
+  INDIVIDUAL = "individual"  // Utilisateur individuel
+}
+
 export interface ConnectionRecord {
   date: string;
   duration: number;
@@ -81,6 +89,40 @@ export interface UserData {
   engagementData?: any; 
   leadData?: any;
   isAdmin?: boolean;
+  // Nouveaux champs pour les profils familiaux
+  role?: UserRole;
+  familyId?: string;
+  familyName?: string;
+  familyOwnerId?: string;
+}
+
+// Interface pour les profils familiaux
+export interface FamilyProfile {
+  id: string;
+  name: string;
+  ownerId: string;
+  ownerName: string;
+  ownerEmail?: string;
+  ownerPhone?: string;
+  memberCount: number;
+  maxMembers: number;
+  createdAt: string;
+  expiresAt: string;
+  active: boolean;
+  members: FamilyMember[];
+}
+
+// Interface pour les membres d'un profil familial
+export interface FamilyMember {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  macAddress?: string;
+  joinedAt: string;
+  lastActive?: string;
+  active: boolean;
+  timeUsedMinutes: number;
 }
 
 export interface MiniGameData {
@@ -121,4 +163,41 @@ export interface DailyStatistics {
   quizCompletions: number;
   gamesPlayed: number;
   leadsCollected: number;
+}
+
+// Interface pour les clients RADIUS
+export interface RadiusClient {
+  id: string;
+  name: string;
+  shortname: string;
+  nastype: string;
+  secret: string;
+  ipAddress: string;
+  description?: string;
+  isActive: boolean;
+}
+
+// Interface pour les journaux d'authentification RADIUS
+export interface RadiusAuthLog {
+  id: string;
+  username: string;
+  nasipaddress: string;
+  nasportid?: string;
+  authDate: string;
+  authStatus: "accept" | "reject";
+  failureReason?: string;
+}
+
+// Interface pour les journaux de comptabilité RADIUS
+export interface RadiusAccountingLog {
+  id: string;
+  username: string;
+  acctSessionId: string;
+  acctSessionTime: number;
+  acctInputOctets: number;
+  acctOutputOctets: number;
+  nasipaddress: string;
+  startTime: string;
+  stopTime?: string;
+  terminationCause?: string;
 }
