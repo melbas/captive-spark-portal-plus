@@ -13,59 +13,59 @@ import AudioPromo from "../ads/AudioPromo";
 import WhatsAppSupport from "../support/WhatsAppSupport";
 import { Step } from "./types";
 
-// West African themed advertisement slides - updated with more relevant imagery
+// Updated with user-provided images
 const adSlides = [
   {
     id: "ad1",
-    imageUrl: "https://images.unsplash.com/photo-1603294278610-b4ee8654abff?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "/image-1.jpg", // First uploaded image
     title: {
-      en: "Student WiFi Plans",
-      fr: "Forfaits WiFi Étudiants"
+      en: "High-Speed WiFi Access",
+      fr: "Accès WiFi Haut Débit"
     },
     description: {
-      en: "Special internet rates for students",
-      fr: "Tarifs internet spéciaux pour étudiants"
+      en: "Connect instantly to our nationwide network",
+      fr: "Connectez-vous instantanément à notre réseau national"
     },
-    link: "#student-wifi"
+    link: "#wifi-plans"
   },
   {
     id: "ad2",
-    imageUrl: "https://images.unsplash.com/photo-1621958335842-6a9bbff73d6d?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "/image-2.jpg", // Second uploaded image
     title: {
-      en: "Market Vendor Connectivity",
-      fr: "Connectivité pour Commerçants"
+      en: "WiFi for Business",
+      fr: "WiFi pour Entreprises"
     },
     description: {
-      en: "Stay connected at your market stall",
-      fr: "Restez connecté à votre étal de marché"
+      en: "Reliable connectivity for your company",
+      fr: "Connectivité fiable pour votre entreprise"
     },
-    link: "#market-wifi"
+    link: "#business-wifi"
   },
   {
     id: "ad3",
-    imageUrl: "https://images.unsplash.com/photo-1506877339221-ede41280a7a2?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "/image-3.jpg", // Third uploaded image
     title: {
-      en: "Café WiFi Access",
-      fr: "Accès WiFi dans les Cafés"
+      en: "Home WiFi Solutions",
+      fr: "Solutions WiFi Domicile"
     },
     description: {
-      en: "Enjoy WiFi while sipping coffee",
-      fr: "Profitez du WiFi tout en dégustant un café"
+      en: "Stay connected at home with our premium plans",
+      fr: "Restez connecté chez vous avec nos forfaits premium"
     },
-    link: "#cafe-wifi"
+    link: "#home-wifi"
   },
   {
     id: "ad4",
-    imageUrl: "https://images.unsplash.com/photo-1531747056595-07f6cbbe10ad?auto=format&fit=crop&w=800&h=400",
+    imageUrl: "/image-4.jpg", // Fourth uploaded image
     title: {
-      en: "Family WiFi Packages",
-      fr: "Forfaits WiFi Famille"
+      en: "Mobile WiFi Access",
+      fr: "Accès WiFi Mobile"
     },
     description: {
-      en: "Connect the whole family with our special rates",
-      fr: "Connectez toute la famille avec nos tarifs spéciaux"
+      en: "Take your connection anywhere in Senegal",
+      fr: "Emportez votre connexion partout au Sénégal"
     },
-    link: "#family-wifi"
+    link: "#mobile-wifi"
   }
 ];
 

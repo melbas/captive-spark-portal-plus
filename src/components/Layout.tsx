@@ -26,17 +26,7 @@ const LayoutContent: React.FC<LayoutProps> = ({
       <header className="gradient-header-bg py-4 px-6 flex items-center justify-between shadow-md">
         {showLogo && <Logo variant="light" />}
         <div className="flex items-center gap-3">
-          <nav className="hidden md:flex items-center space-x-1">
-            <a href="#" className="frandroid-nav-item">
-              {t("home")}
-            </a>
-            <a href="#" className="frandroid-nav-item">
-              {t("services")}
-            </a>
-            <a href="#" className="frandroid-nav-item">
-              {t("support")}
-            </a>
-          </nav>
+          {/* Navigation menu removed as requested */}
           <LanguageSelector />
           <ThemeToggle />
         </div>
