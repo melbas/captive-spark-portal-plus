@@ -1,6 +1,4 @@
-
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from 'uuid';
 import { toast } from "sonner";
 import { wifiPortalService, WifiUser, WifiSession } from "@/services/wifi-portal-service";
 import { 
@@ -13,7 +11,6 @@ import {
   MiniGameData,
   GameType
 } from "./types";
-import { useLanguage } from "@/components/LanguageContext";
 
 export const useWifiPortal = () => {
   const [currentStep, setCurrentStep] = useState<Step>(Step.AUTH);
@@ -27,26 +24,6 @@ export const useWifiPortal = () => {
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Get MAC address - in a real implementation this would be provided by the captive portal
-  const getMacAddress = (): string | null => {
-    // This is a mock implementation - in a real captive portal, this would be provided
-    // by the OPNsense API or URL parameters
-    
-    // For demo purposes, we'll use a simulated MAC address from localStorage
-    const simulatedMac = localStorage.getItem('simulated_mac_address');
-    if (!simulatedMac) {
-      // Generate a simulated MAC for testing
-      const randomMac = Array.from({length: 6}, () => 
-        Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
-      ).join(':');
-      
-      localStorage.setItem('simulated_mac_address', randomMac);
-      return randomMac;
-    }
-    
-    return simulatedMac;
-  };
   
   // Logger les transitions d'état pour le débogage
   useEffect(() => {
@@ -67,6 +44,26 @@ export const useWifiPortal = () => {
       window.removeEventListener('error', handleGlobalError);
     };
   }, []);
+  
+  // Get MAC address - in a real implementation this would be provided by the captive portal
+  const getMacAddress = (): string | null => {
+    // This is a mock implementation - in a real captive portal, this would be provided
+    // by the OPNsense API or URL parameters
+    
+    // For demo purposes, we'll use a simulated MAC address from localStorage
+    const simulatedMac = localStorage.getItem('simulated_mac_address');
+    if (!simulatedMac) {
+      // Generate a simulated MAC for testing
+      const randomMac = Array.from({length: 6}, () => 
+        Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+      ).join(':');
+      
+      localStorage.setItem('simulated_mac_address', randomMac);
+      return randomMac;
+    }
+    
+    return simulatedMac;
+  };
   
   useEffect(() => {
     const checkExistingUser = async () => {
@@ -370,6 +367,7 @@ export const useWifiPortal = () => {
   };
   
   const handleNavigate = (section: string) => {
+    console.log(`Navigation vers: ${section}`);
     switch (section) {
       case "dashboard":
         setCurrentStep(Step.DASHBOARD);
@@ -380,7 +378,7 @@ export const useWifiPortal = () => {
       case "referral":
         setCurrentStep(Step.REFERRAL);
         break;
-      case "games":
+      case "mini-games":
         setCurrentStep(Step.MINI_GAMES);
         break;
       case "admin":
@@ -388,9 +386,6 @@ export const useWifiPortal = () => {
         break;
       case "payment":
         setCurrentStep(Step.PAYMENT);
-        break;
-      case "family":
-        setCurrentStep(Step.FAMILY_MANAGEMENT);
         break;
       default:
         setCurrentStep(Step.SUCCESS);
@@ -538,12 +533,12 @@ export const useWifiPortal = () => {
     handleContinue,
     handleExtendTime,
     handleLeadGameComplete,
+    handleReset,
+    getMacAddress,
     handleNavigate,
     handleRedeemReward,
     handleInvite,
     handleGameComplete,
-    handlePaymentComplete,
-    handleReset,
-    getMacAddress
+    handlePaymentComplete
   };
 };

@@ -4,8 +4,6 @@ import { userService } from "./wifi/user-service";
 import { sessionService } from "./wifi/session-service";
 import { statisticsService } from "./wifi/statistics-service";
 import { smsService } from "./wifi/sms-service";
-import { familyService } from "./wifi/family-service";
-import { radiusService } from "./wifi/radius-service";
 
 // Re-export all types and services
 export type { 
@@ -34,24 +32,5 @@ export const wifiPortalService = {
   sendSMS: smsService.sendSMS,
   generateVerificationCode: smsService.generateVerificationCode,
   sendVerificationCode: smsService.sendVerificationCode,
-  verifyCode: smsService.verifyCode,
-
-  // Family services
-  getFamilyProfiles: familyService.getFamilyProfiles,
-  getFamilyProfile: familyService.getFamilyProfile,
-  getUserFamily: familyService.getUserFamily,
-  createFamilyProfile: familyService.createFamilyProfile,
-  addFamilyMember: familyService.addFamilyMember,
-  removeFamilyMember: familyService.removeFamilyMember,
-  updateFamilyMember: familyService.updateFamilyMember,
-  getUserFamilyRole: familyService.getUserFamilyRole,
-
-  // RADIUS services
-  getRadiusClients: radiusService.getClients,
-  getRadiusClient: radiusService.getClient,
-  createRadiusClient: radiusService.createClient,
-  updateRadiusClient: radiusService.updateClient,
-  deleteRadiusClient: radiusService.deleteClient,
-  getRadiusAuthLogs: radiusService.getAuthLogs,
-  getRadiusAccountingLogs: radiusService.getAccountingLogs
+  verifyCode: smsService.verifyCode
 };

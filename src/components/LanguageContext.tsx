@@ -1,588 +1,598 @@
+import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+// Define available languages
+export type Language = "en" | "fr" | "es";
 
-// Define language type
-export type LanguageType = 'en' | 'fr';
-
-interface LanguageContextProps {
-  language: LanguageType;
-  setLanguage: (lang: LanguageType) => void;
-  t: (key: string) => string;
+// Define translations interface
+export interface Translations {
+  [key: string]: {
+    en: string;
+    fr: string;
+    es: string;
+  };
 }
 
-const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
-
-interface LanguageProviderProps {
-  children: React.ReactNode;
+// Define translation categories
+export enum TranslationCategory {
+  GENERAL = "general",
+  AUTH = "auth",
+  WIFI = "wifi",
+  REWARDS = "rewards",
+  GAMES = "games",
+  PROFILE = "profile",
+  LEGAL = "legal",
+  PAYMENT = "payment",
+  ADS = "ads",
+  SUPPORT = "support"
 }
 
-const translations = {
-  en: {
-    portal: "WiFi Portal",
-    connectToWifi: "Connect to our WiFi network for free internet access.",
-    demoMac: "Your simulated MAC address:",
-    reset: "Reset",
-    loading: "Loading...",
-    auth: "Authentication",
-    authWith: "Authenticate with:",
-    email: "Email",
-    phone: "Phone",
-    name: "Name",
-    password: "Password",
-    continueWithEmail: "Continue with Email",
-    continueWithPhone: "Continue with Phone",
-    enterYourEmail: "Enter your email",
-    enterYourPhone: "Enter your phone number",
-    enterYourName: "Enter your name",
-    enterYourPassword: "Enter your password",
-    invalidEmail: "Please enter a valid email address.",
-    invalidPhone: "Please enter a valid phone number.",
-    invalidName: "Please enter a valid name.",
-    invalidPassword: "Password must be at least 6 characters long.",
-    authSuccess: "Authentication successful!",
-    authFailed: "Authentication failed. Please try again.",
-    watchVideo: "Watch Video",
-    playGame: "Play Game",
-    rewards: "Rewards",
-    profile: "Profile",
-    buyTime: "Buy Time",
-    administration: "Administration",
-    inviteFriends: "Invite Friends",
-    remaining: "Remaining",
-    minutes: "minutes",
-    userPoints: "Your Points",
-    retry: "Retry",
-    videoEngagement: "Watch a short video to get free WiFi time.",
-    quizEngagement: "Answer a quick quiz to get free WiFi time.",
-    engagementSuccess: "Engagement completed! You've earned additional WiFi time.",
-    engagementFailed: "Engagement failed. Please try again.",
-    continue: "Continue",
-    accessGranted: "Access Granted!",
-    youHave: "You have",
-    freeWifi: "minutes of free WiFi.",
-    extendTime: "Extend Time",
-    extendByWatching: "Extend your WiFi time by watching a video or completing a quiz.",
-    leadCollection: "Enter your information to win a prize!",
-    collectLeads: "Collect Leads",
-    enterYourInfo: "Enter your information",
-    leadSuccess: "Thank you! We will contact you soon.",
-    dashboard: "Dashboard",
-    connectionHistory: "Connection History",
-    date: "Date",
-    duration: "Duration",
-    engagement: "Engagement",
-    noConnections: "No connections yet.",
-    rewardsSystem: "Rewards System",
-    availableRewards: "Available Rewards",
-    redeem: "Redeem",
-    notEnoughPoints: "Not enough points.",
-    redeemSuccess: "Reward redeemed successfully!",
-    referralSystem: "Referral System",
-    inviteFriendsAndEarn: "Invite friends and earn points!",
-    yourReferralCode: "Your Referral Code:",
-    inviteFriends1: "Invite Friends",
-    enterFriendEmail: "Enter your friend's email",
-    inviteSuccess: "Invitation sent successfully!",
-    miniGames: "Mini Games",
-    playAndEarn: "Play games and earn points!",
-    gameDescription: "Description",
-    reward: "Reward",
-    play: "Play",
-    adminStats: "Admin Statistics",
-    totalConnections: "Total Connections",
-    videoViews: "Video Views",
-    quizCompletions: "Quiz Completions",
-    gamesPlayed: "Games Played",
-    leadsCollected: "Leads Collected",
-    dailyStats: "Daily Statistics",
-    connections: "Connections",
-    views: "Views",
-    completions: "Completions",
-    played: "Played",
-    collected: "Collected",
-    userGrowth: "User Growth",
-    averageSession: "Average Session Duration",
-    paymentPortal: "Payment Portal",
-    buyWifiTime: "Buy WiFi Time",
-    choosePackageAndPay: "Choose a package and pay for your WiFi time.",
-    selectPackage: "Please select a package.",
-    paymentSuccess: "Payment successful! Your WiFi time has been extended.",
-    mobileMoney: "Mobile Money",
-    creditCard: "Credit Card",
-    selectProvider: "Select your mobile provider:",
-    phoneNumber: "Phone Number",
-    enterPhoneNumber: "Enter your phone number",
-    example: "Example",
-    cardNumber: "Card Number",
-    expiryDate: "Expiry Date",
-    nameOnCard: "Name on Card",
-    fullName: "Full Name",
-    pay: "Pay",
-    processing: "Processing...",
-    securePayment: "Secure Payment",
-    paymentSecurityInfo: "Your payment is processed securely.",
-    goBack: "Go Back",
-    changePackage: "Change Package",
-    mostPopular: "Most Popular",
-    select: "Select",
-    selectedPackage: "Selected Package",
-    enterEmail: "Enter your email",
-    enterName: "Enter your name",
-    enterPassword: "Enter your password",
-    byConnecting: "By connecting, you agree to our",
-    termsOfService: "Terms of Service",
-    and: "and",
-    privacyPolicy: "Privacy Policy",
-    welcome: "Welcome",
-    welcomeMessage: "Welcome to our WiFi network!",
-    verificationCode: "Verification Code",
-    enterVerificationCode: "Enter the verification code sent to your phone",
-    verifyCode: "Verify Code",
-    invalidVerificationCode: "Invalid verification code. Please try again.",
-    verificationCodeSent: "Verification code sent!",
-    sendVerificationCodeAgain: "Send verification code again",
-    verificationCodeExpired: "Verification code expired. Please request a new one.",
-    invalidAuthMethod: "Invalid authentication method.",
-    authenticationRequired: "Authentication required.",
-    authenticationInProgress: "Authentication in progress...",
-    authenticationCancelled: "Authentication cancelled.",
-    authenticationSuccessful: "Authentication successful!",
-    authenticationFailedMessage: "Authentication failed. Please check your credentials and try again.",
-    authenticationTimeout: "Authentication timeout. Please try again.",
-    authenticationError: "Authentication error. Please try again later.",
-    authenticationUnavailable: "Authentication service unavailable. Please try again later.",
-    authenticationUnknownError: "Unknown authentication error. Please try again later.",
-    authenticationTooManyRequests: "Too many authentication attempts. Please try again later.",
-    authenticationNetworkError: "Network error. Please check your internet connection and try again.",
-    authenticationServerError: "Server error. Please try again later.",
-    authenticationUnauthorized: "Unauthorized access. Please check your credentials and try again.",
-    authenticationForbidden: "Forbidden access. Please check your credentials and try again.",
-    authenticationNotFound: "Authentication resource not found. Please try again later.",
-    authenticationBadRequest: "Bad request. Please check your input and try again.",
-    authenticationInternalServerError: "Internal server error. Please try again later.",
-    authenticationServiceUnavailable: "Authentication service unavailable. Please try again later.",
-    authenticationGatewayTimeout: "Gateway timeout. Please try again later.",
-    authenticationBadGateway: "Bad gateway. Please try again later.",
-    authenticationPreconditionFailed: "Precondition failed. Please try again later.",
-    authenticationRequestEntityTooLarge: "Request entity too large. Please try again later.",
-    authenticationRequestURITooLong: "Request URI too long. Please try again later.",
-    authenticationUnsupportedMediaType: "Unsupported media type. Please try again later.",
-    authenticationTooManyRequestsMessage: "Too many requests. Please try again later.",
-    authenticationRequestHeaderFieldsTooLarge: "Request header fields too large. Please try again later.",
-    authenticationUpgradeRequired: "Upgrade required. Please try again later.",
-    authenticationClientClosedRequest: "Client closed request. Please try again later.",
-    authenticationInsufficientStorage: "Insufficient storage. Please try again later.",
-    authenticationLoopDetected: "Loop detected. Please try again later.",
-    authenticationNotExtended: "Not extended. Please try again later.",
-    authenticationNetworkAuthenticationRequired: "Network authentication required. Please try again later.",
-    authenticationOriginDENIED: "Origin denied. Please try again later.",
-    authenticationUnknown: "Unknown error. Please try again later.",
-    authenticationAborted: "Aborted. Please try again later.",
-    authenticationNoInternet: "No internet connection. Please check your connection and try again.",
-    authenticationOffline: "Offline. Please check your connection and try again.",
-    authenticationTimeoutMessage: "Authentication timeout. Please try again.",
-    authenticationCancelledMessage: "Authentication cancelled.",
-    authenticationUnknownErrorMessage: "Unknown error. Please try again later.",
-    authenticationAbortedMessage: "Aborted. Please try again later.",
-    authenticationNoInternetMessage: "No internet connection. Please check your connection and try again.",
-    authenticationOfflineMessage: "Offline. Please check your connection and try again.",
-    authenticationTooManyRequestsTitle: "Too Many Requests",
-    authenticationTimeoutTitle: "Timeout",
-    authenticationCancelledTitle: "Cancelled",
-    authenticationUnknownErrorTitle: "Unknown Error",
-    authenticationAbortedTitle: "Aborted",
-    authenticationNoInternetTitle: "No Internet",
-    authenticationOfflineTitle: "Offline",
-    authenticationErrorMessage: "An error occurred during authentication. Please try again.",
-    authenticationSuccessTitle: "Success",
-    authenticationSuccessMessage: "Authentication successful!",
-    authenticationFailedTitle: "Failed",
-    authenticationFailedMessageTitle: "Authentication Failed",
-    authenticationErrorMessageTitle: "Error",
-    authenticationErrorMessageMessage: "An error occurred during authentication. Please try again.",
-    authenticationUnavailableTitle: "Unavailable",
-    authenticationUnavailableMessage: "Authentication service unavailable. Please try again later.",
-    authenticationServerErrorTitle: "Server Error",
-    authenticationServerErrorMessage: "Server error. Please try again later.",
-    authenticationNetworkErrorTitle: "Network Error",
-    authenticationNetworkErrorMessage: "Network error. Please check your internet connection and try again.",
-    authenticationUnauthorizedTitle: "Unauthorized",
-    authenticationUnauthorizedMessage: "Unauthorized access. Please check your credentials and try again.",
-    authenticationForbiddenTitle: "Forbidden",
-    authenticationForbiddenMessage: "Forbidden access. Please check your credentials and try again.",
-    authenticationNotFoundTitle: "Not Found",
-    authenticationNotFoundMessage: "Authentication resource not found. Please try again later.",
-    authenticationBadRequestTitle: "Bad Request",
-    authenticationBadRequestMessage: "Bad request. Please check your input and try again.",
-    authenticationInternalServerErrorTitle: "Internal Server Error",
-    authenticationInternalServerErrorMessage: "Internal server error. Please try again later.",
-    authenticationServiceUnavailableTitle: "Service Unavailable",
-    authenticationServiceUnavailableMessage: "Authentication service unavailable. Please try again later.",
-    authenticationGatewayTimeoutTitle: "Gateway Timeout",
-    authenticationGatewayTimeoutMessage: "Gateway timeout. Please try again later.",
-    authenticationBadGatewayTitle: "Bad Gateway",
-    authenticationBadGatewayMessage: "Bad gateway. Please try again later.",
-    authenticationPreconditionFailedTitle: "Precondition Failed",
-    authenticationPreconditionFailedMessage: "Precondition failed. Please try again later.",
-    authenticationRequestEntityTooLargeTitle: "Request Entity Too Large",
-    authenticationRequestEntityTooLargeMessage: "Request entity too large. Please try again later.",
-    authenticationRequestURITooLongTitle: "Request URI Too Long",
-    authenticationRequestURITooLongMessage: "Request URI too long. Please try again later.",
-    authenticationUnsupportedMediaTypeTitle: "Unsupported Media Type",
-    authenticationUnsupportedMediaTypeMessage: "Unsupported media type. Please try again later.",
-    authenticationRequestHeaderFieldsTooLargeTitle: "Request Header Fields Too Large",
-    authenticationRequestHeaderFieldsTooLargeMessage: "Request header fields too large. Please try again later.",
-    authenticationUpgradeRequiredTitle: "Upgrade Required",
-    authenticationUpgradeRequiredMessage: "Upgrade required. Please try again later.",
-    authenticationClientClosedRequestTitle: "Client Closed Request",
-    authenticationClientClosedRequestMessage: "Client closed request. Please try again later.",
-    authenticationInsufficientStorageTitle: "Insufficient Storage",
-    authenticationInsufficientStorageMessage: "Insufficient storage. Please try again later.",
-    authenticationLoopDetectedTitle: "Loop Detected",
-    authenticationLoopDetectedMessage: "Loop detected. Please try again later.",
-    authenticationNotExtendedTitle: "Not Extended",
-    authenticationNotExtendedMessage: "Not extended. Please try again later.",
-    authenticationNetworkAuthenticationRequiredTitle: "Network Authentication Required",
-    authenticationNetworkAuthenticationRequiredMessage: "Network authentication required. Please try again later.",
-    authenticationOriginDENIEDTitle: "Origin Denied",
-    authenticationOriginDENIEDMessage: "Origin denied. Please try again later.",
-    daily: "Daily",
-    weekly: "Weekly",
-    monthly: "Monthly",
-    familyPlan: "Family Plan",
-    dailyWifiAccess: "24 hours of high-speed WiFi",
-    weeklyWifiAccess: "7 days of high-speed WiFi",
-    monthlyWifiAccess: "30 days of high-speed WiFi",
-    familyPlanDescription: "30 days of high-speed WiFi for up to 5 users",
-    day: "day",
-    week: "week",
-    month: "month",
-    familyPlanDuration: "month",
-    upTo5Users: "up to 5 users",
-    familyManagement: "Family Management",
-    manageFamilyMembers: "Manage your family members",
-    createFamilyProfile: "Create a family profile",
-    familyNameRequired: "Family name is required",
-    userNotAuthenticated: "User not authenticated",
-    familyProfileCreated: "Family profile created successfully",
-    errorCreatingFamilyProfile: "Error creating family profile",
-    familyName: "Family Name",
-    enterFamilyName: "Enter family name",
-    createFamilyProfileButton: "Create Family Profile",
-    familyPlanCost: "Family plan costs 10000 FCFA per month",
-    owner: "Owner",
-    members: "Members",
-    created: "Created",
-    expires: "Expires",
-    addMember: "Add Member",
-    noFamilyMembers: "No family members yet",
-    macAddress: "MAC Address",
-    enterMacAddress: "Enter MAC address",
-    addMemberButton: "Add Member",
-    memberNameRequired: "Member name is required",
-    familyProfileNotFound: "Family profile not found",
-    memberAdded: "Member added successfully",
-    errorAddingMember: "Error adding member",
-    confirmRemoveMember: "Are you sure you want to remove this member?",
-    memberRemoved: "Member removed successfully",
-    errorRemovingMember: "Error removing member",
-    memberActivated: "Member activated successfully",
-    memberDeactivated: "Member deactivated successfully",
-    errorUpdatingMemberStatus: "Error updating member status",
-    maxMembersReached: "Maximum number of members reached",
-    noContactInfo: "No contact info",
-    createFamilyPlan: "Create Family Plan",
-    errorLoadingFamilyProfile: "Error loading family profile"
+// Define grouped translations with categories
+export const translations: Record<string, Translations> = {
+  // General UI elements
+  [TranslationCategory.GENERAL]: {
+    welcome: {
+      en: "Welcome",
+      fr: "Bienvenue",
+      es: "Bienvenido"
+    },
+    loading: {
+      en: "Loading...",
+      fr: "Chargement...",
+      es: "Cargando..."
+    },
+    continue: {
+      en: "Continue",
+      fr: "Continuer",
+      es: "Continuar"
+    },
+    goBack: {
+      en: "Go Back",
+      fr: "Retour",
+      es: "Volver"
+    },
+    error: {
+      en: "Error",
+      fr: "Erreur",
+      es: "Error"
+    },
+    tryAgain: {
+      en: "Please try again",
+      fr: "Veuillez réessayer",
+      es: "Por favor, inténtelo de nuevo"
+    },
+    fillRequired: {
+      en: "Please fill in all required fields",
+      fr: "Veuillez remplir tous les champs obligatoires",
+      es: "Por favor, rellene todos los campos obligatorios"
+    },
+    success: {
+      en: "Success",
+      fr: "Succès",
+      es: "Éxito"
+    },
+    cancel: {
+      en: "Cancel",
+      fr: "Annuler",
+      es: "Cancelar"
+    },
+    submit: {
+      en: "Submit",
+      fr: "Soumettre",
+      es: "Enviar"
+    },
+    reset: {
+      en: "Reset",
+      fr: "Réinitialiser",
+      es: "Resetear"
+    },
+    and: {
+      en: "and",
+      fr: "et",
+      es: "y"
+    },
+    portal: {
+      en: "WiFi Portal",
+      fr: "Portail WiFi",
+      es: "Portal WiFi"
+    },
+    demoMac: {
+      en: "Demo MAC:",
+      fr: "MAC de démo:",
+      es: "MAC de demostración:"
+    },
+    retry: {
+      en: "Retry",
+      fr: "Réessayer",
+      es: "Reintentar"
+    },
+    allRightsReserved: {
+      en: "All rights reserved.",
+      fr: "Tous droits réservés.",
+      es: "Todos los derechos reservados."
+    },
   },
-  fr: {
-    portal: "Portail WiFi",
-    connectToWifi: "Connectez-vous à notre réseau WiFi pour un accès internet gratuit.",
-    demoMac: "Votre adresse MAC simulée:",
-    reset: "Réinitialiser",
-    loading: "Chargement...",
-    auth: "Authentification",
-    authWith: "S'authentifier avec:",
-    email: "Email",
-    phone: "Téléphone",
-    name: "Nom",
-    password: "Mot de passe",
-    continueWithEmail: "Continuer avec Email",
-    continueWithPhone: "Continuer avec Téléphone",
-    enterYourEmail: "Entrez votre email",
-    enterYourPhone: "Entrez votre numéro de téléphone",
-    enterYourName: "Entrez votre nom",
-    enterYourPassword: "Entrez votre mot de passe",
-    invalidEmail: "Veuillez entrer une adresse email valide.",
-    invalidPhone: "Veuillez entrer un numéro de téléphone valide.",
-    invalidName: "Veuillez entrer un nom valide.",
-    invalidPassword: "Le mot de passe doit contenir au moins 6 caractères.",
-    authSuccess: "Authentification réussie!",
-    authFailed: "Authentification échouée. Veuillez réessayer.",
-    watchVideo: "Regarder une Vidéo",
-    playGame: "Jouer à un Jeu",
-    rewards: "Récompenses",
-    profile: "Profil",
-    buyTime: "Acheter du Temps",
-    administration: "Administration",
-    inviteFriends: "Inviter des Amis",
-    remaining: "Restant",
-    minutes: "minutes",
-    userPoints: "Vos Points",
-    retry: "Réessayer",
-    videoEngagement: "Regardez une courte vidéo pour obtenir du temps WiFi gratuit.",
-    quizEngagement: "Répondez à un quiz rapide pour obtenir du temps WiFi gratuit.",
-    engagementSuccess: "Engagement terminé! Vous avez gagné du temps WiFi supplémentaire.",
-    engagementFailed: "Engagement échoué. Veuillez réessayer.",
-    continue: "Continuer",
-    accessGranted: "Accès Autorisé!",
-    youHave: "Vous avez",
-    freeWifi: "minutes de WiFi gratuit.",
-    extendTime: "Prolonger le Temps",
-    extendByWatching: "Prolongez votre temps WiFi en regardant une vidéo ou en répondant à un quiz.",
-    leadCollection: "Entrez vos informations pour gagner un prix!",
-    collectLeads: "Collecter des Prospects",
-    enterYourInfo: "Entrez vos informations",
-    leadSuccess: "Merci! Nous vous contacterons bientôt.",
-    dashboard: "Tableau de Bord",
-    connectionHistory: "Historique de Connexion",
-    date: "Date",
-    duration: "Durée",
-    engagement: "Engagement",
-    noConnections: "Aucune connexion pour le moment.",
-    rewardsSystem: "Système de Récompenses",
-    availableRewards: "Récompenses Disponibles",
-    redeem: "Échanger",
-    notEnoughPoints: "Pas assez de points.",
-    redeemSuccess: "Récompense échangée avec succès!",
-    referralSystem: "Système de Parrainage",
-    inviteFriendsAndEarn: "Invitez des amis et gagnez des points!",
-    yourReferralCode: "Votre Code de Parrainage:",
-    inviteFriends1: "Inviter des Amis",
-    enterFriendEmail: "Entrez l'email de votre ami",
-    inviteSuccess: "Invitation envoyée avec succès!",
-    miniGames: "Mini-Jeux",
-    playAndEarn: "Jouez à des jeux et gagnez des points!",
-    gameDescription: "Description",
-    reward: "Récompense",
-    play: "Jouer",
-    adminStats: "Statistiques Admin",
-    totalConnections: "Connexions Totales",
-    videoViews: "Vues de Vidéos",
-    quizCompletions: "Réussites aux Quizz",
-    gamesPlayed: "Parties Jouées",
-    leadsCollected: "Prospects Collectés",
-    dailyStats: "Statistiques Quotidiennes",
-    connections: "Connexions",
-    views: "Vues",
-    completions: "Réussites",
-    played: "Jouées",
-    collected: "Collectés",
-    userGrowth: "Croissance des Utilisateurs",
-    averageSession: "Durée Moyenne des Sessions",
-    paymentPortal: "Portail de Paiement",
-    buyWifiTime: "Acheter du Temps WiFi",
-    choosePackageAndPay: "Choisissez un forfait et payez pour votre temps WiFi.",
-    selectPackage: "Veuillez sélectionner un forfait.",
-    paymentSuccess: "Paiement réussi! Votre temps WiFi a été prolongé.",
-    mobileMoney: "Mobile Money",
-    creditCard: "Carte de Crédit",
-    selectProvider: "Sélectionnez votre fournisseur mobile:",
-    phoneNumber: "Numéro de Téléphone",
-    enterPhoneNumber: "Entrez votre numéro de téléphone",
-    example: "Exemple",
-    cardNumber: "Numéro de Carte",
-    expiryDate: "Date d'Expiration",
-    nameOnCard: "Nom sur la Carte",
-    fullName: "Nom Complet",
-    pay: "Payer",
-    processing: "Traitement...",
-    securePayment: "Paiement Sécurisé",
-    paymentSecurityInfo: "Votre paiement est traité de manière sécurisée.",
-    goBack: "Retour",
-    changePackage: "Changer de Forfait",
-    mostPopular: "Le Plus Populaire",
-    select: "Sélectionner",
-    selectedPackage: "Forfait Sélectionné",
-    enterEmail: "Entrez votre email",
-    enterName: "Entrez votre nom",
-    enterPassword: "Entrez votre mot de passe",
-    byConnecting: "En vous connectant, vous acceptez nos",
-    termsOfService: "Conditions d'Utilisation",
-    and: "et notre",
-    privacyPolicy: "Politique de Confidentialité",
-    welcome: "Bienvenue",
-    welcomeMessage: "Bienvenue sur notre réseau WiFi!",
-    verificationCode: "Code de Vérification",
-    enterVerificationCode: "Entrez le code de vérification envoyé à votre téléphone",
-    verifyCode: "Vérifier le Code",
-    invalidVerificationCode: "Code de vérification invalide. Veuillez réessayer.",
-    verificationCodeSent: "Code de vérification envoyé!",
-    sendVerificationCodeAgain: "Renvoyer le code de vérification",
-    verificationCodeExpired: "Code de vérification expiré. Veuillez demander un nouveau code.",
-    invalidAuthMethod: "Méthode d'authentification invalide.",
-    authenticationRequired: "Authentification requise.",
-    authenticationInProgress: "Authentification en cours...",
-    authenticationCancelled: "Authentification annulée.",
-    authenticationSuccessful: "Authentification réussie!",
-    authenticationFailedMessage: "Authentification échouée. Veuillez vérifier vos informations d'identification et réessayer.",
-    authenticationTimeout: "Délai d'authentification dépassé. Veuillez réessayer.",
-    authenticationError: "Erreur d'authentification. Veuillez réessayer plus tard.",
-    authenticationUnavailable: "Service d'authentification indisponible. Veuillez réessayer plus tard.",
-    authenticationUnknownError: "Erreur d'authentification inconnue. Veuillez réessayer plus tard.",
-    authenticationTooManyRequests: "Trop de tentatives d'authentification. Veuillez réessayer plus tard.",
-    authenticationNetworkError: "Erreur réseau. Veuillez vérifier votre connexion Internet et réessayer.",
-    authenticationServerError: "Erreur serveur. Veuillez réessayer plus tard.",
-    authenticationUnauthorized: "Accès non autorisé. Veuillez vérifier vos informations d'identification et réessayer.",
-    authenticationForbidden: "Accès interdit. Veuillez vérifier vos informations d'identification et réessayer.",
-    authenticationNotFound: "Ressource d'authentification introuvable. Veuillez réessayer plus tard.",
-    authenticationBadRequest: "Mauvaise requête. Veuillez vérifier votre saisie et réessayer.",
-    authenticationInternalServerError: "Erreur interne du serveur. Veuillez réessayer plus tard.",
-    authenticationServiceUnavailable: "Service d'authentification indisponible. Veuillez réessayer plus tard.",
-    authenticationGatewayTimeout: "Délai de passerelle dépassé. Veuillez réessayer plus tard.",
-    authenticationBadGateway: "Mauvaise passerelle. Veuillez réessayer plus tard.",
-    authenticationPreconditionFailed: "Condition préalable non remplie. Veuillez réessayer plus tard.",
-    authenticationRequestEntityTooLarge: "Entité de requête trop grande. Veuillez réessayer plus tard.",
-    authenticationRequestURITooLong: "URI de requête trop long. Veuillez réessayer plus tard.",
-    authenticationUnsupportedMediaType: "Type de média non pris en charge. Veuillez réessayer plus tard.",
-    authenticationTooManyRequestsMessage: "Trop de requêtes. Veuillez réessayer plus tard.",
-    authenticationRequestHeaderFieldsTooLarge: "Champs d'en-tête de requête trop grands. Veuillez réessayer plus tard.",
-    authenticationUpgradeRequired: "Mise à niveau requise. Veuillez réessayer plus tard.",
-    authenticationClientClosedRequest: "Requête fermée par le client. Veuillez réessayer plus tard.",
-    authenticationInsufficientStorage: "Stockage insuffisant. Veuillez réessayer plus tard.",
-    authenticationLoopDetected: "Boucle détectée. Veuillez réessayer plus tard.",
-    authenticationNotExtended: "Non étendu. Veuillez réessayer plus tard.",
-    authenticationNetworkAuthenticationRequired: "Authentification réseau requise. Veuillez réessayer plus tard.",
-    authenticationOriginDENIED: "Origine refusée. Veuillez réessayer plus tard.",
-    authenticationUnknown: "Erreur inconnue. Veuillez réessayer plus tard.",
-    authenticationAborted: "Abandonné. Veuillez réessayer plus tard.",
-    authenticationNoInternet: "Pas de connexion Internet. Veuillez vérifier votre connexion et réessayer.",
-    authenticationOffline: "Hors ligne. Veuillez vérifier votre connexion et réessayer.",
-    authenticationTimeoutMessage: "Délai d'authentification dépassé. Veuillez réessayer.",
-    authenticationCancelledMessage: "Authentification annulée.",
-    authenticationUnknownErrorMessage: "Erreur inconnue. Veuillez réessayer plus tard.",
-    authenticationAbortedMessage: "Abandonné. Veuillez réessayer plus tard.",
-    authenticationNoInternetMessage: "Pas de connexion Internet. Veuillez vérifier votre connexion et réessayer.",
-    authenticationOfflineMessage: "Hors ligne. Veuillez vérifier votre connexion et réessayer.",
-    authenticationTooManyRequestsTitle: "Trop de Requêtes",
-    authenticationTimeoutTitle: "Délai Dépassé",
-    authenticationCancelledTitle: "Annulé",
-    authenticationUnknownErrorTitle: "Erreur Inconnue",
-    authenticationAbortedTitle: "Abandonné",
-    authenticationNoInternetTitle: "Pas d'Internet",
-    authenticationOfflineTitle: "Hors Ligne",
-    authenticationErrorMessage: "Une erreur s'est produite lors de l'authentification. Veuillez réessayer.",
-    authenticationSuccessTitle: "Succès",
-    authenticationSuccessMessage: "Authentification réussie!",
-    authenticationFailedTitle: "Échec",
-    authenticationFailedMessageTitle: "Authentification Échouée",
-    authenticationErrorMessageTitle: "Erreur",
-    authenticationErrorMessageMessage: "Une erreur s'est produite lors de l'authentification. Veuillez réessayer.",
-    authenticationUnavailableTitle: "Indisponible",
-    authenticationUnavailableMessage: "Service d'authentification indisponible. Veuillez réessayer plus tard.",
-    authenticationServerErrorTitle: "Erreur Serveur",
-    authenticationServerErrorMessage: "Erreur serveur. Veuillez réessayer plus tard.",
-    authenticationNetworkErrorTitle: "Erreur Réseau",
-    authenticationNetworkErrorMessage: "Erreur réseau. Veuillez vérifier votre connexion Internet et réessayer.",
-    authenticationUnauthorizedTitle: "Non Autorisé",
-    authenticationUnauthorizedMessage: "Accès non autorisé. Veuillez vérifier vos informations d'identification et réessayer.",
-    authenticationForbiddenTitle: "Interdit",
-    authenticationForbiddenMessage: "Accès interdit. Veuillez vérifier vos informations d'identification et réessayer.",
-    authenticationNotFoundTitle: "Introuvable",
-    authenticationNotFoundMessage: "Ressource d'authentification introuvable. Veuillez réessayer plus tard.",
-    authenticationBadRequestTitle: "Mauvaise Requête",
-    authenticationBadRequestMessage: "Mauvaise requête. Veuillez vérifier votre saisie et réessayer.",
-    authenticationInternalServerErrorTitle: "Erreur Interne du Serveur",
-    authenticationInternalServerErrorMessage: "Erreur interne du serveur. Veuillez réessayer plus tard.",
-    authenticationServiceUnavailableTitle: "Service Indisponible",
-    authenticationServiceUnavailableMessage: "Service d'authentification indisponible. Veuillez réessayer plus tard.",
-    authenticationGatewayTimeoutTitle: "Délai de la Passerelle Dépassé",
-    authenticationGatewayTimeoutMessage: "Délai de la passerelle dépassé. Veuillez réessayer plus tard.",
-    authenticationBadGatewayTitle: "Mauvaise Passerelle",
-    authenticationBadGatewayMessage: "Mauvaise passerelle. Veuillez réessayer plus tard.",
-    authenticationPreconditionFailedTitle: "Condition Préalable Non Remplie",
-    authenticationPreconditionFailedMessage: "Condition préalable non remplie. Veuillez réessayer plus tard.",
-    authenticationRequestEntityTooLargeTitle: "Entité de Requête Trop Grande",
-    authenticationRequestEntityTooLargeMessage: "Entité de requête trop grande. Veuillez réessayer plus tard.",
-    authenticationRequestURITooLongTitle: "URI de Requête Trop Long",
-    authenticationRequestURITooLongMessage: "URI de requête trop long. Veuillez réessayer plus tard.",
-    authenticationUnsupportedMediaTypeTitle: "Type de Média Non Pris en Charge",
-    authenticationUnsupportedMediaTypeMessage: "Type de média non pris en charge. Veuillez réessayer plus tard.",
-    authenticationRequestHeaderFieldsTooLargeTitle: "Champs d'En-tête de Requête Trop Grands",
-    authenticationRequestHeaderFieldsTooLargeMessage: "Champs d'en-tête de requête trop grands. Veuillez réessayer plus tard.",
-    authenticationUpgradeRequiredTitle: "Mise à Niveau Requise",
-    authenticationUpgradeRequiredMessage: "Mise à niveau requise. Veuillez réessayer plus tard.",
-    authenticationClientClosedRequestTitle: "Requête Fermée par le Client",
-    authenticationClientClosedRequestMessage: "Requête fermée par le client. Veuillez réessayer plus tard.",
-    authenticationInsufficientStorageTitle: "Stockage Insuffisant",
-    authenticationInsufficientStorageMessage: "Stockage insuffisant. Veuillez réessayer plus tard.",
-    authenticationLoopDetectedTitle: "Boucle Détectée",
-    authenticationLoopDetectedMessage: "Boucle détectée. Veuillez réessayer plus tard.",
-    authenticationNotExtendedTitle: "Non Étendu",
-    authenticationNotExtendedMessage: "Non étendu. Veuillez réessayer plus tard.",
-    authenticationNetworkAuthenticationRequiredTitle: "Authentification Réseau Requise",
-    authenticationNetworkAuthenticationRequiredMessage: "Authentification réseau requise. Veuillez réessayer plus tard.",
-    authenticationOriginDENIEDTitle: "Origine Refusée",
-    authenticationOriginDENIEDMessage: "Origine refusée. Veuillez réessayer plus tard.",
-    daily: "Journalier",
-    weekly: "Hebdomadaire",
-    monthly: "Mensuel",
-    familyPlan: "Forfait Familial",
-    dailyWifiAccess: "24 heures de WiFi haute vitesse",
-    weeklyWifiAccess: "7 jours de WiFi haute vitesse",
-    monthlyWifiAccess: "30 jours de WiFi haute vitesse",
-    familyPlanDescription: "30 jours de WiFi haute vitesse pour 5 utilisateurs",
-    day: "jour",
-    week: "semaine",
-    month: "mois",
-    familyPlanDuration: "mois",
-    upTo5Users: "jusqu'à 5 utilisateurs",
-    familyManagement: "Gestion Familiale",
-    manageFamilyMembers: "Gérer les membres de votre famille",
-    createFamilyProfile: "Créer un profil familial",
-    familyNameRequired: "Le nom de famille est requis",
-    userNotAuthenticated: "Utilisateur non authentifié",
-    familyProfileCreated: "Profil familial créé avec succès",
-    errorCreatingFamilyProfile: "Erreur lors de la création du profil familial",
-    familyName: "Nom de Famille",
-    enterFamilyName: "Entrez le nom de famille",
-    createFamilyProfileButton: "Créer un Profil Familial",
-    familyPlanCost: "Le forfait familial coûte 10000 FCFA par mois",
-    owner: "Propriétaire",
-    members: "Membres",
-    created: "Créé",
-    expires: "Expire",
-    addMember: "Ajouter un Membre",
-    noFamilyMembers: "Aucun membre de la famille pour le moment",
-    macAddress: "Adresse MAC",
-    enterMacAddress: "Entrez l'adresse MAC",
-    addMemberButton: "Ajouter un Membre",
-    memberNameRequired: "Le nom du membre est requis",
-    familyProfileNotFound: "Profil familial introuvable",
-    memberAdded: "Membre ajouté avec succès",
-    errorAddingMember: "Erreur lors de l'ajout du membre",
-    confirmRemoveMember: "Êtes-vous sûr de vouloir supprimer ce membre?",
-    memberRemoved: "Membre supprimé avec succès",
-    errorRemovingMember: "Erreur lors de la suppression du membre",
-    memberActivated: "Membre activé avec succès",
-    memberDeactivated: "Membre désactivé avec succès",
-    errorUpdatingMemberStatus: "Erreur lors de la mise à jour du statut du membre",
-    maxMembersReached: "Nombre maximum de membres atteint",
-    noContactInfo: "Aucune information de contact",
-    createFamilyPlan: "Créer un Forfait Familial",
-    errorLoadingFamilyProfile: "Erreur lors du chargement du profil familial"
+
+  // Authentication related
+  [TranslationCategory.AUTH]: {
+    connectToWifi: {
+      en: "Connect to our high-speed WiFi network",
+      fr: "Connectez-vous à notre réseau WiFi haut débit",
+      es: "Conéctese a nuestra red WiFi de alta velocidad"
+    },
+    phoneNumber: {
+      en: "Phone Number",
+      fr: "Numéro de téléphone",
+      es: "Número de teléfono"
+    },
+    emailAddress: {
+      en: "Email Address",
+      fr: "Adresse e-mail",
+      es: "Correo electrónico"
+    },
+    verificationCode: {
+      en: "Verification Code",
+      fr: "Code de vérification",
+      es: "Código de verificación"
+    },
+    sendCode: {
+      en: "Send Code",
+      fr: "Envoyer le code",
+      es: "Enviar código"
+    },
+    verify: {
+      en: "Verify",
+      fr: "Vérifier",
+      es: "Verificar"
+    },
+    chooseVerification: {
+      en: "Choose your preferred verification method",
+      fr: "Choisissez votre méthode de vérification préférée",
+      es: "Elija su método de verificación preferido"
+    },
+    localFormat: {
+      en: "your local format",
+      fr: "votre format local",
+      es: "su formato local"
+    },
+    example: {
+      en: "Example",
+      fr: "Exemple",
+      es: "Ejemplo"
+    },
+    verificationCodeSent: {
+      en: "Verification code sent to your",
+      fr: "Code de vérification envoyé à votre",
+      es: "Código de verificación enviado a su"
+    },
+    toPhone: {
+      en: "phone",
+      fr: "téléphone",
+      es: "teléfono"
+    },
+    toEmail: {
+      en: "email",
+      fr: "email",
+      es: "correo electrónico"
+    },
+    enterValidCode: {
+      en: "Please enter a valid verification code",
+      fr: "Veuillez entrer un code de vérification valide",
+      es: "Por favor, introduzca un código de verificación válido"
+    },
+    verificationSuccessful: {
+      en: "Verification successful",
+      fr: "Vérification réussie",
+      es: "Verificación exitosa"
+    },
+    invalidCode: {
+      en: "Invalid verification code",
+      fr: "Code de vérification invalide",
+      es: "Código de verificación no válido"
+    },
+    useCodeForDemo: {
+      en: "Use code",
+      fr: "Utilisez le code",
+      es: "Use el código"
+    },
+    enterCodeSentTo: {
+      en: "Enter the verification code sent to",
+      fr: "Entrez le code de vérification envoyé à",
+      es: "Introduzca el código de verificación enviado a"
+    },
+    countryCode: {
+      en: "Country Code",
+      fr: "Indicatif du pays",
+      es: "Código de país"
+    },
+    selectCountry: {
+      en: "Select Country",
+      fr: "Sélectionner le pays",
+      es: "Seleccionar país"
+    },
+    phoneVerification: {
+      en: "Phone Verification",
+      fr: "Vérification par téléphone",
+      es: "Verificación por teléfono"
+    },
+    emailVerification: {
+      en: "Email Verification",
+      fr: "Vérification par e-mail",
+      es: "Verificación por correo electrónico"
+    },
+    registerSuccess: {
+      en: "Registration successful",
+      fr: "Inscription réussie",
+      es: "Registro exitoso"
+    },
+    validPhone: {
+      en: "Please enter a valid phone number",
+      fr: "Veuillez entrer un numéro de téléphone valide",
+      es: "Por favor, introduzca un número de teléfono válido"
+    },
+    validEmail: {
+      en: "Please enter a valid email address",
+      fr: "Veuillez entrer une adresse email valide", 
+      es: "Por favor, introduzca una dirección de correo electrónico válida"
+    },
+  },
+
+  // WiFi related
+  [TranslationCategory.WIFI]: {
+    accessGranted: {
+      en: "Access Granted",
+      fr: "Accès accordé",
+      es: "Acceso concedido"
+    },
+    youHave: {
+      en: "You have",
+      fr: "Vous avez",
+      es: "Tiene"
+    },
+    ofWifiAccess: {
+      en: "of WiFi access",
+      fr: "d'accès WiFi",
+      es: "de acceso WiFi"
+    },
+    buyTime: {
+      en: "Buy Time",
+      fr: "Acheter du temps",
+      es: "Comprar tiempo"
+    },
+    extendTime: {
+      en: "Extend Time",
+      fr: "Prolonger le temps",
+      es: "Extender tiempo"
+    },
+    minutes: {
+      en: "minutes",
+      fr: "minutes",
+      es: "minutos"
+    },
+    remaining: {
+      en: "remaining",
+      fr: "restantes",
+      es: "restantes"
+    },
+    watchVideo: {
+      en: "Watch Video",
+      fr: "Regarder une vidéo",
+      es: "Ver vídeo"
+    },
+    watchTheVideo: {
+      en: "Watch the video to continue",
+      fr: "Regardez la vidéo pour continuer",
+      es: "Ver el video para continuar"
+    },
+  },
+
+  // Rewards and games
+  [TranslationCategory.REWARDS]: {
+    rewards: {
+      en: "Rewards",
+      fr: "Récompenses",
+      es: "Recompensas"
+    },
+    playGame: {
+      en: "Play Game",
+      fr: "Jouer",
+      es: "Jugar"
+    },
+    submitAnswer: {
+      en: "Submit Answer",
+      fr: "Soumettre la réponse",
+      es: "Enviar respuesta"
+    },
+  },
+
+  // Games related
+  [TranslationCategory.GAMES]: {
+    gameResults: {
+      en: "Game Results",
+      fr: "Résultats du jeu",
+      es: "Resultados del juego"
+    },
+    yourScore: {
+      en: "Your Score",
+      fr: "Votre score",
+      es: "Tu puntuación"
+    },
+    playAgain: {
+      en: "Play Again",
+      fr: "Rejouer",
+      es: "Jugar de nuevo"
+    },
+    gameInstructions: {
+      en: "Game Instructions",
+      fr: "Instructions du jeu",
+      es: "Instrucciones del juego"
+    },
+    startGame: {
+      en: "Start Game",
+      fr: "Commencer le jeu",
+      es: "Iniciar juego"
+    },
+  },
+
+  // Profile related
+  [TranslationCategory.PROFILE]: {
+    profile: {
+      en: "Profile",
+      fr: "Profil",
+      es: "Perfil"
+    },
+    inviteFriends: {
+      en: "Invite Friends",
+      fr: "Inviter des amis",
+      es: "Invitar amigos"
+    },
+    administration: {
+      en: "Administration",
+      fr: "Administration",
+      es: "Administración"
+    },
+    connectionHistory: {
+      en: "Connection History",
+      fr: "Historique de connexion",
+      es: "Historial de conexión"
+    },
+    userPoints: {
+      en: "Your Points",
+      fr: "Vos points",
+      es: "Sus puntos"
+    },
+    userLevel: {
+      en: "Your Level",
+      fr: "Votre niveau",
+      es: "Su nivel"
+    },
+    basic: {
+      en: "Basic",
+      fr: "Basique",
+      es: "Básico"
+    },
+    silver: {
+      en: "Silver",
+      fr: "Argent",
+      es: "Plata"
+    },
+    gold: {
+      en: "Gold",
+      fr: "Or",
+      es: "Oro"
+    },
+    platinum: {
+      en: "Platinum",
+      fr: "Platine", 
+      es: "Platino"
+    },
+  },
+
+  // Legal related
+  [TranslationCategory.LEGAL]: {
+    termsOfService: {
+      en: "Terms of Service",
+      fr: "Conditions d'utilisation",
+      es: "Términos de servicio"
+    },
+    privacyPolicy: {
+      en: "Privacy Policy",
+      fr: "Politique de confidentialité",
+      es: "Política de privacidad"
+    },
+    byConnecting: {
+      en: "By connecting to our network, you agree to our",
+      fr: "En vous connectant à notre réseau, vous acceptez nos",
+      es: "Al conectarse a nuestra red, acepta nuestros"
+    },
+  },
+  
+  // Payment related
+  [TranslationCategory.PAYMENT]: {
+    buyWifiTime: {
+      en: "Buy WiFi Time",
+      fr: "Acheter du temps WiFi",
+      es: "Comprar tiempo WiFi"
+    },
+    choosePackageAndPay: {
+      en: "Choose a package and pay to get more WiFi time",
+      fr: "Choisissez un forfait et payez pour obtenir plus de temps WiFi",
+      es: "Elija un paquete y pague para obtener más tiempo WiFi"
+    },
+    mostPopular: {
+      en: "Most Popular",
+      fr: "Plus populaire",
+      es: "Más popular"
+    },
+    select: {
+      en: "Select",
+      fr: "Sélectionner",
+      es: "Seleccionar"
+    },
+    selectedPackage: {
+      en: "Selected Package",
+      fr: "Forfait sélectionné",
+      es: "Paquete seleccionado"
+    },
+    changePackage: {
+      en: "Change Package",
+      fr: "Changer de forfait",
+      es: "Cambiar paquete"
+    },
+    paymentMethod: {
+      en: "Payment Method",
+      fr: "Méthode de paiement",
+      es: "Método de pago"
+    },
+    mobileMoney: {
+      en: "Mobile Money",
+      fr: "Mobile Money",
+      es: "Dinero Móvil"
+    },
+    creditCard: {
+      en: "Credit Card",
+      fr: "Carte bancaire",
+      es: "Tarjeta de crédito"
+    },
+    selectProvider: {
+      en: "Select Provider",
+      fr: "Sélectionner l'opérateur",
+      es: "Seleccionar proveedor"
+    },
+    enterPhoneNumber: {
+      en: "Enter your phone number",
+      fr: "Entrez votre numéro de téléphone",
+      es: "Ingrese su número de teléfono"
+    },
+    cardNumber: {
+      en: "Card Number",
+      fr: "Numéro de carte",
+      es: "Número de tarjeta"
+    },
+    expiryDate: {
+      en: "Expiry Date",
+      fr: "Date d'expiration",
+      es: "Fecha de vencimiento"
+    },
+    nameOnCard: {
+      en: "Name on Card",
+      fr: "Nom sur la carte",
+      es: "Nombre en la tarjeta"
+    },
+    fullName: {
+      en: "First Name LAST NAME",
+      fr: "Prénom NOM",
+      es: "Nombre APELLIDO"
+    },
+    pay: {
+      en: "Pay",
+      fr: "Payer",
+      es: "Pagar"
+    },
+    processing: {
+      en: "Processing...",
+      fr: "Traitement en cours...",
+      es: "Procesando..."
+    },
+    selectPackage: {
+      en: "Please select a package",
+      fr: "Veuillez sélectionner un forfait",
+      es: "Por favor seleccione un paquete"
+    },
+    paymentSuccess: {
+      en: "Payment successful! Your WiFi time has been added.",
+      fr: "Paiement réussi! Votre temps WiFi a été ajouté.",
+      es: "¡Pago exitoso! Se ha añadido su tiempo WiFi."
+    },
+    securePayment: {
+      en: "Secure Payment",
+      fr: "Paiement sécurisé",
+      es: "Pago seguro"
+    },
+    paymentSecurityInfo: {
+      en: "All your payment information is secure. We do not store your card details.",
+      fr: "Toutes vos informations de paiement sont sécurisées. Nous ne stockons pas vos données de carte bancaire.",
+      es: "Toda su información de pago está segura. No almacenamos los datos de su tarjeta."
+    },
+  },
+  
+  // Advertisement related
+  [TranslationCategory.ADS]: {
+    advertisement: {
+      en: "Advertisement",
+      fr: "Publicité",
+      es: "Publicidad"
+    },
+    learnMore: {
+      en: "Learn More",
+      fr: "En savoir plus",
+      es: "Más información"
+    },
+    sponsoredContent: {
+      en: "Sponsored Content",
+      fr: "Contenu sponsorisé",
+      es: "Contenido patrocinado"
+    },
+    specialOffer: {
+      en: "Special Offer",
+      fr: "Offre spéciale",
+      es: "Oferta especial"
+    },
+  },
+  
+  // Support related
+  [TranslationCategory.SUPPORT]: {
+    whatsappSupport: {
+      en: "WhatsApp Support",
+      fr: "Support WhatsApp",
+      es: "Soporte WhatsApp"
+    },
+    contactSupport: {
+      en: "Contact Support",
+      fr: "Contacter le support",
+      es: "Contactar soporte"
+    },
+    whatsappDefaultMessage: {
+      en: "Hello, I need help with my WiFi connection.",
+      fr: "Bonjour, j'ai besoin d'aide avec ma connexion WiFi.",
+      es: "Hola, necesito ayuda con mi conexión WiFi."
+    },
   },
 };
 
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language, setLanguage] = useState<LanguageType>(localStorage.getItem('language') as LanguageType || 'fr');
+// Flatten all translations into a single object for easy access
+const flattenedTranslations: Translations = Object.values(translations).reduce((acc, categoryTranslations) => {
+  return { ...acc, ...categoryTranslations };
+}, {});
 
+type LanguageContextType = {
+  language: Language;
+  setLanguage: (language: Language) => void;
+  t: (key: string) => string;
+};
+
+// Create context
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+// Create provider
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Try to get language from localStorage or default to English
+  const [language, setLanguage] = useState<Language>(() => {
+    const savedLanguage = localStorage.getItem("wifi-portal-language");
+    return (savedLanguage as Language) || "fr"; // Default to French
+  });
+
+  // Save language preference to localStorage
   useEffect(() => {
-    localStorage.setItem('language', language);
+    localStorage.setItem("wifi-portal-language", language);
   }, [language]);
 
-  const t = useCallback((key: string) => {
-    return translations[language][key as keyof typeof translations[typeof language]] || key;
-  }, [language]);
+  // Translation function
+  const t = (key: string): string => {
+    if (flattenedTranslations[key]) {
+      return flattenedTranslations[key][language] || key;
+    }
+    return key; // Fallback to the key itself if translation not found
+  };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
@@ -591,6 +601,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   );
 };
 
+// Hook for easy access to the language context
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) {
