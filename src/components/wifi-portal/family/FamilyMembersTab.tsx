@@ -158,7 +158,10 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                       <Button 
                         variant="destructive" 
                         size="sm"
-                        onClick={() => handleRemoveMember(member.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleRemoveMember(member.id);
+                        }}
                       >
                         {t("remove")}
                       </Button>
