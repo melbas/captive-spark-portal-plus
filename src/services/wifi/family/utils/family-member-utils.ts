@@ -4,7 +4,7 @@ import { FamilyRole } from "@/components/wifi-portal/types";
 /**
  * Maps FamilyRole enum to database string role
  */
-export const mapRoleToDbRole = (role: FamilyRole): string => {
+export const mapRoleToDbRole = (role: FamilyRole): "owner" | "member" | "child" => {
   switch (role) {
     case FamilyRole.OWNER:
       return "owner";
