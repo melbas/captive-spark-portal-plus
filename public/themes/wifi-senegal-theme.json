@@ -1,0 +1,552 @@
+
+{
+  "meta": {
+    "name": "WiFi Sénégal Portal Theme",
+    "version": "1.0.0",
+    "description": "Thème complet du portail captif WiFi Sénégal avec parcours client gamifié",
+    "author": "WiFi Sénégal",
+    "created_at": "2025-01-06",
+    "compatible_versions": ["1.0.0+"],
+    "preview_url": "/themes/previews/wifi-senegal-preview.png",
+    "categories": ["telecom", "africa", "gamified", "family"],
+    "languages": ["fr", "en", "es"],
+    "features": [
+      "multi_language",
+      "gamification", 
+      "family_plans",
+      "referral_system",
+      "payment_integration",
+      "analytics",
+      "admin_dashboard"
+    ]
+  },
+  
+  "visual_config": {
+    "design_system": {
+      "colors": {
+        "primary": {
+          "DEFAULT": "hsl(248, 100%, 65%)",
+          "foreground": "hsl(0, 0%, 100%)",
+          "light": "hsl(248, 100%, 75%)",
+          "dark": "hsl(248, 100%, 55%)"
+        },
+        "secondary": {
+          "DEFAULT": "hsl(350, 100%, 65%)",
+          "foreground": "hsl(0, 0%, 100%)",
+          "light": "hsl(350, 100%, 75%)",
+          "dark": "hsl(350, 100%, 55%)"
+        },
+        "background": {
+          "light": "hsl(220, 14%, 97%)",
+          "dark": "hsl(0, 0%, 10%)"
+        },
+        "card": {
+          "light": "hsl(0, 0%, 100%)",
+          "dark": "hsl(0, 0%, 10%)"
+        },
+        "muted": {
+          "light": "hsl(220, 14%, 97%)",
+          "dark": "hsl(0, 0%, 20%)"
+        },
+        "accent": {
+          "light": "hsl(248, 100%, 95%)",
+          "dark": "hsl(248, 100%, 20%)"
+        }
+      },
+      "typography": {
+        "font_family": {
+          "primary": "Montserrat, sans-serif",
+          "secondary": "Inter, sans-serif"
+        },
+        "font_weights": {
+          "light": 300,
+          "normal": 400,
+          "medium": 500,
+          "semibold": 600,
+          "bold": 700
+        },
+        "font_sizes": {
+          "xs": "0.75rem",
+          "sm": "0.875rem", 
+          "base": "1rem",
+          "lg": "1.125rem",
+          "xl": "1.25rem",
+          "2xl": "1.5rem",
+          "3xl": "1.875rem",
+          "4xl": "2.25rem"
+        }
+      },
+      "spacing": {
+        "radius": "0.75rem",
+        "container_padding": "2rem",
+        "card_padding": "1.5rem",
+        "button_padding": "0.75rem 1.5rem"
+      },
+      "animations": {
+        "fade_in": "fade-in 0.5s ease-out",
+        "slide_in": "slide-in 0.5s ease-out", 
+        "hover_scale": "scale-105",
+        "pulse_slow": "pulse-slow 3s ease-in-out infinite"
+      }
+    },
+    
+    "layout": {
+      "header": {
+        "show_logo": true,
+        "show_language_selector": true,
+        "show_theme_toggle": true,
+        "gradient_background": true,
+        "background_class": "gradient-header-bg"
+      },
+      "main": {
+        "container_class": "container mx-auto px-4 py-8 fade-in max-w-[1200px]",
+        "background_class": "gradient-bg min-h-screen",
+        "card_style": "glass-card"
+      },
+      "footer": {
+        "show_copyright": true,
+        "copyright_text": "© 2025 WIFI Senegal. Tous droits réservés",
+        "links": []
+      }
+    },
+    
+    "components": {
+      "buttons": {
+        "primary": {
+          "class": "btn-primary",
+          "style": "bg-primary text-primary-foreground hover:bg-primary/90"
+        },
+        "secondary": {
+          "class": "btn-secondary", 
+          "style": "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+        },
+        "outline": {
+          "class": "btn-outline",
+          "style": "border border-input bg-background hover:bg-accent"
+        }
+      },
+      "cards": {
+        "default": {
+          "class": "wifi-card",
+          "style": "rounded-xl border bg-card p-6 shadow-md hover:shadow-lg"
+        },
+        "glass": {
+          "class": "glass-card",
+          "style": "backdrop-blur-md bg-white/50 dark:bg-black/30 border border-white/20"
+        }
+      },
+      "inputs": {
+        "default": {
+          "class": "auth-input",
+          "style": "w-full rounded-lg border border-input bg-background px-3 py-2"
+        }
+      }
+    }
+  },
+  
+  "user_journey": {
+    "steps": [
+      {
+        "id": "auth",
+        "name": "Authentification", 
+        "type": "authentication",
+        "required": true,
+        "options": [
+          {
+            "method": "sms",
+            "enabled": true,
+            "config": {
+              "verification_required": true,
+              "max_attempts": 3,
+              "timeout_seconds": 300
+            }
+          },
+          {
+            "method": "email", 
+            "enabled": true,
+            "config": {
+              "verification_required": false
+            }
+          },
+          {
+            "method": "facebook",
+            "enabled": true,
+            "config": {}
+          },
+          {
+            "method": "referral",
+            "enabled": true,
+            "config": {
+              "bonus_minutes": 30
+            }
+          }
+        ]
+      },
+      {
+        "id": "engagement",
+        "name": "Engagement",
+        "type": "content_interaction", 
+        "required": true,
+        "options": [
+          {
+            "type": "video",
+            "probability": 0.5,
+            "config": {
+              "min_watch_time_percentage": 80,
+              "reward_minutes": 15
+            }
+          },
+          {
+            "type": "quiz",
+            "probability": 0.5,
+            "config": {
+              "min_correct_answers": 2,
+              "reward_minutes": 15
+            }
+          }
+        ]
+      },
+      {
+        "id": "success", 
+        "name": "Accès accordé",
+        "type": "access_granted",
+        "config": {
+          "default_duration_minutes": 30,
+          "show_additional_options": true
+        }
+      }
+    ],
+    
+    "additional_features": [
+      {
+        "id": "extend_time",
+        "name": "Prolonger le temps",
+        "type": "video_engagement",
+        "reward_minutes": 15,
+        "icon": "Timer"
+      },
+      {
+        "id": "mini_games",
+        "name": "Mini-jeux", 
+        "type": "gamification",
+        "reward_minutes": 10,
+        "reward_points": 50,
+        "icon": "Trophy"
+      },
+      {
+        "id": "rewards",
+        "name": "Récompenses",
+        "type": "loyalty_program", 
+        "icon": "Award"
+      },
+      {
+        "id": "referral",
+        "name": "Parrainage",
+        "type": "referral_system",
+        "reward_minutes": 60,
+        "icon": "Users"
+      },
+      {
+        "id": "payment",
+        "name": "Acheter du temps",
+        "type": "payment",
+        "icon": "CreditCard"
+      },
+      {
+        "id": "family_management",
+        "name": "Gestion familiale",
+        "type": "family_plan",
+        "icon": "Home"
+      }
+    ]
+  },
+  
+  "gamification": {
+    "points_system": {
+      "enabled": true,
+      "actions": {
+        "video_completion": 25,
+        "quiz_completion": 30,
+        "game_completion": 50,
+        "referral_success": 100,
+        "daily_login": 10
+      }
+    },
+    "levels": [
+      {
+        "name": "BASIC",
+        "min_points": 0,
+        "color": "#6B7280",
+        "benefits": []
+      },
+      {
+        "name": "BRONZE", 
+        "min_points": 100,
+        "color": "#CD7F32",
+        "benefits": ["5% bonus time"]
+      },
+      {
+        "name": "SILVER",
+        "min_points": 500,
+        "color": "#C0C0C0", 
+        "benefits": ["10% bonus time", "priority support"]
+      },
+      {
+        "name": "GOLD",
+        "min_points": 1500,
+        "color": "#FFD700",
+        "benefits": ["20% bonus time", "exclusive games", "family discounts"]
+      },
+      {
+        "name": "PLATINUM",
+        "min_points": 5000,
+        "color": "#E5E4E2",
+        "benefits": ["unlimited time extensions", "premium support", "special rewards"]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "extra_time_30",
+        "name": "30 minutes supplémentaires",
+        "type": "wifi_time",
+        "value": "30",
+        "points_cost": 100
+      },
+      {
+        "id": "extra_time_60",
+        "name": "1 heure supplémentaire", 
+        "type": "wifi_time",
+        "value": "60",
+        "points_cost": 180
+      },
+      {
+        "id": "premium_day",
+        "name": "Accès premium 24h",
+        "type": "premium_access",
+        "value": "1440",
+        "points_cost": 500
+      }
+    ]
+  },
+  
+  "features_config": {
+    "family_management": {
+      "enabled": true,
+      "max_members": 8,
+      "roles": ["owner", "member", "child"],
+      "permissions": {
+        "owner": ["invite", "remove", "manage_settings"],
+        "member": ["view_usage", "extend_time"],
+        "child": ["view_basic_info"]
+      }
+    },
+    "referral_system": {
+      "enabled": true,
+      "referrer_reward_minutes": 60,
+      "referred_reward_minutes": 30,
+      "max_referrals_per_user": 10
+    },
+    "payment_integration": {
+      "enabled": true,
+      "providers": ["mobile_money", "credit_card"],
+      "packages": [
+        {
+          "id": "basic_1h",
+          "name": "1 Heure",
+          "minutes": 60,
+          "price": 500,
+          "currency": "XOF"
+        },
+        {
+          "id": "standard_4h", 
+          "name": "4 Heures",
+          "minutes": 240,
+          "price": 1500,
+          "currency": "XOF",
+          "popular": true
+        },
+        {
+          "id": "premium_24h",
+          "name": "24 Heures",
+          "minutes": 1440,
+          "price": 3000,
+          "currency": "XOF"
+        }
+      ]
+    },
+    "analytics": {
+      "enabled": true,
+      "track_events": [
+        "user_authentication",
+        "engagement_completion", 
+        "game_played",
+        "payment_completed",
+        "referral_created"
+      ]
+    }
+  },
+  
+  "languages": {
+    "default": "fr",
+    "available": ["fr", "en", "es"],
+    "translations": {
+      "fr": {
+        "portal": "Portail",
+        "connectToWifi": "Connectez-vous à notre réseau WiFi haut débit",
+        "authRequired": "Authentification requise",
+        "phone": "Numéro de téléphone",
+        "email": "Adresse e-mail",
+        "continue": "Continuer",
+        "watchVideo": "Regarder vidéo",
+        "playGame": "Jouer",
+        "rewards": "Récompenses",
+        "profile": "Profil",
+        "buyTime": "Acheter du temps",
+        "familyPlan": "Plan familial",
+        "minutes": "minutes",
+        "points": "points",
+        "loading": "Chargement...",
+        "welcome": "Bienvenue",
+        "accessGranted": "Accès accordé",
+        "remaining": "Restant"
+      },
+      "en": {
+        "portal": "Portal", 
+        "connectToWifi": "Connect to our high-speed WiFi network",
+        "authRequired": "Authentication required",
+        "phone": "Phone number",
+        "email": "Email address", 
+        "continue": "Continue",
+        "watchVideo": "Watch video",
+        "playGame": "Play game",
+        "rewards": "Rewards",
+        "profile": "Profile",
+        "buyTime": "Buy time",
+        "familyPlan": "Family plan",
+        "minutes": "minutes",
+        "points": "points",
+        "loading": "Loading...",
+        "welcome": "Welcome",
+        "accessGranted": "Access granted",
+        "remaining": "Remaining"
+      },
+      "es": {
+        "portal": "Portal",
+        "connectToWifi": "Conéctate a nuestra red WiFi de alta velocidad",
+        "authRequired": "Autenticación requerida",
+        "phone": "Número de teléfono",
+        "email": "Dirección de correo",
+        "continue": "Continuar", 
+        "watchVideo": "Ver vídeo",
+        "playGame": "Jugar",
+        "rewards": "Recompensas",
+        "profile": "Perfil",
+        "buyTime": "Comprar tiempo",
+        "familyPlan": "Plan familiar",
+        "minutes": "minutos",
+        "points": "puntos",
+        "loading": "Cargando...",
+        "welcome": "Bienvenido",
+        "accessGranted": "Acceso concedido",
+        "remaining": "Restante"
+      }
+    }
+  },
+  
+  "technical_config": {
+    "dependencies": {
+      "required": [
+        "react@^18.3.1",
+        "typescript@^5.0.0",
+        "tailwindcss@^3.4.0",
+        "@radix-ui/react-*@^1.0.0",
+        "@tanstack/react-query@^5.0.0",
+        "lucide-react@^0.400.0",
+        "sonner@^1.5.0"
+      ],
+      "optional": [
+        "@supabase/supabase-js@^2.0.0",
+        "recharts@^2.12.0",
+        "react-router-dom@^6.26.0"
+      ]
+    },
+    "database_schema": {
+      "required_tables": [
+        "wifi_users",
+        "wifi_sessions", 
+        "portal_statistics",
+        "rewards",
+        "games",
+        "referrals",
+        "transactions"
+      ],
+      "optional_tables": [
+        "quiz_questions",
+        "quiz_options",
+        "ad_videos",
+        "loyalty_levels"
+      ]
+    },
+    "apis": {
+      "authentication": {
+        "sms_provider": "required",
+        "email_provider": "optional",
+        "social_providers": "optional"
+      },
+      "payment": {
+        "mobile_money": "required_for_senegal",
+        "stripe": "optional"
+      },
+      "analytics": {
+        "google_analytics": "optional",
+        "custom_tracking": "recommended"
+      }
+    },
+    "hooks": [
+      "useWifiPortal",
+      "useLanguage", 
+      "useTheme"
+    ],
+    "services": [
+      "wifi-portal-service",
+      "analytics-service",
+      "sms-service"
+    ],
+    "components": [
+      "AuthBox",
+      "VideoForWifi",
+      "MarketingQuiz", 
+      "AccessGranted",
+      "UserDashboard",
+      "RewardSystem",
+      "FamilyManagement",
+      "PaymentPortal"
+    ]
+  },
+  
+  "customization_options": {
+    "branding": {
+      "logo_url": "configurable",
+      "company_name": "configurable",
+      "primary_color": "configurable",
+      "secondary_color": "configurable"
+    },
+    "content": {
+      "welcome_message": "configurable",
+      "success_message": "configurable", 
+      "terms_url": "configurable",
+      "privacy_url": "configurable"
+    },
+    "features": {
+      "enable_games": "configurable",
+      "enable_family_plans": "configurable",
+      "enable_referrals": "configurable",
+      "enable_payments": "configurable"
+    },
+    "limits": {
+      "default_session_minutes": "configurable",
+      "max_daily_extensions": "configurable",
+      "points_per_action": "configurable"
+    }
+  }
+}
