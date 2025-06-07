@@ -37,4 +37,5 @@ export const familyService = {
   logFamilyChange: familyChangeService.logFamilyChange,
   getFamilyChangeHistory: familyChangeService.getFamilyChangeHistory,
   resetMonthlyChangesIfNeeded: familyChangeService.resetMonthlyChangesIfNeeded,
+  getUserChangeStats: familyChangeService.getUserChangeStats,
 };

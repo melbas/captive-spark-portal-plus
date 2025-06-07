@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,11 +31,33 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
 }) => {
   const { t } = useLanguage();
   const [showInviteDialog, setShowInviteDialog] = useState<boolean>(false);
+  const [changeStats, setChangeStats] = useState({
+    changesThisMonth: 0,
+    maxChanges: 3,
+    remainingChanges: 3
+  });
   
-  // Mock data for changes this month - in production this would come from the family profile
-  const changesThisMonth = 1;
-  const maxChangesPerMonth = 3;
-  const remainingChanges = maxChangesPerMonth - changesThisMonth;
+  // Load change statistics
+  useEffect(() => {
+    const loadChangeStats = async () => {
+      try {
+        // In a real app, you'd get the current user ID from auth context
+        const currentUserId = "mock-user-id"; // Replace with actual user ID
+        const stats = await familyService.getUserChangeStats?.(currentUserId);
+        if (stats) {
+          setChangeStats(stats);
+        }
+      } catch (error) {
+        console.error("Error loading change stats:", error);
+      }
+    };
+    
+    if (isOwner) {
+      loadChangeStats();
+    }
+  }, [isOwner]);
+  
+  const { changesThisMonth, maxChanges, remainingChanges } = changeStats;
   
   const handleToggleMemberStatus = async (memberId: string) => {
     try {
@@ -65,7 +87,7 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
   const handleRemoveMember = async (memberId: string) => {
     // Check if user has remaining changes
     if (remainingChanges <= 0) {
-      toast.error(`Limite atteinte: ${changesThisMonth}/${maxChangesPerMonth} changements ce mois`);
+      toast.error(`Limite atteinte: ${changesThisMonth}/${maxChanges} changements ce mois`);
       return;
     }
     
@@ -75,6 +97,13 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
         if (result) {
           toast.success(t("memberRemoved"));
           await onUpdate();
+          
+          // Refresh change stats
+          const currentUserId = "mock-user-id"; // Replace with actual user ID
+          const newStats = await familyService.getUserChangeStats?.(currentUserId);
+          if (newStats) {
+            setChangeStats(newStats);
+          }
           
           // Log the change as a monthly change
           console.log("Member removed:", { 
@@ -96,7 +125,7 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
   const handleReplaceMember = async (memberId: string) => {
     // Check if user has remaining changes
     if (remainingChanges <= 0) {
-      toast.error(`Limite atteinte: ${changesThisMonth}/${maxChangesPerMonth} changements ce mois`);
+      toast.error(`Limite atteinte: ${changesThisMonth}/${maxChanges} changements ce mois`);
       return;
     }
     
@@ -125,7 +154,7 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
           <div className="flex flex-col">
             <h3 className="font-medium">{t("familyMembers")}</h3>
             <p className="text-sm text-muted-foreground">
-              {remainingChanges}/{maxChangesPerMonth} changements restants ce mois
+              {remainingChanges}/{maxChanges} changements restants ce mois
             </p>
           </div>
           <Button

@@ -16,8 +16,21 @@ export interface FamilyChangeValidation {
   errorMessage?: string;
 }
 
+// Mock storage for family changes (in production this would be in database)
+const familyChangesStorage = new Map<string, {
+  changesThisMonth: number;
+  lastChangeReset: string;
+  changeHistory: Array<{
+    changeType: string;
+    timestamp: string;
+    userId: string;
+    familyId: string;
+  }>;
+}>();
+
 /**
  * Service for managing family change tracking and limits
+ * Currently using mock data - will be updated to use database when schema is ready
  */
 export const familyChangeService = {
   /**
@@ -28,17 +41,15 @@ export const familyChangeService = {
       // Reset monthly counter if needed
       await this.resetMonthlyChangesIfNeeded(userId);
       
-      // Get current user data
-      const { data: userData, error } = await supabase
-        .from('wifi_users')
-        .select('changes_this_month, last_change_reset')
-        .eq('id', userId)
-        .single();
-      
-      if (error) throw error;
+      // Get current user data from mock storage
+      const userData = familyChangesStorage.get(userId) || {
+        changesThisMonth: 0,
+        lastChangeReset: new Date().toISOString(),
+        changeHistory: []
+      };
       
       const maxChanges = 3;
-      const changesThisMonth = userData?.changes_this_month || 0;
+      const changesThisMonth = userData.changesThisMonth || 0;
       const remainingChanges = maxChanges - changesThisMonth;
       
       // Suspension and reactivation don't count as changes
@@ -88,29 +99,24 @@ export const familyChangeService = {
       const countsTowardLimit = ['add', 'remove', 'replace'].includes(changeData.changeType);
       const newCount = countsTowardLimit ? validation.changesThisMonth + 1 : validation.changesThisMonth;
       
-      // Update user's change counter
-      if (countsTowardLimit) {
-        const { error: updateError } = await supabase
-          .from('wifi_users')
-          .update({ changes_this_month: newCount })
-          .eq('id', changeData.userId);
-        
-        if (updateError) throw updateError;
-      }
+      // Update mock storage
+      const userData = familyChangesStorage.get(changeData.userId) || {
+        changesThisMonth: 0,
+        lastChangeReset: new Date().toISOString(),
+        changeHistory: []
+      };
       
-      // Log the change in the audit table
-      const { error: logError } = await supabase
-        .from('family_member_changes')
-        .insert({
-          family_id: changeData.familyId,
-          user_id: changeData.userId,
-          change_type: changeData.changeType,
-          old_member_id: changeData.oldMemberId,
-          new_member_id: changeData.newMemberId,
-          changes_count_after: newCount
-        });
+      userData.changesThisMonth = newCount;
+      userData.changeHistory.push({
+        changeType: changeData.changeType,
+        timestamp: new Date().toISOString(),
+        userId: changeData.userId,
+        familyId: changeData.familyId
+      });
       
-      if (logError) throw logError;
+      familyChangesStorage.set(changeData.userId, userData);
+      
+      console.log(`Family change logged: ${changeData.changeType} for user ${changeData.userId}, new count: ${newCount}`);
       
       return true;
     } catch (error) {
@@ -124,30 +130,19 @@ export const familyChangeService = {
    */
   async resetMonthlyChangesIfNeeded(userId: string): Promise<void> {
     try {
-      const { data: userData, error } = await supabase
-        .from('wifi_users')
-        .select('last_change_reset')
-        .eq('id', userId)
-        .single();
-      
-      if (error || !userData) return;
+      const userData = familyChangesStorage.get(userId);
+      if (!userData) return;
       
       const now = new Date();
-      const lastReset = new Date(userData.last_change_reset);
+      const lastReset = new Date(userData.lastChangeReset);
       
       // Check if we're in a different month
       if (now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear()) {
-        const { error: updateError } = await supabase
-          .from('wifi_users')
-          .update({ 
-            changes_this_month: 0,
-            last_change_reset: now.toISOString()
-          })
-          .eq('id', userId);
+        userData.changesThisMonth = 0;
+        userData.lastChangeReset = now.toISOString();
+        familyChangesStorage.set(userId, userData);
         
-        if (updateError) {
-          console.error('Error resetting monthly changes:', updateError);
-        }
+        console.log(`Monthly changes reset for user ${userId}`);
       }
     } catch (error) {
       console.error('Error checking monthly reset:', error);
@@ -159,17 +154,44 @@ export const familyChangeService = {
    */
   async getFamilyChangeHistory(familyId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
-        .from('family_member_changes')
-        .select('*')
-        .eq('family_id', familyId)
-        .order('created_at', { ascending: false });
+      const allChanges: any[] = [];
       
-      if (error) throw error;
-      return data || [];
+      // Collect changes from all users in the family
+      for (const [userId, userData] of familyChangesStorage.entries()) {
+        const familyChanges = userData.changeHistory.filter(change => change.familyId === familyId);
+        allChanges.push(...familyChanges.map(change => ({
+          ...change,
+          id: `${userId}-${change.timestamp}`,
+          user_id: userId,
+          family_id: familyId,
+          change_type: change.changeType,
+          created_at: change.timestamp
+        })));
+      }
+      
+      return allChanges.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } catch (error) {
       console.error('Error getting family change history:', error);
       return [];
     }
+  },
+
+  /**
+   * Get current user's monthly change stats
+   */
+  async getUserChangeStats(userId: string): Promise<{ changesThisMonth: number; maxChanges: number; remainingChanges: number }> {
+    await this.resetMonthlyChangesIfNeeded(userId);
+    
+    const userData = familyChangesStorage.get(userId) || {
+      changesThisMonth: 0,
+      lastChangeReset: new Date().toISOString(),
+      changeHistory: []
+    };
+    
+    const maxChanges = 3;
+    const changesThisMonth = userData.changesThisMonth;
+    const remainingChanges = maxChanges - changesThisMonth;
+    
+    return { changesThisMonth, maxChanges, remainingChanges };
   }
 };
