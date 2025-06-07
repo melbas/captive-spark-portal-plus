@@ -17,7 +17,7 @@ const PendingInvitesAlert: React.FC<PendingInvitesAlertProps> = ({ pendingInvite
     <Alert className="mt-4">
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription>
-        {t("pendingInvitations", { count: pendingInvites })}
+        {pendingInvites} {t("pendingInvitations")}
       </AlertDescription>
     </Alert>
   );
