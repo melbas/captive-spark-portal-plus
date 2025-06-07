@@ -32,6 +32,11 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
   const { t } = useLanguage();
   const [showInviteDialog, setShowInviteDialog] = useState<boolean>(false);
   
+  // Mock data for changes this month - in production this would come from the family profile
+  const changesThisMonth = 1;
+  const maxChangesPerMonth = 3;
+  const remainingChanges = maxChangesPerMonth - changesThisMonth;
+  
   const handleToggleMemberStatus = async (memberId: string) => {
     try {
       // Find the current member's status to toggle it
@@ -42,8 +47,12 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
       const result = await familyService.toggleMemberStatus(memberId, newStatus);
       
       if (result) {
+        const actionType = newStatus ? "reactivated" : "suspended";
         toast.success(newStatus ? t("memberReactivated") : t("memberSuspended"));
         await onUpdate();
+        
+        // Log the change (suspension/reactivation doesn't count as a monthly change)
+        console.log(`Member ${actionType}:`, { memberId, familyId, actionType });
       } else {
         throw new Error("Failed to update member status");
       }
@@ -54,12 +63,26 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
   };
   
   const handleRemoveMember = async (memberId: string) => {
+    // Check if user has remaining changes
+    if (remainingChanges <= 0) {
+      toast.error(`Limite atteinte: ${changesThisMonth}/${maxChangesPerMonth} changements ce mois`);
+      return;
+    }
+    
     if (confirm(t("confirmRemoveMember"))) {
       try {
         const result = await familyService.removeFamilyMember(memberId);
         if (result) {
           toast.success(t("memberRemoved"));
           await onUpdate();
+          
+          // Log the change as a monthly change
+          console.log("Member removed:", { 
+            memberId, 
+            familyId, 
+            changeType: "remove",
+            changesThisMonth: changesThisMonth + 1 
+          });
         } else {
           throw new Error("Failed to remove member");
         }
@@ -68,6 +91,18 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
         toast.error(t("errorRemovingMember"));
       }
     }
+  };
+
+  const handleReplaceMember = async (memberId: string) => {
+    // Check if user has remaining changes
+    if (remainingChanges <= 0) {
+      toast.error(`Limite atteinte: ${changesThisMonth}/${maxChangesPerMonth} changements ce mois`);
+      return;
+    }
+    
+    // This would open a dialog to select a new member
+    console.log("Replace member:", { memberId, remainingChanges });
+    toast.info("Fonctionnalité de remplacement à implémenter");
   };
 
   const getRoleBadge = (role: FamilyRole) => {
@@ -87,11 +122,17 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
     <div className="space-y-4">
       {isOwner && (
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-medium">{t("familyMembers")}</h3>
+          <div className="flex flex-col">
+            <h3 className="font-medium">{t("familyMembers")}</h3>
+            <p className="text-sm text-muted-foreground">
+              {remainingChanges}/{maxChangesPerMonth} changements restants ce mois
+            </p>
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowInviteDialog(true)}
+            disabled={remainingChanges <= 0}
           >
             <UserPlus className="h-4 w-4 mr-2" />
             {t("addMember")}
@@ -103,6 +144,15 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
             onMemberAdded={onUpdate}
           />
         </div>
+      )}
+      
+      {remainingChanges <= 0 && isOwner && (
+        <Alert className="border-orange-200 bg-orange-50">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            Limite de changements atteinte pour ce mois. Les changements se réinitialiseront le mois prochain.
+          </AlertDescription>
+        </Alert>
       )}
       
       {familyMembers.length === 0 ? (
@@ -139,11 +189,17 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                 </TableCell>
                 <TableCell>{getRoleBadge(member.role)}</TableCell>
                 <TableCell>
-                  {member.active ? (
-                    <Badge variant="outline" className="bg-green-100">{t("active")}</Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-red-100">{t("suspended")}</Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {member.active ? (
+                      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                        {t("active")}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
+                        SUSPENDU
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 {isOwner && member.role !== FamilyRole.OWNER && (
                   <TableCell className="text-right">
@@ -153,22 +209,32 @@ const FamilyMembersTab: React.FC<FamilyMembersTabProps> = ({
                         size="sm"
                         onClick={() => handleToggleMemberStatus(member.id)}
                       >
-                        {member.active ? t("suspend") : t("activate")}
+                        {member.active ? "Suspendre" : "Réactiver"}
                       </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleRemoveMember(member.id);
-                        }}
-                      >
-                        {t("remove")}
-                      </Button>
+                      {member.active && (
+                        <>
+                          <Button 
+                            variant="secondary" 
+                            size="sm"
+                            onClick={() => handleReplaceMember(member.id)}
+                            disabled={remainingChanges <= 0}
+                          >
+                            Remplacer
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => handleRemoveMember(member.id)}
+                            disabled={remainingChanges <= 0}
+                          >
+                            {t("remove")}
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 )}
-                {(isOwner && member.role === FamilyRole.OWNER) && (
+                {isOwner && member.role === FamilyRole.OWNER && (
                   <TableCell className="text-right">
                     <span className="text-xs text-muted-foreground">{t("owner")}</span>
                   </TableCell>

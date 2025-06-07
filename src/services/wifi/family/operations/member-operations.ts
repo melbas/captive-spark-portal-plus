@@ -5,6 +5,7 @@ import { mockFamilyMembers } from "../data/mock-family-members";
 import { mapRoleToDbRole, generateMemberId, validateMemberAddition } from "../utils/family-member-utils";
 import { familyProfileService } from "../family-profile-service";
 import { familyActivityService } from "../family-activity-service";
+import { familyChangeService } from "../family-change-service";
 import { AddMemberData } from "../types/family-member-types";
 
 /**
@@ -41,13 +42,19 @@ export const memberOperations = {
     role: FamilyRole = FamilyRole.MEMBER
   ): Promise<FamilyMember | null> {
     try {
+      // Validate change limits
+      const validation = await familyChangeService.validateFamilyChange(userData.id, 'add');
+      if (!validation.canChange) {
+        throw new Error(validation.errorMessage);
+      }
+      
       // Check if the family exists and has space
       const family = await familyProfileService.getFamilyProfile(familyId);
       if (!family) throw new Error("Family not found");
       
       // Validate member addition
-      const validation = validateMemberAddition(mockFamilyMembers, familyId, userData.id, family.max_members);
-      if (!validation.valid) throw new Error(validation.error);
+      const memberValidation = validateMemberAddition(mockFamilyMembers, familyId, userData.id, family.max_members);
+      if (!memberValidation.valid) throw new Error(memberValidation.error);
       
       const memberId = generateMemberId();
       const now = new Date().toISOString();
@@ -76,6 +83,14 @@ export const memberOperations = {
       // For development:
       mockFamilyMembers.push(newMember);
       
+      // Log the change
+      await familyChangeService.logFamilyChange({
+        familyId,
+        userId: userData.id,
+        changeType: 'add',
+        newMemberId: memberId
+      });
+      
       // Update member count
       await familyProfileService.updateFamilyProfile(familyId, {
         member_count: family.member_count + 1
@@ -98,10 +113,31 @@ export const memberOperations = {
   },
 
   /**
-   * Toggle a member's active status
+   * Toggle a member's active status (suspend/reactivate)
    */
   async toggleMemberStatus(memberId: string, active: boolean): Promise<FamilyMember | null> {
     try {
+      // Find the member first
+      const memberIndex = mockFamilyMembers.findIndex(m => m.id === memberId);
+      if (memberIndex === -1) return null;
+      
+      const member = mockFamilyMembers[memberIndex];
+      
+      // Validate change (suspension/reactivation doesn't count toward monthly limit)
+      const changeType = active ? 'reactivate' : 'suspend';
+      const validation = await familyChangeService.validateFamilyChange(member.user_id, changeType);
+      
+      if (!validation.canChange && changeType === 'reactivate') {
+        // Check if there are available slots for reactivation
+        const activeMembers = mockFamilyMembers.filter(m => 
+          m.family_id === member.family_id && m.active
+        ).length;
+        
+        if (activeMembers >= 5) {
+          throw new Error("Impossible de réactiver: limite de 5 membres actifs atteinte");
+        }
+      }
+      
       // In production:
       // const { data, error } = await supabase
       //   .from('family_members')
@@ -112,22 +148,26 @@ export const memberOperations = {
       // if (error) throw error;
       
       // For development:
-      const index = mockFamilyMembers.findIndex(m => m.id === memberId);
-      if (index === -1) return null;
+      mockFamilyMembers[memberIndex] = { ...mockFamilyMembers[memberIndex], active };
       
-      mockFamilyMembers[index] = { ...mockFamilyMembers[index], active };
+      // Log the change (doesn't count toward monthly limit)
+      await familyChangeService.logFamilyChange({
+        familyId: member.family_id,
+        userId: member.user_id,
+        changeType,
+        oldMemberId: memberId
+      });
       
       // Log activity
-      const member = mockFamilyMembers[index];
       await familyActivityService.logFamilyActivity(
         member.family_id,
         member.user_id,
         member.name,
-        active ? 'reactivate_member' : 'suspend_member',
+        changeType === 'reactivate' ? 'reactivate_member' : 'suspend_member',
         { memberId }
       );
       
-      return mockFamilyMembers[index];
+      return mockFamilyMembers[memberIndex];
     } catch (error) {
       console.error(`Failed to toggle status for member ${memberId}:`, error);
       return null;
@@ -139,7 +179,7 @@ export const memberOperations = {
    */
   async removeFamilyMember(memberId: string): Promise<boolean> {
     try {
-      // For development:
+      // Find the member
       const memberIndex = mockFamilyMembers.findIndex(m => m.id === memberId);
       if (memberIndex === -1) return false;
       
@@ -151,9 +191,23 @@ export const memberOperations = {
         throw new Error("Cannot remove the family owner");
       }
       
+      // Validate change limits
+      const validation = await familyChangeService.validateFamilyChange(member.user_id, 'remove');
+      if (!validation.canChange) {
+        throw new Error(validation.errorMessage);
+      }
+      
       // Get the family
       const family = await familyProfileService.getFamilyProfile(familyId);
       if (!family) throw new Error("Family not found");
+      
+      // Log the change
+      await familyChangeService.logFamilyChange({
+        familyId,
+        userId: member.user_id,
+        changeType: 'remove',
+        oldMemberId: memberId
+      });
       
       // Log activity
       await familyActivityService.logFamilyActivity(

@@ -1,4 +1,3 @@
-
 import { GameCategory } from "./types/game-categories";
 
 export enum Step {
@@ -78,7 +77,8 @@ export interface FamilyMemberData {
   phone?: string;
   role: FamilyRole;
   active: boolean;
-  lastConnection?: string;
+  added_at?: string;
+  suspended?: boolean; // New field to track suspension state
 }
 
 export interface UserData {

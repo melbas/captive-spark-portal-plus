@@ -3,6 +3,7 @@ import { familyProfileService } from './family-profile-service';
 import { familyMemberService } from './family-member-service';
 import { familyActivityService } from './family-activity-service';
 import { familyInviteService } from './family-invite-service';
+import { familyChangeService } from './family-change-service';
 import { FamilyRole } from '@/components/wifi-portal/types';
 
 /**
@@ -30,4 +31,10 @@ export const familyService = {
   // Re-export from invite service
   createFamilyInvite: familyInviteService.createFamilyInvite,
   getPendingInvites: familyInviteService.getPendingInvites,
+  
+  // Re-export from change service
+  validateFamilyChange: familyChangeService.validateFamilyChange,
+  logFamilyChange: familyChangeService.logFamilyChange,
+  getFamilyChangeHistory: familyChangeService.getFamilyChangeHistory,
+  resetMonthlyChangesIfNeeded: familyChangeService.resetMonthlyChangesIfNeeded,
 };
