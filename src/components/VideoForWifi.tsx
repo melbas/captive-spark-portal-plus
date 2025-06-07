@@ -14,15 +14,20 @@ const VideoForWifi: React.FC<VideoForWifiProps> = ({
   onComplete, 
   videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4" // Default demo video
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Changed to true for autoplay
   const [progress, setProgress] = useState(0);
   const [completed, setCompleted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlayClick = () => {
     if (videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
     }
   };
 
@@ -47,6 +52,14 @@ const VideoForWifi: React.FC<VideoForWifiProps> = ({
     }
   };
 
+  const handleVideoPlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handleVideoPause = () => {
+    setIsPlaying(false);
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto glass-card animate-fade-in">
       <CardHeader>
@@ -57,23 +70,17 @@ const VideoForWifi: React.FC<VideoForWifiProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative rounded-lg overflow-hidden bg-black aspect-video">
-          {!isPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="rounded-full w-16 h-16 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={handlePlayClick}
-              >
-                <Play className="h-8 w-8" />
-              </Button>
-            </div>
-          )}
           <video 
             ref={videoRef}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleVideoEnd}
+            onPlay={handleVideoPlay}
+            onPause={handleVideoPause}
             className="w-full h-full"
+            autoPlay
+            muted
+            playsInline
+            controls
           >
             <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
