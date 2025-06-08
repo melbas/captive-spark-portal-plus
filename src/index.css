@@ -147,41 +147,49 @@
   }
   
   .auth-input {
-    @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 focus-visible:scale-[1.02];
   }
   
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95;
   }
 
   .btn-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95;
   }
   
-  /* Animation classes */
+  /* Enhanced Animation classes */
   .fade-in {
-    @apply opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards];
+    @apply opacity-0 animate-[fadeIn_0.6s_ease-out_forwards];
   }
   
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    @apply transition-transform duration-200 hover:scale-105 active:scale-95;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .stagger-fade {
+    @apply opacity-0 translate-y-4 animate-[staggerFade_0.5s_ease-out_forwards];
   }
   
   /* Frandroid-inspired elements */
   .frandroid-link {
-    @apply text-primary hover:underline hover:text-secondary transition-colors;
+    @apply text-primary hover:underline hover:text-secondary transition-all duration-200 hover:scale-105;
   }
   
   .frandroid-nav-item {
-    @apply relative px-3 py-2 text-white font-medium hover:text-white/80 transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-secondary after:scale-x-0 after:origin-bottom-right after:transition-transform hover:after:scale-x-100 hover:after:origin-bottom-left;
+    @apply relative px-3 py-2 text-white font-medium hover:text-white/80 transition-all duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-secondary after:scale-x-0 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
   }
   
   .wifi-card {
-    @apply rounded-xl border bg-card p-6 shadow-md transition-all hover:shadow-lg;
+    @apply rounded-xl border bg-card p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1;
   }
   
   .wifi-heading {
@@ -189,11 +197,108 @@
   }
   
   .frandroid-badge {
-    @apply inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground;
+    @apply inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground transition-all duration-200 hover:scale-105;
+  }
+
+  /* Interactive elements */
+  .interactive-card {
+    @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:-translate-y-1 cursor-pointer;
+  }
+
+  .button-bounce {
+    @apply transition-all duration-200 hover:scale-110 active:scale-95;
+  }
+
+  .smooth-enter {
+    @apply opacity-0 translate-y-4 scale-95 animate-[smoothEnter_0.4s_ease-out_forwards];
+  }
+
+  .pulse-glow {
+    @apply animate-[pulseGlow_2s_ease-in-out_infinite];
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes staggerFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes smoothEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(91, 77, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px rgba(91, 77, 255, 0.1);
+  }
+}
+
+/* Mobile-first responsive utilities */
+@media (max-width: 640px) {
+  .responsive-grid {
+    @apply grid-cols-1 gap-3;
+  }
+  
+  .responsive-text {
+    @apply text-sm;
+  }
+  
+  .responsive-padding {
+    @apply p-4;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .responsive-grid {
+    @apply grid-cols-2 gap-4;
+  }
+  
+  .responsive-text {
+    @apply text-base;
+  }
+  
+  .responsive-padding {
+    @apply p-6;
+  }
+}
+
+@media (min-width: 769px) {
+  .responsive-grid {
+    @apply grid-cols-3 gap-6;
+  }
+  
+  .responsive-text {
+    @apply text-lg;
+  }
+  
+  .responsive-padding {
+    @apply p-8;
+  }
 }

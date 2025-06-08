@@ -2,8 +2,7 @@
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FamilyMemberData, FamilyRole } from "../types";
+import { FamilyMemberData } from "../types";
 import { useLanguage } from "../../LanguageContext";
 import MemberActions from "./MemberActions";
 
@@ -14,6 +13,8 @@ interface MemberRowProps {
   onToggleStatus: (memberId: string) => void;
   onReplace: (memberId: string) => void;
   onRemove: (memberId: string) => void;
+  isMobileView?: boolean;
+  animationDelay?: number;
 }
 
 const MemberRow: React.FC<MemberRowProps> = ({
@@ -22,53 +23,15 @@ const MemberRow: React.FC<MemberRowProps> = ({
   remainingChanges,
   onToggleStatus,
   onReplace,
-  onRemove
+  onRemove,
+  isMobileView = false,
+  animationDelay = 0
 }) => {
   const { t } = useLanguage();
 
-  const getRoleBadge = (role: FamilyRole) => {
-    switch (role) {
-      case FamilyRole.OWNER:
-        return <Badge variant="default">{t("owner")}</Badge>;
-      case FamilyRole.MEMBER:
-        return <Badge variant="outline">{t("member")}</Badge>;
-      case FamilyRole.CHILD:
-        return <Badge variant="secondary">{t("child")}</Badge>;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <TableRow key={member.id}>
-      <TableCell className="font-medium">
-        <div className="flex items-center space-x-3">
-          <Avatar>
-            <AvatarFallback>{(member.name?.substring(0, 2) || "U").toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p>{member.name || t("unnamed")}</p>
-            <p className="text-xs text-muted-foreground">
-              {member.email || member.phone || t("noContact")}
-            </p>
-          </div>
-        </div>
-      </TableCell>
-      <TableCell>{getRoleBadge(member.role)}</TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2">
-          {member.active ? (
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-              {t("active")}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-              SUSPENDU
-            </Badge>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="text-right">
+  if (isMobileView) {
+    return (
+      <div className="w-full">
         <MemberActions
           memberId={member.id}
           memberRole={member.role}
@@ -79,7 +42,67 @@ const MemberRow: React.FC<MemberRowProps> = ({
           onReplace={onReplace}
           onRemove={onRemove}
         />
+      </div>
+    );
+  }
+
+  return (
+    <TableRow 
+      className="hover:bg-muted/50 transition-all duration-200 animate-slide-in group"
+      style={{ animationDelay: `${animationDelay}ms` }}
+    >
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center transition-all duration-200 group-hover:bg-primary/20">
+            <span className="text-xs font-medium text-primary">
+              {member.name?.charAt(0).toUpperCase() || member.email.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div>
+            <div className="font-medium">{member.name || member.email}</div>
+            {member.name && (
+              <div className="text-sm text-muted-foreground">{member.email}</div>
+            )}
+          </div>
+        </div>
       </TableCell>
+      
+      <TableCell>
+        <Badge 
+          variant={member.role === 'owner' ? 'default' : 'secondary'}
+          className="transition-all duration-200 hover:scale-105"
+        >
+          {member.role === 'owner' ? t("owner") : 'Membre'}
+        </Badge>
+      </TableCell>
+      
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+            member.active ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+          }`} />
+          <span className={`text-sm font-medium ${
+            member.active ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+          }`}>
+            {member.active ? 'Actif' : 'Suspendu'}
+          </span>
+        </div>
+      </TableCell>
+      
+      {isOwner && (
+        <TableCell className="text-right">
+          <MemberActions
+            memberId={member.id}
+            memberRole={member.role}
+            isActive={member.active}
+            isOwner={isOwner}
+            remainingChanges={remainingChanges}
+            onToggleStatus={onToggleStatus}
+            onReplace={onReplace}
+            onRemove={onRemove}
+          />
+        </TableCell>
+      )}
     </TableRow>
   );
 };
