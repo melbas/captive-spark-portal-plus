@@ -10,6 +10,11 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import WifiPortalContainer from "./components/wifi-portal/WifiPortalContainer";
 import { LanguageProvider } from "./components/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AdminThemeManager from "./components/wifi-portal/AdminThemeManager";
+import ThemePackageManager from "./components/wifi-portal/ThemePackageManager";
+import ThemeImporter from "./components/wifi-portal/ThemeImporter";
+import ThemeMarketplace from "./components/wifi-portal/ThemeMarketplace";
+import ThemeVersionManager from "./components/wifi-portal/ThemeVersionManager";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +37,11 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<WifiPortalContainer />} />
                 <Route path="/legacy" element={<Index />} />
+                <Route path="/admin/theme" element={<AdminThemeManager />} />
+                <Route path="/admin/theme/package" element={<ThemePackageManager />} />
+                <Route path="/admin/theme/import" element={<ThemeImporter />} />
+                <Route path="/admin/theme/marketplace" element={<ThemeMarketplace />} />
+                <Route path="/admin/theme/versions" element={<ThemeVersionManager />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

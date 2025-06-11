@@ -1,0 +1,371 @@
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WiFi Portal Theme Manifest",
+  "type": "object",
+  "required": ["meta", "visual_config", "user_journey", "technical_config"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["name", "version", "description", "author"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nom du thème"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Version sémantique du thème"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description du thème"
+        },
+        "author": {
+          "type": "string",
+          "description": "Auteur du thème"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Date de création"
+        },
+        "compatible_versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Versions compatibles du back-office"
+        },
+        "preview_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL de l'image de prévisualisation"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["telecom", "hospitality", "corporate", "education", "healthcare", "retail", "gaming", "africa", "asia", "europe", "america"]
+          },
+          "description": "Catégories du thème"
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "description": "Langues supportées (codes ISO 639-1)"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "multi_language",
+              "gamification",
+              "family_plans",
+              "referral_system",
+              "payment_integration",
+              "analytics",
+              "admin_dashboard",
+              "mini_games",
+              "social_auth",
+              "mobile_optimized",
+              "dark_mode",
+              "custom_branding"
+            ]
+          },
+          "description": "Fonctionnalités incluses"
+        },
+        "license": {
+          "type": "string",
+          "enum": ["MIT", "GPL", "Commercial", "Educational", "Custom"],
+          "description": "Type de licence"
+        },
+        "price": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          }
+        }
+      }
+    },
+    "visual_config": {
+      "type": "object",
+      "required": ["design_system"],
+      "properties": {
+        "design_system": {
+          "type": "object",
+          "properties": {
+            "colors": {
+              "type": "object",
+              "description": "Système de couleurs du thème"
+            },
+            "typography": {
+              "type": "object",
+              "description": "Configuration typographique"
+            },
+            "spacing": {
+              "type": "object",
+              "description": "Système d'espacement"
+            },
+            "animations": {
+              "type": "object",
+              "description": "Animations et transitions"
+            }
+          }
+        },
+        "layout": {
+          "type": "object",
+          "description": "Configuration du layout"
+        },
+        "components": {
+          "type": "object",
+          "description": "Styles des composants"
+        }
+      }
+    },
+    "user_journey": {
+      "type": "object",
+      "required": ["steps"],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "type", "required"],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["authentication", "content_interaction", "payment", "access_granted"]
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "options": {
+                "type": "array"
+              },
+              "config": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "additional_features": {
+          "type": "array",
+          "description": "Fonctionnalités additionnelles disponibles"
+        }
+      }
+    },
+    "gamification": {
+      "type": "object",
+      "properties": {
+        "points_system": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "actions": {
+              "type": "object"
+            }
+          }
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "min_points", "color"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "min_points": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              "benefits": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "rewards": {
+          "type": "array",
+          "description": "Récompenses disponibles"
+        }
+      }
+    },
+    "features_config": {
+      "type": "object",
+      "description": "Configuration des fonctionnalités"
+    },
+    "languages": {
+      "type": "object",
+      "required": ["default", "available", "translations"],
+      "properties": {
+        "default": {
+          "type": "string",
+          "pattern": "^[a-z]{2}$"
+        },
+        "available": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          }
+        },
+        "translations": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z]{2}$": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "technical_config": {
+      "type": "object",
+      "required": ["dependencies"],
+      "properties": {
+        "dependencies": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "optional": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "database_schema": {
+          "type": "object",
+          "properties": {
+            "required_tables": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "optional_tables": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "apis": {
+          "type": "object",
+          "description": "APIs requises"
+        },
+        "hooks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Hooks React personnalisés"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Services backend requis"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Composants React inclus"
+        }
+      }
+    },
+    "customization_options": {
+      "type": "object",
+      "description": "Options de personnalisation disponibles pour l'administrateur"
+    },
+    "installation": {
+      "type": "object",
+      "properties": {
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "node_version": {
+              "type": "string"
+            },
+            "database": {
+              "type": "string"
+            },
+            "memory_mb": {
+              "type": "integer"
+            },
+            "storage_mb": {
+              "type": "integer"
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "description"],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "sql": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "post_install": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Actions à effectuer après l'installation"
+        }
+      }
+    }
+  }
+}
