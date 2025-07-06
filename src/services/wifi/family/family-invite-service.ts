@@ -2,9 +2,36 @@
 import { supabase } from "@/integrations/supabase/client";
 import { FamilyInvite } from "../types";
 import { FamilyRole } from "@/components/wifi-portal/types";
+import { smsService } from "../sms-service";
+import { emailService } from "../email-service";
 
 // Mock data for development
 const mockFamilyInvites: FamilyInvite[] = [];
+
+const sendInviteNotification = async (invite: FamilyInvite): Promise<boolean> => {
+  const link = `https://example.com/invite/${invite.token}`;
+  try {
+    if (invite.email) {
+      return await emailService.sendEmail({
+        to: invite.email,
+        subject: "Invitation à rejoindre une famille",
+        body: `Vous avez été invité à rejoindre une famille. Cliquez ici pour accepter: ${link}`,
+        type: 'invite'
+      });
+    } else if (invite.phone) {
+      return await smsService.sendSMS({
+        to: invite.phone,
+        message: `Invitation à rejoindre la famille: ${link}`,
+        type: 'notification'
+      });
+    }
+    console.error('No contact info available to send invite');
+    return false;
+  } catch (err) {
+    console.error('Failed to send invite notification:', err);
+    return false;
+  }
+};
 
 /**
  * Service for managing family invites
@@ -49,12 +76,15 @@ export const familyInviteService = {
       //   .single();
       // if (error) throw error;
       
+      const notificationSent = await sendInviteNotification(newInvite);
+      if (!notificationSent) {
+        console.error('Failed to notify invitee');
+        return null;
+      }
+
       // For development:
       mockFamilyInvites.push(newInvite);
-      
-      // TODO: Send an email or SMS with the invitation link
-      // containing the token
-      
+
       return newInvite;
     } catch (error) {
       console.error(`Failed to create family invite:`, error);
