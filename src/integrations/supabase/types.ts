@@ -7,8 +7,58 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
+  }
   public: {
     Tables: {
+      access_profiles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_down_kbps: number
+          max_up_kbps: number
+          name: string
+          priority: number
+          quota_mb: number | null
+          quota_minutes: number | null
+          updated_at: string
+          vlan_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_down_kbps?: number
+          max_up_kbps?: number
+          name: string
+          priority?: number
+          quota_mb?: number | null
+          quota_minutes?: number | null
+          updated_at?: string
+          vlan_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_down_kbps?: number
+          max_up_kbps?: number
+          name?: string
+          priority?: number
+          quota_mb?: number | null
+          quota_minutes?: number | null
+          updated_at?: string
+          vlan_id?: number | null
+        }
+        Relationships: []
+      }
       ad_videos: {
         Row: {
           active: boolean | null
@@ -56,7 +106,7 @@ export type Database = {
           created_at: string | null
           criticality: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_data: Json | null
           previous_data: Json | null
           request_id: string | null
@@ -72,7 +122,7 @@ export type Database = {
           created_at?: string | null
           criticality?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_data?: Json | null
           previous_data?: Json | null
           request_id?: string | null
@@ -88,7 +138,7 @@ export type Database = {
           created_at?: string | null
           criticality?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_data?: Json | null
           previous_data?: Json | null
           request_id?: string | null
@@ -104,7 +154,7 @@ export type Database = {
           admin_user_id: string
           ended_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean | null
           last_activity: string | null
           location_data: Json | null
@@ -118,7 +168,7 @@ export type Database = {
           admin_user_id: string
           ended_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity?: string | null
           location_data?: Json | null
@@ -132,7 +182,7 @@ export type Database = {
           admin_user_id?: string
           ended_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity?: string | null
           location_data?: Json | null
@@ -269,6 +319,72 @@ export type Database = {
           session_duration_minutes?: number | null
           sms_enabled?: boolean | null
           timeout_seconds?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      auth_funnel_metrics: {
+        Row: {
+          auth_method: string
+          created_at: string
+          failure_count: number
+          id: string
+          site_id: string | null
+          stage: string
+          success_count: number
+          success_rate: number
+          timestamp: string
+          total_attempts: number
+        }
+        Insert: {
+          auth_method: string
+          created_at?: string
+          failure_count?: number
+          id?: string
+          site_id?: string | null
+          stage: string
+          success_count?: number
+          success_rate?: number
+          timestamp?: string
+          total_attempts?: number
+        }
+        Update: {
+          auth_method?: string
+          created_at?: string
+          failure_count?: number
+          id?: string
+          site_id?: string | null
+          stage?: string
+          success_count?: number
+          success_rate?: number
+          timestamp?: string
+          total_attempts?: number
+        }
+        Relationships: []
+      }
+      auth_otp_config: {
+        Row: {
+          created_at: string | null
+          enable_leaked_password_protection: boolean
+          id: string
+          max_attempts: number
+          otp_expiry_seconds: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enable_leaked_password_protection?: boolean
+          id?: string
+          max_attempts?: number
+          otp_expiry_seconds?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enable_leaked_password_protection?: boolean
+          id?: string
+          max_attempts?: number
+          otp_expiry_seconds?: number
           updated_at?: string | null
         }
         Relationships: []
@@ -457,6 +573,54 @@ export type Database = {
           },
         ]
       }
+      customer_satisfaction_metrics: {
+        Row: {
+          acquisition_channel: string | null
+          created_at: string
+          csat_score: number | null
+          fcr_rate: number
+          id: string
+          metric_date: string
+          nps_score: number | null
+          resolved_first_contact: number
+          segment: string | null
+          support_tickets: number
+          survey_responses: number
+          ttfa_median_hours: number | null
+          ttfa_p95_hours: number | null
+        }
+        Insert: {
+          acquisition_channel?: string | null
+          created_at?: string
+          csat_score?: number | null
+          fcr_rate?: number
+          id?: string
+          metric_date?: string
+          nps_score?: number | null
+          resolved_first_contact?: number
+          segment?: string | null
+          support_tickets?: number
+          survey_responses?: number
+          ttfa_median_hours?: number | null
+          ttfa_p95_hours?: number | null
+        }
+        Update: {
+          acquisition_channel?: string | null
+          created_at?: string
+          csat_score?: number | null
+          fcr_rate?: number
+          id?: string
+          metric_date?: string
+          nps_score?: number | null
+          resolved_first_contact?: number
+          segment?: string | null
+          support_tickets?: number
+          survey_responses?: number
+          ttfa_median_hours?: number | null
+          ttfa_p95_hours?: number | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
@@ -494,6 +658,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financial_kpis: {
+        Row: {
+          arpu: number
+          arpu_b2b: number
+          arpu_b2c: number
+          churn_rate_customers: number
+          churn_rate_revenue: number
+          churned_customers: number
+          created_at: string
+          id: string
+          metric_date: string
+          mrr_churn: number
+          mrr_contraction: number
+          mrr_expansion: number
+          mrr_new: number
+          mrr_total: number
+          new_customers: number
+          nrr_percentage: number
+          total_customers: number
+        }
+        Insert: {
+          arpu?: number
+          arpu_b2b?: number
+          arpu_b2c?: number
+          churn_rate_customers?: number
+          churn_rate_revenue?: number
+          churned_customers?: number
+          created_at?: string
+          id?: string
+          metric_date?: string
+          mrr_churn?: number
+          mrr_contraction?: number
+          mrr_expansion?: number
+          mrr_new?: number
+          mrr_total?: number
+          new_customers?: number
+          nrr_percentage?: number
+          total_customers?: number
+        }
+        Update: {
+          arpu?: number
+          arpu_b2b?: number
+          arpu_b2c?: number
+          churn_rate_customers?: number
+          churn_rate_revenue?: number
+          churned_customers?: number
+          created_at?: string
+          id?: string
+          metric_date?: string
+          mrr_churn?: number
+          mrr_contraction?: number
+          mrr_expansion?: number
+          mrr_new?: number
+          mrr_total?: number
+          new_customers?: number
+          nrr_percentage?: number
+          total_customers?: number
+        }
+        Relationships: []
       }
       games: {
         Row: {
@@ -534,6 +758,75 @@ export type Database = {
           points_reward?: number | null
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      incidents_tracking: {
+        Row: {
+          affected_sites: string[] | null
+          affected_users_count: number | null
+          assigned_to: string | null
+          closed_at: string | null
+          created_at: string
+          description: string | null
+          eta: string | null
+          first_response_at: string | null
+          id: string
+          impact_level: string
+          incident_id: string
+          last_update_at: string
+          mttr_minutes: number | null
+          resolved_at: string | null
+          severity: string
+          sla_breached: boolean
+          sla_target_minutes: number
+          started_at: string
+          status: string
+          title: string
+        }
+        Insert: {
+          affected_sites?: string[] | null
+          affected_users_count?: number | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          description?: string | null
+          eta?: string | null
+          first_response_at?: string | null
+          id?: string
+          impact_level: string
+          incident_id: string
+          last_update_at?: string
+          mttr_minutes?: number | null
+          resolved_at?: string | null
+          severity: string
+          sla_breached?: boolean
+          sla_target_minutes?: number
+          started_at?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          affected_sites?: string[] | null
+          affected_users_count?: number | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          description?: string | null
+          eta?: string | null
+          first_response_at?: string | null
+          id?: string
+          impact_level?: string
+          incident_id?: string
+          last_update_at?: string
+          mttr_minutes?: number | null
+          resolved_at?: string | null
+          severity?: string
+          sla_breached?: boolean
+          sla_target_minutes?: number
+          started_at?: string
+          status?: string
+          title?: string
         }
         Relationships: []
       }
@@ -960,6 +1253,45 @@ export type Database = {
         }
         Relationships: []
       }
+      qoe_measurements: {
+        Row: {
+          ap_name: string | null
+          created_at: string
+          id: string
+          latency_p95_ms: number | null
+          packet_loss_percentage: number | null
+          qoe_score: number
+          site_id: string
+          throughput_mbps: number | null
+          timestamp: string
+          user_count: number
+        }
+        Insert: {
+          ap_name?: string | null
+          created_at?: string
+          id?: string
+          latency_p95_ms?: number | null
+          packet_loss_percentage?: number | null
+          qoe_score: number
+          site_id: string
+          throughput_mbps?: number | null
+          timestamp?: string
+          user_count?: number
+        }
+        Update: {
+          ap_name?: string | null
+          created_at?: string
+          id?: string
+          latency_p95_ms?: number | null
+          packet_loss_percentage?: number | null
+          qoe_score?: number
+          site_id?: string
+          throughput_mbps?: number | null
+          timestamp?: string
+          user_count?: number
+        }
+        Relationships: []
+      }
       quiz_options: {
         Row: {
           id: string
@@ -1057,6 +1389,148 @@ export type Database = {
         }
         Relationships: []
       }
+      radius_coa_requests: {
+        Row: {
+          attributes: Json
+          created_at: string
+          error_message: string | null
+          id: string
+          nas_ip_address: unknown
+          nas_port_id: string | null
+          request_type: string
+          response_at: string | null
+          response_code: number | null
+          sent_at: string | null
+          session_id: string
+          status: string
+        }
+        Insert: {
+          attributes?: Json
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          nas_ip_address: unknown
+          nas_port_id?: string | null
+          request_type: string
+          response_at?: string | null
+          response_code?: number | null
+          sent_at?: string | null
+          session_id: string
+          status?: string
+        }
+        Update: {
+          attributes?: Json
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          nas_ip_address?: unknown
+          nas_port_id?: string | null
+          request_type?: string
+          response_at?: string | null
+          response_code?: number | null
+          sent_at?: string | null
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radius_coa_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "radius_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      radius_sessions: {
+        Row: {
+          ap_name: string | null
+          created_at: string
+          id: string
+          ip_address: unknown
+          last_seen: string | null
+          mac_address: string | null
+          nas_ip_address: unknown
+          nas_port_id: string | null
+          profile_id: string | null
+          rx_bytes: number | null
+          rx_packets: number | null
+          session_id: string
+          session_time: number | null
+          ssid: string | null
+          start_time: string
+          state: string
+          stop_time: string | null
+          terminate_cause: string | null
+          tx_bytes: number | null
+          tx_packets: number | null
+          updated_at: string
+          user_id: string | null
+          username: string | null
+          vlan_id: number | null
+        }
+        Insert: {
+          ap_name?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          last_seen?: string | null
+          mac_address?: string | null
+          nas_ip_address?: unknown
+          nas_port_id?: string | null
+          profile_id?: string | null
+          rx_bytes?: number | null
+          rx_packets?: number | null
+          session_id: string
+          session_time?: number | null
+          ssid?: string | null
+          start_time?: string
+          state?: string
+          stop_time?: string | null
+          terminate_cause?: string | null
+          tx_bytes?: number | null
+          tx_packets?: number | null
+          updated_at?: string
+          user_id?: string | null
+          username?: string | null
+          vlan_id?: number | null
+        }
+        Update: {
+          ap_name?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          last_seen?: string | null
+          mac_address?: string | null
+          nas_ip_address?: unknown
+          nas_port_id?: string | null
+          profile_id?: string | null
+          rx_bytes?: number | null
+          rx_packets?: number | null
+          session_id?: string
+          session_time?: number | null
+          ssid?: string | null
+          start_time?: string
+          state?: string
+          stop_time?: string | null
+          terminate_cause?: string | null
+          tx_bytes?: number | null
+          tx_packets?: number | null
+          updated_at?: string
+          user_id?: string | null
+          username?: string | null
+          vlan_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radius_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "access_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           code: string | null
@@ -1148,7 +1622,7 @@ export type Database = {
           created_at: string | null
           description: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_resolved: boolean | null
           metadata: Json | null
           resolved_at: string | null
@@ -1162,7 +1636,7 @@ export type Database = {
           created_at?: string | null
           description: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_resolved?: boolean | null
           metadata?: Json | null
           resolved_at?: string | null
@@ -1176,13 +1650,46 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_resolved?: boolean | null
           metadata?: Json | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity?: string
           title?: string
+        }
+        Relationships: []
+      }
+      site_availability_metrics: {
+        Row: {
+          created_at: string
+          downtime_minutes: number
+          id: string
+          incident_count: number
+          site_id: string
+          sla_breached: boolean
+          timestamp: string
+          uptime_percentage: number
+        }
+        Insert: {
+          created_at?: string
+          downtime_minutes?: number
+          id?: string
+          incident_count?: number
+          site_id: string
+          sla_breached?: boolean
+          timestamp?: string
+          uptime_percentage?: number
+        }
+        Update: {
+          created_at?: string
+          downtime_minutes?: number
+          id?: string
+          incident_count?: number
+          site_id?: string
+          sla_breached?: boolean
+          timestamp?: string
+          uptime_percentage?: number
         }
         Relationships: []
       }
@@ -1240,6 +1747,47 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "wifi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_access: {
+        Row: {
+          created_at: string
+          id: string
+          last_reset_at: string | null
+          minutes_used: number | null
+          profile_id: string
+          quota_used_mb: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_reset_at?: string | null
+          minutes_used?: number | null
+          profile_id: string
+          quota_used_mb?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_reset_at?: string | null
+          minutes_used?: number | null
+          profile_id?: string
+          quota_used_mb?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_access_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "access_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1306,6 +1854,56 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      vouchers: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          profile_id: string
+          use_limit: number | null
+          used_at: string | null
+          used_count: number | null
+          valid_from: string
+          valid_to: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          profile_id: string
+          use_limit?: number | null
+          used_at?: string | null
+          used_count?: number | null
+          valid_from?: string
+          valid_to: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          profile_id?: string
+          use_limit?: number | null
+          used_at?: string | null
+          used_count?: number | null
+          valid_from?: string
+          valid_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "access_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wifi_plans: {
         Row: {
@@ -1466,10 +2064,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_old_audit_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
+      cleanup_old_audit_logs: { Args: never; Returns: undefined }
+      fn_apply_quota: { Args: { target_user_id: string }; Returns: undefined }
+      get_active_sessions: {
+        Args: never
+        Returns: {
+          ap_name: string
+          id: string
+          ip_address: unknown
+          last_seen: string
+          mac_address: string
+          max_down_kbps: number
+          max_up_kbps: number
+          minutes_used: number
+          profile_name: string
+          quota_mb: number
+          quota_usage_percent: number
+          quota_used_mb: number
+          rx_bytes: number
+          session_id: string
+          session_time: number
+          ssid: string
+          start_time: string
+          tx_bytes: number
+          user_id: string
+          username: string
+        }[]
       }
+      get_realtime_dashboard_metrics: { Args: never; Returns: Json }
+      get_security_dashboard_metrics: { Args: never; Returns: Json }
+      is_admin_user: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -1480,21 +2104,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1512,14 +2140,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1535,14 +2165,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1558,14 +2190,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1573,14 +2207,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

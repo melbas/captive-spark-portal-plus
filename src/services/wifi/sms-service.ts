@@ -90,13 +90,13 @@ export const smsService = {
     }
   },
   
-  verifyCode(phoneNumber: string, code: string): boolean {
+  verifyCode(phoneNumber: string, code: string): { success: boolean; attemptsRemaining?: number; error?: string } {
     // Find the verification record
     const index = verificationCodes.findIndex(v => v.phoneNumber === phoneNumber);
     
     if (index === -1) {
       console.error("No verification code found for this number");
-      return false;
+      return { success: false, error: 'no_code_found' };
     }
     
     const verification = verificationCodes[index];
@@ -106,27 +106,30 @@ export const smsService = {
       // Remove expired code
       verificationCodes.splice(index, 1);
       console.error("Verification code has expired");
-      return false;
+      return { success: false, error: 'code_expired' };
     }
     
-    // Increment attempt count
-    verification.attempts += 1;
+    // Check if the code matches FIRST
+    if (verification.code === code) {
+      // Code correct: remove the verification record on success
+      verificationCodes.splice(index, 1);
+      console.log("Verification successful");
+      return { success: true };
+    }
     
-    // Check if max attempts reached (3 attempts)
-    if (verification.attempts > 3) {
+    // Code incorrect: increment attempt count
+    verification.attempts += 1;
+    const attemptsRemaining = 5 - verification.attempts;
+    
+    // Check if max attempts reached (5 attempts)
+    if (verification.attempts >= 5) {
       // Remove the verification record
       verificationCodes.splice(index, 1);
       console.error("Max verification attempts reached");
-      return false;
+      return { success: false, error: 'max_attempts_reached', attemptsRemaining: 0 };
     }
     
-    // Check if the code matches
-    if (verification.code === code) {
-      // Remove the verification record on success
-      verificationCodes.splice(index, 1);
-      return true;
-    }
-    
-    return false;
+    console.log(`Invalid code. ${attemptsRemaining} attempts remaining`);
+    return { success: false, error: 'invalid_code', attemptsRemaining };
   }
 };

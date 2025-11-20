@@ -185,16 +185,28 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         // Format the full phone number
         const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
         
-        // Verify the code - in development, accept demo code or the actual sent code
-        if (otp === verificationCode || otp === '1234' || 
-            wifiPortalService.verifyCode(fullPhoneNumber, otp)) {
+        // Verify the code using the service
+        const result = wifiPortalService.verifyCode(fullPhoneNumber, otp);
+        
+        if (result.success) {
           toast.success(t("verificationSuccessful"));
           await onAuth('sms', { 
             phoneNumber: fullPhoneNumber
           });
         } else {
-          toast.error(t("invalidCode"));
-          setAuthError(t("invalidCode"));
+          // Handle different error types
+          let errorMessage = t("invalidCode");
+          
+          if (result.error === 'code_expired') {
+            errorMessage = t("codeExpired") || "Le code a expiré";
+          } else if (result.error === 'max_attempts_reached') {
+            errorMessage = t("maxAttemptsReached") || "Nombre maximum de tentatives atteint";
+          } else if (result.attemptsRemaining !== undefined && result.attemptsRemaining > 0) {
+            errorMessage = `${t("invalidCode")} (${result.attemptsRemaining} ${t("attemptsRemaining") || "tentatives restantes"})`;
+          }
+          
+          toast.error(errorMessage);
+          setAuthError(errorMessage);
         }
       } else {
         // For email, in this demo we just check against the fixed code
