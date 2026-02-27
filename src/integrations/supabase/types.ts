@@ -761,6 +761,56 @@ export type Database = {
         }
         Relationships: []
       }
+      hardware_integrations: {
+        Row: {
+          api_password_enc: string | null
+          api_username: string | null
+          brand: string | null
+          controller_url: string
+          id: string
+          is_active: boolean | null
+          last_test_msg: string | null
+          last_test_ok: boolean | null
+          last_tested_at: string | null
+          site_id: string | null
+          unifi_site_id: string | null
+        }
+        Insert: {
+          api_password_enc?: string | null
+          api_username?: string | null
+          brand?: string | null
+          controller_url: string
+          id?: string
+          is_active?: boolean | null
+          last_test_msg?: string | null
+          last_test_ok?: boolean | null
+          last_tested_at?: string | null
+          site_id?: string | null
+          unifi_site_id?: string | null
+        }
+        Update: {
+          api_password_enc?: string | null
+          api_username?: string | null
+          brand?: string | null
+          controller_url?: string
+          id?: string
+          is_active?: boolean | null
+          last_test_msg?: string | null
+          last_test_ok?: boolean | null
+          last_tested_at?: string | null
+          site_id?: string | null
+          unifi_site_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hardware_integrations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidents_tracking: {
         Row: {
           affected_sites: string[] | null
@@ -889,6 +939,88 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      pc_admin_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          last_login_at: string | null
+          name: string | null
+          reseller_id: string | null
+          role: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          last_login_at?: string | null
+          name?: string | null
+          reseller_id?: string | null
+          role?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          last_login_at?: string | null
+          name?: string | null
+          reseller_id?: string | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pc_admin_users_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pc_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string | null
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pc_audit_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "pc_admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       portal_analytics: {
         Row: {
@@ -1582,6 +1714,42 @@ export type Database = {
           },
         ]
       }
+      resellers: {
+        Row: {
+          address: string | null
+          commission_rate: number | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       rewards: {
         Row: {
           active: boolean | null
@@ -1693,39 +1861,116 @@ export type Database = {
         }
         Relationships: []
       }
+      sites: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          portal_slug: string
+          primary_color: string | null
+          reseller_id: string | null
+          type: string | null
+          updated_at: string | null
+          welcome_msg: string | null
+          whatsapp_support: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          portal_slug: string
+          primary_color?: string | null
+          reseller_id?: string | null
+          type?: string | null
+          updated_at?: string | null
+          welcome_msg?: string | null
+          whatsapp_support?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          portal_slug?: string
+          primary_color?: string | null
+          reseller_id?: string | null
+          type?: string | null
+          updated_at?: string | null
+          welcome_msg?: string | null
+          whatsapp_support?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
+          amount_fcfa: number | null
+          commission_fcfa: number | null
           completed_at: string | null
           created_at: string | null
           id: string
+          method: string | null
           payment_method_id: string | null
           plan_id: string | null
+          provider_ref: string | null
+          session_id: string | null
+          site_id: string | null
           status: string
           transaction_reference: string | null
           user_id: string | null
+          wave_checkout_id: string | null
         }
         Insert: {
           amount: number
+          amount_fcfa?: number | null
+          commission_fcfa?: number | null
           completed_at?: string | null
           created_at?: string | null
           id?: string
+          method?: string | null
           payment_method_id?: string | null
           plan_id?: string | null
+          provider_ref?: string | null
+          session_id?: string | null
+          site_id?: string | null
           status: string
           transaction_reference?: string | null
           user_id?: string | null
+          wave_checkout_id?: string | null
         }
         Update: {
           amount?: number
+          amount_fcfa?: number | null
+          commission_fcfa?: number | null
           completed_at?: string | null
           created_at?: string | null
           id?: string
+          method?: string | null
           payment_method_id?: string | null
           plan_id?: string | null
+          provider_ref?: string | null
+          session_id?: string | null
+          site_id?: string | null
           status?: string
           transaction_reference?: string | null
           user_id?: string | null
+          wave_checkout_id?: string | null
         }
         Relationships: [
           {
@@ -1740,6 +1985,13 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "wifi_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
             referencedColumns: ["id"]
           },
           {
@@ -1857,40 +2109,58 @@ export type Database = {
       }
       vouchers: {
         Row: {
+          batch_name: string | null
           code: string
           created_at: string
           created_by: string | null
+          expires_at: string | null
           id: string
           is_active: boolean
+          is_used: boolean | null
+          plan_id: string | null
           profile_id: string
+          site_id: string | null
           use_limit: number | null
           used_at: string | null
+          used_by: string | null
           used_count: number | null
           valid_from: string
           valid_to: string
         }
         Insert: {
+          batch_name?: string | null
           code: string
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_used?: boolean | null
+          plan_id?: string | null
           profile_id: string
+          site_id?: string | null
           use_limit?: number | null
           used_at?: string | null
+          used_by?: string | null
           used_count?: number | null
           valid_from?: string
           valid_to: string
         }
         Update: {
+          batch_name?: string | null
           code?: string
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_used?: boolean | null
+          plan_id?: string | null
           profile_id?: string
+          site_id?: string | null
           use_limit?: number | null
           used_at?: string | null
+          used_by?: string | null
           used_count?: number | null
           valid_from?: string
           valid_to?: string
@@ -1903,87 +2173,153 @@ export type Database = {
             referencedRelation: "access_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vouchers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wifi_plans: {
         Row: {
           active: boolean | null
           created_at: string | null
+          data_limit_mb: number | null
           description: string | null
+          duration_min: number | null
           duration_minutes: number
           id: string
+          is_active: boolean | null
           is_family_plan: boolean | null
+          is_popular: boolean | null
           is_subscription: boolean | null
+          max_devices: number | null
           max_members: number | null
           name: string
           price: number
+          price_fcfa: number | null
           recurring_interval: string | null
+          site_id: string | null
+          sort_order: number | null
+          speed_down_mb: number | null
+          speed_up_mb: number | null
           updated_at: string | null
         }
         Insert: {
           active?: boolean | null
           created_at?: string | null
+          data_limit_mb?: number | null
           description?: string | null
+          duration_min?: number | null
           duration_minutes: number
           id?: string
+          is_active?: boolean | null
           is_family_plan?: boolean | null
+          is_popular?: boolean | null
           is_subscription?: boolean | null
+          max_devices?: number | null
           max_members?: number | null
           name: string
           price: number
+          price_fcfa?: number | null
           recurring_interval?: string | null
+          site_id?: string | null
+          sort_order?: number | null
+          speed_down_mb?: number | null
+          speed_up_mb?: number | null
           updated_at?: string | null
         }
         Update: {
           active?: boolean | null
           created_at?: string | null
+          data_limit_mb?: number | null
           description?: string | null
+          duration_min?: number | null
           duration_minutes?: number
           id?: string
+          is_active?: boolean | null
           is_family_plan?: boolean | null
+          is_popular?: boolean | null
           is_subscription?: boolean | null
+          max_devices?: number | null
           max_members?: number | null
           name?: string
           price?: number
+          price_fcfa?: number | null
           recurring_interval?: string | null
+          site_id?: string | null
+          sort_order?: number | null
+          speed_down_mb?: number | null
+          speed_up_mb?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wifi_plans_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wifi_sessions: {
         Row: {
+          ap_mac: string | null
           device_info: Json | null
           duration_minutes: number | null
+          ended_at: string | null
           engagement_data: Json | null
           engagement_type: string | null
+          expires_at: string | null
           id: string
           is_active: boolean | null
+          mac_address: string | null
           plan_id: string | null
+          site_id: string | null
+          ssid: string | null
           started_at: string | null
+          status: string | null
           transaction_id: string | null
           user_id: string | null
         }
         Insert: {
+          ap_mac?: string | null
           device_info?: Json | null
           duration_minutes?: number | null
+          ended_at?: string | null
           engagement_data?: Json | null
           engagement_type?: string | null
+          expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          mac_address?: string | null
           plan_id?: string | null
+          site_id?: string | null
+          ssid?: string | null
           started_at?: string | null
+          status?: string | null
           transaction_id?: string | null
           user_id?: string | null
         }
         Update: {
+          ap_mac?: string | null
           device_info?: Json | null
           duration_minutes?: number | null
+          ended_at?: string | null
           engagement_data?: Json | null
           engagement_type?: string | null
+          expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          mac_address?: string | null
           plan_id?: string | null
+          site_id?: string | null
+          ssid?: string | null
           started_at?: string | null
+          status?: string | null
           transaction_id?: string | null
           user_id?: string | null
         }
@@ -1993,6 +2329,13 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "wifi_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wifi_sessions_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
             referencedColumns: ["id"]
           },
           {
@@ -2013,51 +2356,80 @@ export type Database = {
       }
       wifi_users: {
         Row: {
+          ai_segment: string | null
           auth_method: string
+          churn_risk: number | null
           created_at: string | null
           email: string | null
           family_id: string | null
           family_role: string | null
           id: string
+          is_blocked: boolean | null
           last_connection: string | null
+          loyalty_level: string | null
           loyalty_points: number | null
+          loyalty_pts: number | null
           mac_address: string | null
           name: string | null
           phone: string | null
           preferences: Json | null
           referral_code: string | null
+          referred_by: string | null
+          site_id: string | null
         }
         Insert: {
+          ai_segment?: string | null
           auth_method: string
+          churn_risk?: number | null
           created_at?: string | null
           email?: string | null
           family_id?: string | null
           family_role?: string | null
           id?: string
+          is_blocked?: boolean | null
           last_connection?: string | null
+          loyalty_level?: string | null
           loyalty_points?: number | null
+          loyalty_pts?: number | null
           mac_address?: string | null
           name?: string | null
           phone?: string | null
           preferences?: Json | null
           referral_code?: string | null
+          referred_by?: string | null
+          site_id?: string | null
         }
         Update: {
+          ai_segment?: string | null
           auth_method?: string
+          churn_risk?: number | null
           created_at?: string | null
           email?: string | null
           family_id?: string | null
           family_role?: string | null
           id?: string
+          is_blocked?: boolean | null
           last_connection?: string | null
+          loyalty_level?: string | null
           loyalty_points?: number | null
+          loyalty_pts?: number | null
           mac_address?: string | null
           name?: string | null
           phone?: string | null
           preferences?: Json | null
           referral_code?: string | null
+          referred_by?: string | null
+          site_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wifi_users_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
