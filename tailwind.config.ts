@@ -65,7 +65,22 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// PremiumConnect brand tokens
+				brand: {
+					primary: '#5B4DFF',
+					secondary: '#FF4D6A',
+				},
+				surface: {
+					light: '#F5F6FA',
+					dark: '#1A1B2E',
+					card: '#FFFFFF',
+				},
+				status: {
+					success: '#10B981',
+					error: '#EF4444',
+					warning: '#F59E0B',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
