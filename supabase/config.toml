@@ -1,1 +1,25 @@
 project_id = "pvplhqzzhmqseyzooags"
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.authorize-guest]
+verify_jwt = false
+
+[functions.create-wave-payment]
+verify_jwt = false
+
+[functions.wave-webhook]
+verify_jwt = false
+
+[functions.create-om-payment]
+verify_jwt = false
+
+[functions.revoke-session]
+verify_jwt = false
+
+[functions.test-hardware-connection]
+verify_jwt = false
