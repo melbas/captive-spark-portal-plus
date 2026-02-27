@@ -1,0 +1,154 @@
+version: '3.9'
+
+services:
+  # ─── Base de données PostgreSQL 16 ───────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: pc_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-premiumconnect}
+      POSTGRES_USER: ${POSTGRES_USER:-premiumconnect}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-premiumconnect}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis 7 (cache + OTP + queues Bull) ─────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: pc_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MinIO (stockage objets compatible S3) ────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: pc_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # ─── API Core Node.js ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile.dev
+    container_name: pc_api
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-premiumconnect}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-premiumconnect}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      AI_SERVICE_URL: http://ai-service:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../apps/api:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: pnpm dev
+
+  # ─── Service IA Python FastAPI ────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ../apps/ai-service
+      dockerfile: Dockerfile.dev
+    container_name: pc_ai
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-premiumconnect}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-premiumconnect}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../apps/ai-service:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ─── Portail captif React (dev) ───────────────────────────────────────────────
+  portal:
+    build:
+      context: ../apps/portal
+      dockerfile: Dockerfile.dev
+    container_name: pc_portal
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../apps/portal:/app
+      - /app/node_modules
+
+  # ─── Back-Office React (dev) ──────────────────────────────────────────────────
+  backoffice:
+    build:
+      context: ../apps/backoffice
+      dockerfile: Dockerfile.dev
+    container_name: pc_backoffice
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5174:5174"
+    volumes:
+      - ../apps/backoffice:/app
+      - /app/node_modules
+
+  # ─── MLflow (versioning modèles IA) ──────────────────────────────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: pc_mlflow
+    restart: unless-stopped
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://${POSTGRES_USER:-premiumconnect}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/mlflow --default-artifact-root s3://premiumconnect/mlflow
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - minio
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+/* ─── Design Tokens PremiumConnect ────────────────────────────────────────── */
+:root {
+  /* Couleurs primaires */
+  --pc-primary:        #5B4DFF;
+  --pc-primary-dark:   #4338E0;
+  --pc-primary-light:  #7C6FFF;
+  --pc-secondary:      #FF4D6A;
+  --pc-secondary-dark: #E03555;
+
+  /* Niveaux de fidélité */
+  --pc-basic:    #94A3B8;
+  --pc-bronze:   #CD7F32;
+  --pc-silver:   #C0C0C0;
+  --pc-gold:     #FFD700;
+  --pc-platinum: #E5E4E2;
+
+  /* Fond & surfaces */
+  --pc-bg:       #F5F6FA;
+  --pc-surface:  #FFFFFF;
+  --pc-border:   #E2E8F0;
+
+  /* Texte */
+  --pc-text:     #1A1B2E;
+  --pc-muted:    #64748B;
+
+  /* Gradients */
+  --pc-gradient-primary: linear-gradient(135deg, #5B4DFF 0%, #FF4D6A 100%);
+  --pc-gradient-dark:    linear-gradient(135deg, #1A1B2E 0%, #2D2F4E 100%);
+  --pc-gradient-wave:    linear-gradient(135deg, #1BCEDF 0%, #5B4DFF 100%);
+  --pc-gradient-om:      linear-gradient(135deg, #FF6B00 0%, #FF4D6A 100%);
+
+  /* Ombres */
+  --pc-shadow-sm: 0 1px 3px rgba(91,77,255,0.12);
+  --pc-shadow-md: 0 4px 16px rgba(91,77,255,0.18);
+  --pc-shadow-lg: 0 8px 32px rgba(91,77,255,0.24);
+}
+
+/* ─── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--pc-bg);
+  color: var(--pc-text);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Utilitaires personnalisés ────────────────────────────────────────────── */
+.pc-gradient-text {
+  background: var(--pc-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pc-card {
+  background: var(--pc-surface);
+  border-radius: 1.25rem;
+  box-shadow: var(--pc-shadow-sm);
+  border: 1px solid var(--pc-border);
+}
+
+.pc-btn-primary {
+  background: var(--pc-gradient-primary);
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  border-radius: 0.875rem;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: var(--pc-shadow-md);
+  width: 100%;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.pc-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--pc-shadow-lg);
+}
+
+.pc-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pc-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pc-btn-outline {
+  background: transparent;
+  color: var(--pc-primary);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  border-radius: 0.875rem;
+  padding: 0.875rem 1.5rem;
+  border: 2px solid var(--pc-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.pc-btn-outline:hover {
+  background: var(--pc-primary);
+  color: white;
+}
+
+.pc-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--pc-border);
+  border-radius: 0.875rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--pc-text);
+  background: var(--pc-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.pc-input:focus {
+  border-color: var(--pc-primary);
+  box-shadow: 0 0 0 3px rgba(91,77,255,0.12);
+}
+
+.pc-input::placeholder {
+  color: var(--pc-muted);
+  font-weight: 400;
+}
+
+/* ─── Badges niveaux fidélité ──────────────────────────────────────────────── */
+.badge-basic    { background: #F1F5F9; color: var(--pc-basic); }
+.badge-bronze   { background: #FEF3E2; color: var(--pc-bronze); }
+.badge-silver   { background: #F8FAFC; color: #64748B; }
+.badge-gold     { background: #FFFBEB; color: #B45309; }
+.badge-platinum { background: #F0F9FF; color: #0369A1; }
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+@keyframes pc-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pc-bounce-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pc-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pc-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pc-animate-bounce-in { animation: pc-bounce-in 0.5s ease forwards; }
+.pc-animate-slide-up  { animation: pc-slide-up 0.4s ease forwards; }
+.pc-animate-spin      { animation: pc-spin 1s linear infinite; }
+.pc-animate-pulse     { animation: pc-pulse 2s ease-in-out infinite; }
+
+/* ─── Scrollbar personnalisée ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pc-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pc-muted); }

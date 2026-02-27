@@ -1,0 +1,24 @@
+{
+  "name": "premiumconnect",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PremiumConnect — Plateforme SaaS de portail captif WiFi multi-revendeurs, IA-First",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:api": "pnpm --filter @premiumconnect/api dev",
+    "dev:portal": "pnpm --filter @premiumconnect/portal dev",
+    "dev:backoffice": "pnpm --filter @premiumconnect/backoffice dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "db:push": "pnpm --filter @premiumconnect/api db:push",
+    "db:migrate": "pnpm --filter @premiumconnect/api db:migrate",
+    "docker:dev": "docker compose -f infra/docker-compose.yml up -d",
+    "docker:prod": "docker compose -f infra/docker-compose.prod.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
