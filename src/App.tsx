@@ -23,6 +23,7 @@ import AdminVouchers from "./pages/admin/AdminVouchers";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminLogin from "./pages/admin/AdminLogin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/" element={<WifiPortalContainer />} />
                 <Route path="/portal/:slug" element={<Portal />} />
                 <Route path="/legacy" element={<Index />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
