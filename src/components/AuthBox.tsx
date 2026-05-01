@@ -21,6 +21,8 @@ interface AuthBoxProps {
   onAuth: (method: string, data: any) => void;
 }
 
+const DEV_OTP_CODE = '123456';
+
 const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const { t, language } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -117,8 +119,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         } else {
           // Even if SMS fails in development, allow continuing
           console.warn("SMS sending failed, but continuing in demo mode");
-          toast.info(`${t("demoMode")}: ${t("useCode")} 1234`);
-          setVerificationCode('1234'); // Fallback code
+          toast.info(`${t("demoMode")}: ${t("useCode")} ${DEV_OTP_CODE}`);
+          setVerificationCode(DEV_OTP_CODE); // Fallback code
           setAuthMethod(method);
           setIsVerifying(true);
         }
@@ -148,7 +150,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         setTimeout(() => {
           toast.success(`${t("verificationCodeSent")} ${t("toEmail")}`);
           // For demo, use a fixed code
-          setVerificationCode('1234');
+          setVerificationCode(DEV_OTP_CODE);
           setAuthMethod(method);
           setIsVerifying(true);
           
@@ -172,7 +174,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   };
   
   const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 4) {
+    if (!otp || otp.length < 6) {
       toast.error(t("enterValidCode"));
       return;
     }
@@ -210,7 +212,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         }
       } else {
         // For email, in this demo we just check against the fixed code
-        if (otp === verificationCode || otp === '1234') {
+        if (otp === verificationCode || otp === DEV_OTP_CODE) {
           toast.success(t("verificationSuccessful"));
           await onAuth('email', { 
             email: email
@@ -349,18 +351,20 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             <div className="space-y-2">
               <Label htmlFor="otp">{t("verificationCode")}</Label>
               <div className="flex justify-center">
-                <InputOTP maxLength={4} value={otp} onChange={setOtp}>
+                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
                     <InputOTPSlot index={2} />
                     <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
               <div className="flex justify-between items-center mt-2">
                 <p className="text-xs text-muted-foreground">
-                  {t("useCodeForDemo")} <span className="font-bold">1234</span>
+                  {t("useCodeForDemo")} <span className="font-bold">{DEV_OTP_CODE}</span>
                 </p>
                 <Button 
                   variant="ghost" 
@@ -377,7 +381,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             <Button 
               className="w-full"
               onClick={handleVerifyOtp}
-              disabled={isVerifyingCode || !otp || otp.length < 4}
+              disabled={isVerifyingCode || !otp || otp.length < 6}
             >
               {isVerifyingCode ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("verifying")}</>
