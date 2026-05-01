@@ -351,18 +351,20 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             <div className="space-y-2">
               <Label htmlFor="otp">{t("verificationCode")}</Label>
               <div className="flex justify-center">
-                <InputOTP maxLength={4} value={otp} onChange={setOtp}>
+                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
                     <InputOTPSlot index={2} />
                     <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
               <div className="flex justify-between items-center mt-2">
                 <p className="text-xs text-muted-foreground">
-                  {t("useCodeForDemo")} <span className="font-bold">1234</span>
+                  {t("useCodeForDemo")} <span className="font-bold">{DEV_OTP_CODE}</span>
                 </p>
                 <Button 
                   variant="ghost" 
@@ -379,7 +381,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             <Button 
               className="w-full"
               onClick={handleVerifyOtp}
-              disabled={isVerifyingCode || !otp || otp.length < 4}
+              disabled={isVerifyingCode || !otp || otp.length < 6}
             >
               {isVerifyingCode ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("verifying")}</>
