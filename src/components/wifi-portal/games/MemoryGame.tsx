@@ -80,7 +80,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onCancel }) => {
   
   // Timer effect
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    let interval: ReturnType<typeof setInterval> | undefined;
     
     if (gameStarted && !gameOver) {
       interval = setInterval(() => {

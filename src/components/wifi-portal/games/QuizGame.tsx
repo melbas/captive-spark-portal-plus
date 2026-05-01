@@ -61,7 +61,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ onComplete, onCancel }) => {
   
   // Timer countdown
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    let interval: ReturnType<typeof setInterval> | undefined;
     
     if (!loading && !gameOver && timer > 0) {
       interval = setInterval(() => {
