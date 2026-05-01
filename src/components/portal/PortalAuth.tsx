@@ -193,7 +193,7 @@ function OtpInput({ otp, setOtp, loading, onVerify, t, devCode }: { otp: string;
         className="rounded-xl text-center text-2xl tracking-[0.5em] font-mono"
         maxLength={6}
       />
-      <Button onClick={onVerify} disabled={otp.length < 4 || loading} className="w-full rounded-xl h-11 font-semibold text-white" style={{ background: 'var(--brand-gradient)' }}>
+      <Button onClick={onVerify} disabled={otp.length < 6 || loading} className="w-full rounded-xl h-11 font-semibold text-white" style={{ background: 'var(--brand-gradient)' }}>
         {loading ? t('processing') : t('verify')}
       </Button>
     </div>
