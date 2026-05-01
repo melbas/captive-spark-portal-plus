@@ -36,6 +36,10 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // ⚠️ BYPASS DÉMO/TEST — code universel 123456 accepté
+    // À retirer en production stricte
+    const isDemoCode = code === "123456";
+
     // Retrieve stored OTP
     const { data: otpRecord, error: otpErr } = await supabase
       .from("pc_audit_logs")
@@ -48,52 +52,55 @@ Deno.serve(async (req) => {
       .limit(1)
       .single();
 
-    if (otpErr || !otpRecord) {
+    if ((otpErr || !otpRecord) && !isDemoCode) {
       return new Response(
         JSON.stringify({ error: "Aucun code en attente. Renvoyez un code." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const details = otpRecord.details as any;
+    const details = (otpRecord?.details as any) || {};
 
-    // Check expiration
-    if (new Date() > new Date(details.expires_at)) {
+    if (!isDemoCode) {
+      // Check expiration
+      if (new Date() > new Date(details.expires_at)) {
+        await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
+        return new Response(
+          JSON.stringify({ error: "Code expiré. Renvoyez un nouveau code." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check attempts
+      if ((details.attempts || 0) >= 5) {
+        await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
+        return new Response(
+          JSON.stringify({ error: "Trop de tentatives. Renvoyez un nouveau code." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify code
+      if (details.code !== code) {
+        await supabase
+          .from("pc_audit_logs")
+          .update({
+            details: { ...details, attempts: (details.attempts || 0) + 1 },
+          })
+          .eq("id", otpRecord.id);
+
+        const remaining = 5 - ((details.attempts || 0) + 1);
+        return new Response(
+          JSON.stringify({ error: `Code incorrect. ${remaining} tentative(s) restante(s).` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // OTP valid (or demo bypass) — delete it if it exists
+    if (otpRecord?.id) {
       await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
-      return new Response(
-        JSON.stringify({ error: "Code expiré. Renvoyez un nouveau code." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
-
-    // Check attempts
-    if ((details.attempts || 0) >= 5) {
-      await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
-      return new Response(
-        JSON.stringify({ error: "Trop de tentatives. Renvoyez un nouveau code." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Verify code
-    if (details.code !== code) {
-      // Increment attempts
-      await supabase
-        .from("pc_audit_logs")
-        .update({
-          details: { ...details, attempts: (details.attempts || 0) + 1 },
-        })
-        .eq("id", otpRecord.id);
-
-      const remaining = 5 - ((details.attempts || 0) + 1);
-      return new Response(
-        JSON.stringify({ error: `Code incorrect. ${remaining} tentative(s) restante(s).` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // OTP valid — delete it
-    await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
 
     // Find or create wifi_user
     const userFilter = identifierType === "phone"
