@@ -36,18 +36,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Generate a 6-digit OTP
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 min
+    // DEV mode: active tant qu'aucun provider SMS n'est configuré, ou si DEV_OTP_MODE=true
+    const smsApiKey = Deno.env.get("SMS_API_KEY");
+    const devModeFlag = Deno.env.get("DEV_OTP_MODE");
+    const devMode = devModeFlag === "true" || (devModeFlag !== "false" && !smsApiKey);
+    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE") || "123456";
 
-    // Store OTP in a simple approach: upsert into a temporary table or use Supabase Auth OTP
-    // For now, store in a lightweight way using the wifi_users table + a separate OTP store
-    // We'll use Supabase's built-in cache via a dedicated table approach
-    // Since we want to keep it simple, store OTP hashed in memory via KV-like approach
-
-    // Store OTP: use a simple insert into a dedicated structure
-    // For MVP: store in pc_audit_logs as a secure OTP record (temporary approach)
-    // Better: create a small OTP tracking mechanism
+    // Generate OTP (fixed in DEV for easier testing)
+    const code = devMode
+      ? fixedCode
+      : String(Math.floor(100000 + Math.random() * 900000));
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
     const identifier = phone || email;
     const identifierType = phone ? "phone" : "email";
@@ -60,7 +59,7 @@ Deno.serve(async (req) => {
       .eq("entity_type", identifierType)
       .eq("ip_address", identifier);
 
-    // Store new OTP (using audit_logs as temporary OTP store)
+    // Store new OTP
     await supabase.from("pc_audit_logs").insert({
       action: "otp_pending",
       entity_type: identifierType,
@@ -69,15 +68,20 @@ Deno.serve(async (req) => {
       details: { code, expires_at: expiresAt, attempts: 0 },
     });
 
-    // In production: send SMS via Twilio/Orange SMS API or email via Resend
-    // For now, log the OTP (dev mode)
-    console.log(`[DEV] OTP for ${identifier}: ${code}`);
-
-    // TODO: Integrate SMS_API_KEY for real SMS sending
-    // const smsApiKey = Deno.env.get("SMS_API_KEY");
+    if (devMode) {
+      console.log(`[DEV-OTP] ${identifier} → code: ${code}`);
+    } else {
+      // TODO: Intégration SMS réelle (Twilio / Orange SMS API)
+      console.log(`[PROD] OTP sent to ${identifier}`);
+    }
 
     return new Response(
-      JSON.stringify({ success: true, expiresIn: 300 }),
+      JSON.stringify({
+        success: true,
+        expiresIn: 300,
+        // En DEV uniquement : on renvoie le code pour faciliter les tests
+        ...(devMode ? { devMode: true, devCode: code } : {}),
+      }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -94,4 +98,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-

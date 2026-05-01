@@ -23,6 +23,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('phone');
+  const [devCode, setDevCode] = useState<string | null>(null);
 
   const handleSendOtp = async () => {
     setLoading(true);
@@ -35,6 +36,15 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
       if (error) throw error;
       setOtpSent(true);
       toast.success(t('verificationCodeSent'));
+
+      // Mode DEV: pré-remplit le code et l'affiche pour faciliter les tests
+      if (data?.devMode && data?.devCode) {
+        setDevCode(data.devCode);
+        setOtp(data.devCode);
+        toast.info(`Mode test — Code OTP : ${data.devCode}`, { duration: 8000 });
+      } else {
+        setDevCode(null);
+      }
     } catch (err: any) {
       toast.error(err.message || t('error'));
     } finally {
@@ -122,7 +132,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
                 </Button>
               </div>
             ) : (
-              <OtpInput otp={otp} setOtp={setOtp} loading={loading} onVerify={handleVerifyOtp} t={t} />
+              <OtpInput otp={otp} setOtp={setOtp} loading={loading} onVerify={handleVerifyOtp} t={t} devCode={devCode} />
             )}
           </TabsContent>
 
@@ -141,7 +151,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
                 </Button>
               </div>
             ) : (
-              <OtpInput otp={otp} setOtp={setOtp} loading={loading} onVerify={handleVerifyOtp} t={t} />
+              <OtpInput otp={otp} setOtp={setOtp} loading={loading} onVerify={handleVerifyOtp} t={t} devCode={devCode} />
             )}
           </TabsContent>
 
@@ -165,9 +175,15 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
   );
 }
 
-function OtpInput({ otp, setOtp, loading, onVerify, t }: { otp: string; setOtp: (v: string) => void; loading: boolean; onVerify: () => void; t: (k: string) => string }) {
+function OtpInput({ otp, setOtp, loading, onVerify, t, devCode }: { otp: string; setOtp: (v: string) => void; loading: boolean; onVerify: () => void; t: (k: string) => string; devCode?: string | null }) {
   return (
     <div className="space-y-4">
+      {devCode && (
+        <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-3 text-center text-sm text-yellow-800">
+          <div className="font-semibold">🧪 Mode test</div>
+          <div>Code OTP&nbsp;: <span className="font-mono text-base font-bold">{devCode}</span></div>
+        </div>
+      )}
       <Input
         type="text"
         inputMode="numeric"

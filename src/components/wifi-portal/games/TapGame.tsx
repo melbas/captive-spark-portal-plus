@@ -46,7 +46,7 @@ const TapGame: React.FC<TapGameProps> = ({ onComplete, onCancel }) => {
   
   // Timer countdown
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    let interval: ReturnType<typeof setInterval> | undefined;
     
     if (gameStarted && !gameOver && timer > 0) {
       interval = setInterval(() => {
@@ -85,7 +85,7 @@ const TapGame: React.FC<TapGameProps> = ({ onComplete, onCancel }) => {
   }, [gameStarted, gameOver, gameWidth]);
   
   useEffect(() => {
-    let starInterval: NodeJS.Timeout;
+    let starInterval: ReturnType<typeof setInterval>;
     let animationFrameId: number;
     let lastTime = 0;
     
