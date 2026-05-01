@@ -36,6 +36,10 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // ⚠️ BYPASS DÉMO/TEST — code universel 123456 accepté
+    // À retirer en production stricte
+    const isDemoCode = code === "123456";
+
     // Retrieve stored OTP
     const { data: otpRecord, error: otpErr } = await supabase
       .from("pc_audit_logs")
