@@ -31,7 +31,7 @@ export const statisticsService = {
         // Update existing record
         const { error } = await supabase
           .from('portal_statistics')
-          .update({ [field]: existingRecord[field] + 1 })
+          .update({ [field]: ((existingRecord as any)[field] || 0) + 1 } as any)
           .eq('id', existingRecord.id);
         
         if (error) {
@@ -55,7 +55,7 @@ export const statisticsService = {
         
         const { error } = await supabase
           .from('portal_statistics')
-          .insert(newRecord);
+          .insert(newRecord as any);
         
         if (error) {
           console.error(`Error creating statistic record for ${field}:`, error);
