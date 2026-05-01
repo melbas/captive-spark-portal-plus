@@ -132,7 +132,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
                 </Button>
               </div>
             ) : (
-              <OtpInput otp={otp} setOtp={setOtp} loading={loading} onVerify={handleVerifyOtp} t={t} />
+              <OtpInput otp={otp} setOtp={setOtp} loading={loading} onVerify={handleVerifyOtp} t={t} devCode={devCode} />
             )}
           </TabsContent>
 
