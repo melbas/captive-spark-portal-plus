@@ -43,8 +43,8 @@ export const smsService = {
   },
   
   generateVerificationCode(): string {
-    // Generate a random 4-digit code
-    return Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate a random 6-digit code
+    return Math.floor(100000 + Math.random() * 900000).toString();
   },
   
   async sendVerificationCode(phoneNumber: string): Promise<{ success: boolean; code: string }> {
