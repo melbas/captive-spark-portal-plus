@@ -23,6 +23,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('phone');
+  const [devCode, setDevCode] = useState<string | null>(null);
 
   const handleSendOtp = async () => {
     setLoading(true);
@@ -35,6 +36,15 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
       if (error) throw error;
       setOtpSent(true);
       toast.success(t('verificationCodeSent'));
+
+      // Mode DEV: pré-remplit le code et l'affiche pour faciliter les tests
+      if (data?.devMode && data?.devCode) {
+        setDevCode(data.devCode);
+        setOtp(data.devCode);
+        toast.info(`Mode test — Code OTP : ${data.devCode}`, { duration: 8000 });
+      } else {
+        setDevCode(null);
+      }
     } catch (err: any) {
       toast.error(err.message || t('error'));
     } finally {
