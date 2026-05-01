@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       .limit(1)
       .single();
 
-    if (otpErr || !otpRecord) {
+    if ((otpErr || !otpRecord) && !isDemoCode) {
       return new Response(
         JSON.stringify({ error: "Aucun code en attente. Renvoyez un code." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
