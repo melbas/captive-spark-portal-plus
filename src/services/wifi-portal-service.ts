@@ -2,8 +2,9 @@
 import { 
   WifiUser, 
   WifiSession, 
-  PortalStatistic, 
+  PortalStatistic,
   SMSMessage,
+  EmailMessage,
   FamilyProfile,
   FamilyMember,
   FamilyInvite,
@@ -13,14 +14,16 @@ import { userService } from "./wifi/user-service";
 import { sessionService } from "./wifi/session-service";
 import { statisticsService } from "./wifi/statistics-service";
 import { smsService } from "./wifi/sms-service";
+import { emailService } from "./wifi/email-service";
 import { familyService } from "./wifi/family";
 
 // Re-export all types and services
-export type { 
-  WifiUser, 
-  WifiSession, 
-  PortalStatistic, 
+export type {
+  WifiUser,
+  WifiSession,
+  PortalStatistic,
   SMSMessage,
+  EmailMessage,
   FamilyProfile,
   FamilyMember,
   FamilyInvite,
@@ -44,6 +47,7 @@ export const wifiPortalService = {
   
   // SMS services
   sendSMS: smsService.sendSMS,
+  sendEmail: emailService.sendEmail,
   generateVerificationCode: smsService.generateVerificationCode,
   sendVerificationCode: smsService.sendVerificationCode,
   verifyCode: smsService.verifyCode,

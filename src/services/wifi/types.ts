@@ -41,6 +41,14 @@ export interface SMSVerification {
   attempts: number;
 }
 
+export interface EmailMessage {
+  to: string;
+  subject: string;
+  body: string;
+  type?: 'invite' | 'notification';
+  status?: 'pending' | 'sent' | 'delivered' | 'failed';
+}
+
 // Nouvelles interfaces pour la gestion de famille
 export interface FamilyProfile {
   id: string;
