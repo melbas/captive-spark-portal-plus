@@ -97,10 +97,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
   // Logos des fournisseurs de paiement mobile
   const paymentProviderLogos = {
     orange: (
-      <div className="flex items-center justify-center bg-[#FF6600] text-white rounded-md px-3 py-1">
-        <span className="font-bold mr-1">Orange</span>
-        <span className="font-light">Money</span>
-      </div>
+      <img src="/logos/orange-money.svg" alt="Orange Money" className="h-6 object-contain" />
     ),
     free: (
       <div className="flex items-center justify-center border border-[#FF0000] text-[#FF0000] rounded-md px-3 py-1">
@@ -109,9 +106,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
       </div>
     ),
     wave: (
-      <div className="flex items-center justify-center bg-[#1DC8FF] text-white rounded-md px-3 py-1">
-        <span className="font-bold">Wave</span>
-      </div>
+      <img src="/logos/wave.png" alt="Wave" className="h-6 object-contain" />
     )
   };
   
