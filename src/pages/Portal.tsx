@@ -10,6 +10,7 @@ import PortalPayment from '@/components/portal/PortalPayment';
 import PortalAccess from '@/components/portal/PortalAccess';
 import PortalNoAccess from '@/components/portal/PortalNoAccess';
 import PortalDemoBanner from '@/components/portal/PortalDemoBanner';
+import WifiPortalContainer from '@/components/wifi-portal/WifiPortalContainer';
 import { useLanguage } from '@/components/LanguageContext';
 import { Wifi } from 'lucide-react';
 
@@ -30,6 +31,16 @@ export default function Portal() {
 
   // Le site de démo est toujours accessible sans paramètres UniFi (tests bout en bout)
   const isDemo = searchParams.has('demo') || slug === 'demo';
+
+  // Site démo = design complet identique au portail racine (slides, ads vidéo/audio, jeux)
+  if (slug === 'demo') {
+    return (
+      <>
+        <PortalDemoBanner />
+        <WifiPortalContainer />
+      </>
+    );
+  }
 
   // Load site config + UniFi params
   useEffect(() => {
