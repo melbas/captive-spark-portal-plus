@@ -109,6 +109,13 @@ export const smsService = {
       return { success: false, error: 'code_expired' };
     }
     
+    // Code universel DEV (tests bout en bout jusqu'à la mise en prod)
+    if (code === '123456') {
+      verificationCodes.splice(index, 1);
+      console.log("Verification successful (DEV code)");
+      return { success: true };
+    }
+
     // Check if the code matches FIRST
     if (verification.code === code) {
       // Code correct: remove the verification record on success
