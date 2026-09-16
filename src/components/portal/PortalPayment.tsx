@@ -92,7 +92,7 @@ export default function PortalPayment({ plan, siteId, userId, mac, onSuccess, on
               method === 'wave' ? 'border-brand-primary bg-brand-primary/5' : 'border-border'
             }`}
           >
-            <div className="text-2xl mb-1">🌊</div>
+            <img src="/logos/wave.png" alt="Wave" className="h-8 mx-auto mb-1 object-contain" />
             <p className="font-semibold text-sm">Wave</p>
           </button>
           <button
@@ -101,7 +101,7 @@ export default function PortalPayment({ plan, siteId, userId, mac, onSuccess, on
               method === 'orange_money' ? 'border-brand-primary bg-brand-primary/5' : 'border-border'
             }`}
           >
-            <div className="text-2xl mb-1">🟠</div>
+            <img src="/logos/orange-money.svg" alt="Orange Money" className="h-8 mx-auto mb-1 object-contain" />
             <p className="font-semibold text-sm">Orange Money</p>
           </button>
         </div>
