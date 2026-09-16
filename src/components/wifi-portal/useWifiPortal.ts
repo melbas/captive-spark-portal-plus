@@ -150,11 +150,13 @@ export const useWifiPortal = () => {
       setLoading(true);
       setError(null);
       
-      // Create new user in database
+      // Create new user in database (mapping: phoneNumber → colonne phone)
+      const { phoneNumber, ...restData } = data;
       const user: WifiUser = {
-        auth_method: method,
-        ...data
-      };
+        auth_method: method === 'sms' ? 'sms' : 'email',
+        ...restData,
+        ...(phoneNumber ? { phone: phoneNumber } : {})
+      } as WifiUser;
       
       const macAddress = getMacAddress();
       if (macAddress) {
