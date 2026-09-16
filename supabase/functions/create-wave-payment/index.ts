@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
         site_id: siteId,
         user_id: userId,
         plan_id: planId,
+        amount: plan.price_fcfa,
         amount_fcfa: plan.price_fcfa,
         commission_fcfa: commissionFcfa,
         method: "wave",

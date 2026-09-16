@@ -121,8 +121,8 @@ Deno.serve(async (req) => {
       const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
       const insertData = identifierType === "phone"
-        ? { phone: identifier, site_id: siteId, referral_code: referralCode }
-        : { email: identifier, site_id: siteId, referral_code: referralCode };
+        ? { phone: identifier, site_id: siteId, auth_method: "phone", referral_code: referralCode }
+        : { email: identifier, site_id: siteId, auth_method: "email", referral_code: referralCode };
 
       const { data: newUser, error: insertErr } = await supabase
         .from("wifi_users")
