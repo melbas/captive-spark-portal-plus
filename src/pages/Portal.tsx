@@ -28,7 +28,8 @@ export default function Portal() {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  const isDemo = searchParams.has('demo');
+  // Le site de démo est toujours accessible sans paramètres UniFi (tests bout en bout)
+  const isDemo = searchParams.has('demo') || slug === 'demo';
 
   // Load site config + UniFi params
   useEffect(() => {
