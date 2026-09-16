@@ -1875,7 +1875,6 @@ export type Database = {
           type: string | null
           updated_at: string | null
           welcome_msg: string | null
-          whatsapp_support: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1890,7 +1889,6 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
           welcome_msg?: string | null
-          whatsapp_support?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1905,7 +1903,6 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
           welcome_msg?: string | null
-          whatsapp_support?: string | null
         }
         Relationships: [
           {

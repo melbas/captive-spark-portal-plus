@@ -77,7 +77,6 @@ export default function Portal() {
         logoUrl: site.logo_url,
         primaryColor: site.primary_color || '#5B4DFF',
         welcomeMsg: site.welcome_msg || 'Bienvenue !',
-        whatsappSupport: site.whatsapp_support,
         plans: (plans || []).map((p: any) => ({
           id: p.id,
           name: p.name,

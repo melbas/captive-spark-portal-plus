@@ -541,20 +541,10 @@ export const translations: Record<string, Translations> = {
   
   // Support related
   [TranslationCategory.SUPPORT]: {
-    whatsappSupport: {
-      en: "WhatsApp Support",
-      fr: "Support WhatsApp",
-      es: "Soporte WhatsApp"
-    },
     contactSupport: {
       en: "Contact Support",
       fr: "Contacter le support",
       es: "Contactar soporte"
-    },
-    whatsappDefaultMessage: {
-      en: "Hello, I need help with my WiFi connection.",
-      fr: "Bonjour, j'ai besoin d'aide avec ma connexion WiFi.",
-      es: "Hola, necesito ayuda con mi conexión WiFi."
     },
   },
 };

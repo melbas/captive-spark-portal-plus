@@ -10,7 +10,6 @@ import { useLanguage } from "../LanguageContext";
 import AdCarousel from "../ads/AdCarousel";
 import VideoAd from "../ads/VideoAd";
 import AudioPromo from "../ads/AudioPromo";
-import WhatsAppSupport from "../support/WhatsAppSupport";
 import { Step } from "./types";
 
 // Mise à jour avec les nouvelles images téléchargées par l'utilisateur
@@ -205,8 +204,6 @@ const WifiPortalContainer = () => {
         </Card>
       </div>
       
-      {/* WhatsApp Support Button - Updated with Senegal number */}
-      <WhatsAppSupport phoneNumber="221771234567" position="bottom-right" />
     </Layout>
   );
 };

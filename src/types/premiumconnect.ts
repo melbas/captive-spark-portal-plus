@@ -45,7 +45,6 @@ export interface PortalConfig {
   logoUrl: string | null;
   primaryColor: string;
   welcomeMsg: string;
-  whatsappSupport: string | null;
   plans: WifiPlan[];
 }
 
