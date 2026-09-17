@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { EngagementKind } from "@/lib/portal-config-defaults";
 import { toast } from "sonner";
+import { normalizeStoredPhone } from "@/lib/phone";
 import { wifiPortalService, WifiUser, WifiSession } from "@/services/wifi-portal-service";
 import { 
   Step, 
@@ -217,7 +218,10 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
           level: UserLevel.BASIC,
           referralCode: "WIFI" + Math.floor(Math.random() * 10000),
           isAdmin: data.email === "admin@example.com", // Simple admin check
-          ...data
+          ...data,
+          // Normalise le numéro collecté à l'auth en E.164 strict : le wallet de
+          // paiement le pré-remplira sans le redemander à l'utilisateur.
+          phone: normalizeStoredPhone(data.phoneNumber) ?? data.phoneNumber,
         });
         
         // Type d'engagement : config publiée (portal_customizations "journey").

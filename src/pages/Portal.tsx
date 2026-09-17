@@ -15,7 +15,6 @@ import { useLanguage } from '@/components/LanguageContext';
 import { Wifi } from 'lucide-react';
 
 export type PortalStep = 'welcome' | 'auth' | 'plans' | 'payment' | 'access';
-
 export default function Portal() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
@@ -27,6 +26,7 @@ export default function Portal() {
   const [error, setError] = useState<string | null>(null);
   const [unifiParams, setUnifiParams] = useState<UnifiParams | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authPhone, setAuthPhone] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   // Le site de démo est toujours accessible sans paramètres UniFi (tests bout en bout)
@@ -135,7 +135,13 @@ export default function Portal() {
         {step === 'auth' && (
           <PortalAuth
             siteId={config.siteId}
-            onAuthenticated={(uid) => { setUserId(uid); setStep('plans'); }}
+            onAuthenticated={(uid, phone) => {
+              setUserId(uid);
+              // Numéro collecté à l'auth : pré-remplira le wallet de paiement
+              // (l'utilisateur ne le ressaisit pas une 2e fois).
+              setAuthPhone(phone ?? null);
+              setStep('plans');
+            }}
             onBack={() => setStep('welcome')}
           />
         )}
@@ -154,6 +160,8 @@ export default function Portal() {
             siteId={config.siteId}
             userId={userId!}
             mac={unifiParams?.mac || 'demo-mac'}
+            // Pré-rempli depuis l'auth : l'utilisateur ne resaisit pas son numéro.
+            phone={authPhone ?? undefined}
             onSuccess={() => setStep('access')}
             onBack={() => setStep('plans')}
           />

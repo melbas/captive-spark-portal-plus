@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { PaymentMethod, PaymentPackage, UserData } from "./types";
 import { toast } from "sonner";
 import { useLanguage } from "../LanguageContext";
+import { toE164, normalizeStoredPhone } from "@/lib/phone";
 
 interface PaymentPortalProps {
   userData: UserData;
@@ -26,6 +27,16 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedMobileOperator, setSelectedMobileOperator] = useState<string>("orange");
   const { t } = useLanguage();
+
+  /**
+   * Numéro de paiement : pré-rempli depuis la session authentifiée (collecté à
+   * l'accueil, stocké en base). L'utilisateur ne le ressaisit JAMAIS — il ne
+   * peut plus saisir un numéro qui n'est pas le sien pour recevoir un code.
+   * Dégradation : si absent/non normalisable, le champ reste éditable.
+   */
+  const [paymentPhone, setPaymentPhone] = useState<string>(() =>
+    normalizeStoredPhone(userData.phone) ?? ""
+  );
   
   // Forfaits individuels mis à jour
   const individualPackages: PaymentPackage[] = [
@@ -82,6 +93,10 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
   const handleProcessPayment = () => {
     if (!selectedPackage) {
       toast.error(t("selectPackage"));
+      return;
+    }
+    if (!paymentPhone) {
+      toast.error(t("enterPhoneNumber"));
       return;
     }
     
@@ -333,8 +348,22 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">{t("phoneNumber")}</Label>
-                    <Input id="phone" placeholder={t("enterPhoneNumber")} />
-                    <p className="text-xs text-muted-foreground">{t("example")}: 77 123 45 67</p>
+                    <Input
+                      id="phone"
+                      value={paymentPhone}
+                      onChange={(e) => setPaymentPhone(e.target.value)}
+                      placeholder={t("enterPhoneNumber")}
+                      inputMode="tel"
+                      autoComplete="tel"
+                      readOnly={!!userData.phone}
+                      className={userData.phone ? "bg-muted/50 text-muted-foreground" : undefined}
+                      aria-describedby="phone-hint"
+                    />
+                    <p id="phone-hint" className="text-xs text-muted-foreground">
+                      {userData.phone
+                        ? t("example") + ": " + paymentPhone
+                        : t("example") + ": 77 123 45 67"}
+                    </p>
                   </div>
                 </TabsContent>
                 

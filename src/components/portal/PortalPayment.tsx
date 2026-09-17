@@ -12,14 +12,18 @@ interface Props {
   siteId: string;
   userId: string;
   mac: string;
+  /** Numéro E.164 collecté à l'auth — pré-remplit le paiement mobile money. */
+  phone?: string;
   onSuccess: () => void;
   onBack: () => void;
 }
 
-export default function PortalPayment({ plan, siteId, userId, mac, onSuccess, onBack }: Props) {
+export default function PortalPayment({ plan, siteId, userId, mac, phone, onSuccess, onBack }: Props) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<'wave' | 'orange_money' | null>(null);
+  // Numéro déjà connu (auth) — c'est lui qui part à l'API paiement.
+  const paymentPhone = phone ?? "";
 
   const handlePay = async () => {
     if (!method) { toast.error('Choisissez un mode de paiement'); return; }
@@ -40,7 +44,9 @@ export default function PortalPayment({ plan, siteId, userId, mac, onSuccess, on
 
       if (method === 'orange_money') {
         const { data, error } = await supabase.functions.invoke('create-om-payment', {
-          body: { planId: plan.id, siteId, userId, mac, phone: '' },
+          // Numéro déjà connu : pré-rempli depuis la session authentifiée
+          // (wallet) — ne plus jamais envoyer de numéro vide.
+          body: { planId: plan.id, siteId, userId, mac, phone: paymentPhone || undefined },
         });
         if (error) throw error;
         if (data?.paymentUrl) {

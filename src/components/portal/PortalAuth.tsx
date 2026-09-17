@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 interface Props {
   siteId: string;
-  onAuthenticated: (userId: string) => void;
+  onAuthenticated: (userId: string, phone?: string | null) => void;
   onBack: () => void;
 }
 
@@ -62,7 +62,9 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
       const { data, error } = await supabase.functions.invoke('verify-otp', { body });
       if (error) throw error;
       toast.success(t('verificationSuccessful'));
-      onAuthenticated(data.userId);
+      // Numéro au format E.164 (déjà construit ci-dessus) pour pré-remplir le
+      // wallet — l'utilisateur ne le ressaisit pas au paiement.
+      onAuthenticated(data.userId, activeTab === 'phone' ? `+221${phone}` : null);
     } catch (err: any) {
       toast.error(err.message || t('invalidCode'));
     } finally {

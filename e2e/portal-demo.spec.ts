@@ -119,6 +119,13 @@ test.describe("Portail démo — parcours complet", () => {
       // Logos facturés en assets statiques (dette tracée — INVENTAIRE-PORTAIL §6)
       await expect(page.getByAltText("Wave")).toBeVisible();
       await expect(page.getByAltText("Orange Money")).toBeVisible();
+      // Numéro de paiement pré-rempli : l'utilisateur ne le ressaisit pas
+      // (collecté à l'auth → wallet). Champ lecture seule quand il est connu.
+      const phoneInput = page.locator("#phone");
+      if ((await phoneInput.count()) > 0) {
+        await expect(phoneInput).toHaveValue(/\+221\d{9}/);
+        await expect(phoneInput).toHaveAttribute("readonly");
+      }
       // Retour à l'écran d'accès accordé pour le valider
       const back = page.getByRole("button").filter({ hasText: /retour|go back|back/i }).first();
       if ((await back.count()) > 0) {
