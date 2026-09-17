@@ -68,6 +68,76 @@ function detectDemo(): boolean {
   return path === "/" || path === "/portal" || /^\/portal\/demo\/?$/.test(path);
 }
 
+/**
+ * Applique la marque lue depuis la config (`themeColor`, `logoUrl`) au CSS du
+ * portail — dette §7 INVENTAIRE-PORTAIL §3 : ces valeurs étaient lues mais
+ * jamais appliquées au rendu.
+ *
+ * - `themeColor` : injectée comme `--primary` (et `--ring`, dérivés) sur
+ *   `:root` ET `.dark` (le portail est le seul consommateur) — les composants
+ *   shadcn/tailwind `text-primary` / `bg-primary` suivent automatiquement.
+ * - `logoUrl` : injectée comme variable CSS `--portal-logo` (utilisable en
+ *   `bg-[var(--portal-logo)]` / `content: var(--portal-logo)` côté portail).
+ *
+ * Sécurité : aucune écriture si la valeur est absente ou mal formée ; la
+ * couleur doit être un `#hex` ou un `hsl(...)` valide (on refuse tout autre
+ * format pour éviter d'injecter du CSS arbitraire).
+ */
+const CSS_COLOR_RE = /^(#[0-9a-f]{3}|#[0-9a-f]{6}|#[0-9a-f]{8}|hsl\([^)]*\)|hsla\([^)]*\))$/i;
+const CSS_URL_RE = /^https?:\/\/[^\s"']+$/i;
+
+function hexToHslChannels(hex: string): string | null {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return null;
+  const r = parseInt(m[1].slice(0, 2), 16) / 255;
+  const g = parseInt(m[1].slice(2, 4), 16) / 255;
+  const b = parseInt(m[1].slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return `${0} ${Math.round(l * 100)}%`;
+  const d = max - min;
+  let h = 0;
+  if (max === r) h = ((g - b) / d) % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  h = Math.round(h * 60);
+  if (h < 0) h += 360;
+  const s = Math.round((d / (1 - Math.abs(2 * l - 1))) * 100);
+  return `${h} ${s}% ${Math.round(l * 100)}%`;
+}
+
+/**
+ * Applique la marque au CSS. Idempotent (écrase les variables précédentes).
+ * À appeler une fois la config résolue (WifiPortalContainer).
+ */
+export function applyPortalBranding(themeColor: string | null, logoUrl: string | null): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  if (themeColor && CSS_COLOR_RE.test(themeColor)) {
+    const channels = themeColor.startsWith("#")
+      ? hexToHslChannels(themeColor)
+      : themeColor.replace(/^hsla?\(/, "").replace(/\)$/, "");
+    if (channels) {
+      // Format canonique tailwind/shadcn : "H S% L%" (sans le préfixe hsl()).
+      root.style.setProperty("--primary", channels);
+      root.style.setProperty("--ring", channels);
+      // Variant sombre : même teinte, luminosité un peu relevée (lisibilité).
+      if (!themeColor.startsWith("#")) {
+        const parts = channels.split(/\s+/);
+        const light = parseInt(parts[2] || "65", 10);
+        parts[2] = `${Math.min(100, light + 10)}%`;
+        root.style.setProperty("--dark-primary", parts.join(" "));
+      } else {
+        root.style.setProperty("--dark-primary", channels);
+      }
+    }
+  }
+  if (logoUrl && CSS_URL_RE.test(logoUrl)) {
+    root.style.setProperty("--portal-logo", `url("${logoUrl}")`);
+  }
+}
+
 function detectSlug(explicit?: string): string | null {
   if (explicit) return explicit;
   if (typeof window === "undefined") return null;
@@ -75,9 +145,23 @@ function detectSlug(explicit?: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-/** Déduit le type d'un média `ad_videos` de son URL (colonne `type` absente — à ajouter côté backend). */
-function inferMediaKind(url: string): "video" | "audio" {
+/** Déduit le type d'un média `ad_videos` de son URL.
+ *
+ * Dette §7 (INVENTAIRE-PORTAIL §1) : la colonne `ad_videos.type` n'existe pas
+ * encore côté backend — le front déduit le type de l'extension de l'URL.
+ * Dégradation gracieuse : extension inconnue/absente → `"video"` (rendu
+ * `<VideoAd>` qui gère une source invalide en erreur, plutôt qu'un écran
+ * vide). Dès que `ad_videos.type` existera, `explicitType` sera lu en base.
+ */
+function inferMediaKind(url: string, explicitType?: string | null): "video" | "audio" {
+  // Contrat backend à venir : `ad_videos.type` (enum image/video/audio).
+  if (explicitType === "audio" || explicitType === "video") return explicitType;
   return /\.(mp3|m4a|ogg|wav)(\?|$)/i.test(url) ? "audio" : "video";
+}
+
+/** Média inconnu (URL absente ou non résolvable) → on ignore la ligne. */
+function isUsableMediaUrl(url: string | null | undefined): url is string {
+  return typeof url === "string" && url.trim().length > 0;
 }
 
 /* ---------- Projections explicites (colonnes réellement lues) ----------
@@ -114,6 +198,8 @@ interface AdVideoRow {
   title: string | null;
   video_url: string | null;
   thumbnail_url: string | null;
+  /** Contrat backend à venir (enum image/video/audio) — absent aujourd'hui. */
+  type?: string | null;
 }
 type QueryResult<T> = { data: T | null; error: { message: string } | null };
 
@@ -228,7 +314,7 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
             .eq("portal_status", "active")
             .maybeSingle() as unknown as QueryResult<PortalConfigRow>;
           const adsResP = table("ad_videos")
-            .select("id, title, video_url, thumbnail_url")
+            .select("id, title, video_url, thumbnail_url, type")
             .eq("site_id", site.id)
             .eq("active", true)
             .order("priority", { ascending: true }) as unknown as QueryResult<AdVideoRow[]>;
@@ -316,9 +402,13 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
         }
 
         // 5. Slides & médias
+        // Robustesse `ad_videos.type` (dette §7) : type inconnu/absent → déduit
+        // de l'extension ; extension inconnue → "video" (VideoAd gère l'erreur).
+        // `image` est un contrat backend à venir ; aujourd'hui un media sans
+        // extension connue et non audio est traité en slide (rétro-compatible).
         const MEDIA_RE = /\.(mp3|m4a|ogg|wav|mp4|webm)(\?|$)/i;
         const slides: PortalAdSlide[] = adRows
-          .filter((a) => a.video_url && !MEDIA_RE.test(a.video_url))
+          .filter((a) => isUsableMediaUrl(a.video_url) && !MEDIA_RE.test(a.video_url))
           .map((a) => ({
             id: a.id,
             imageUrl: a.video_url as string,
@@ -327,10 +417,10 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
             description: { en: "", fr: "" },
           }));
         const mediaAds: PortalMediaAd[] = adRows
-          .filter((a) => a.video_url && MEDIA_RE.test(a.video_url))
+          .filter((a) => isUsableMediaUrl(a.video_url) && MEDIA_RE.test(a.video_url))
           .map((a) => ({
             id: a.id,
-            kind: inferMediaKind(a.video_url as string),
+            kind: inferMediaKind(a.video_url as string, a.type),
             url: a.video_url as string,
             thumbnailUrl: a.thumbnail_url ?? undefined,
             title: a.title ?? "",

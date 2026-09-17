@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import AdCarousel from "../ads/AdCarousel";
 import VideoAd from "../ads/VideoAd";
 import AudioPromo from "../ads/AudioPromo";
 import { Step } from "./types";
-import { usePortalConfig } from "@/hooks/usePortalConfig";
+import { usePortalConfig, applyPortalBranding } from "@/hooks/usePortalConfig";
 import {
   DEMO_AD_SLIDES,
   DEMO_AUDIO_AD,
@@ -29,6 +29,13 @@ const localizedText = (value: LocalizedText, language: string): string =>
 const WifiPortalContainer = () => {
   const [showAds] = useState(true);
   const portal = usePortalConfig();
+
+  // Dette §7 (INVENTAIRE-PORTAIL §3) : la couleur principale et le logo lus
+  // depuis la config sont désormais APPLIQUÉS au CSS du portail (avant : lus
+  // mais non appliqués). Aucun effet en l'absence de config publiée.
+  useEffect(() => {
+    applyPortalBranding(portal.themeColor, portal.logoUrl);
+  }, [portal.themeColor, portal.logoUrl]);
 
   const {
     currentStep,
@@ -107,6 +114,20 @@ const WifiPortalContainer = () => {
       <div className="flex flex-col items-center justify-center min-h-[80vh] py-8">
         <div className="w-full max-w-md mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Logo de marque (config publiée : portal_config.logo_url / sites.logo_url).
+                Dette §7 : avant lu mais non appliqué. Dégradation gracieuse : masqué
+                tant qu'aucun logo n'est publié. */}
+            {portal.logoUrl && (
+              <img
+                src={portal.logoUrl}
+                alt={portal.portalName ?? t("portal")}
+                className="h-12 w-auto object-contain mx-auto md:mx-0"
+                onError={(e) => {
+                  // Logo injoignable : on le masque plutôt que d'afficher un cassé
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            )}
             <h1 className="text-4xl font-bold text-center md:text-left text-foreground">
               {portal.portalName ?? t("portal")}
             </h1>

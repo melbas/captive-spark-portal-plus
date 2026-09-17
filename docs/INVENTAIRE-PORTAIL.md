@@ -78,15 +78,33 @@ Jointure `portal_enabled_modules` ↔ `portal_modules` (catalogue seedé, 12 mod
 | `mini_games` | `MiniGamesHub.tsx` (lazy `WifiPortalContent.tsx:20`) | idem | AdminModules | toggle |
 | `rewards` | `RewardSystem.tsx` (lazy `:18`) | idem | AdminModules | toggle |
 | `referral` | `ReferralSystem.tsx` (lazy `:19`) | idem | AdminModules | toggle |
-| `family` | `FamilyManagement.tsx` (lazy `:21`) — **mock-data, module non raccordé** : masqué tant qu'aucune table `family_*` n'existe (ANALYSE-CROISEE §2.4) | idem | AdminModules | toggle |
+|| `family` | `FamilyManagement.tsx` (lazy `:21`) — **mock-data, module non raccordé** : masqué tant qu'aucune table `family_*` n'existe (ANALYSE-CROISEE §2.4). **Tables `family_profiles`/`family_members` REPORTÉES par le backend** (priorité Bictorys, décision produit 2026-09-17) : le module reste en mock, masqué par défaut (fail-closed). Voir §8.5. | idem | AdminModules | toggle |
 | `payment` | `PaymentPortal.tsx` (lazy `:22`) | idem | AdminModules | toggle |
 
 ## 8. Ce qui reste hardcodé côté front (dette tracée)
 
 1. **Défauts démo** (`portal-config-defaults.ts`) : autorisés uniquement en démo isolée — à supprimer à la fin de la prod.
 2. **OTP `123456`** (`sms-service.ts:113`) : mode dev voulu ; sortie = `DEV_OTP_MODE=false` + vrai fournisseur SMS, pas de retrait silencieux.
-3. **Couleur/logo non appliqués au rendu** (lues mais inutilisées — voir RAPPORT-PORTAIL §à faire).
+3. **Couleur/logo non appliqués au rendu** (lues mais inutilisées — résolu, voir ci-dessous).
+   - **RÉSOLU (session 2026-09-17)** : `applyPortalBranding()` dans
+     `usePortalConfig.ts` injecte `themeColor` → `--primary`/`--ring` (format
+     HSL tailwind/shadcn, validation format + conversion hex→hsl) et
+     `logoUrl` → `--portal-logo` + rendu `<img>` dans `WifiPortalContainer`
+     (masqué si absent, `onError` le retire si injoignable). Appliqué via
+     `useEffect` à la résolution de la config. Aucun effet en démo sans config.
 4. **Interval rotation 7 s** (`WifiPortalContainer.tsx:143`).
 5. **Famille** : mock (`services/wifi/family/data/`) tant que le module n'est pas activé.
+   - **5. Tables `family_*` REPORTÉES** (décision produit 2026-09-17 : le backend
+     priorise l'intégration Bictorys — paiement — avant `family_profiles`/
+     `family_members`). Vérifié dans `supabase/migrations_schema_dump.sql` :
+     aucune table `family_profiles`/`family_members` n'existe dans le schéma
+     (seules colonnes liées : `wifi_users.family_id`/`family_role`,
+     `wifi_plans.is_family_plan`). Conséquence : le module famille **reste en
+     mock, masqué par défaut** (fail-closed — `MANDATORY_ONLY_GATING.family=false`).
+     Aucune activation possible même via `portal_enabled_modules` car les services
+     (`services/wifi/family/*`) pointent sur des tables inexistantes : un toggle
+     admin activé n'afficherait que des données mock — c'est documenté, pas un bug.
+     Dépendance backend pour démasquer : migration créant `family_profiles` +
+     `family_members` (+ RLS), puis branchement des services family existants.
 6. **Logos paiement** : assets statiques.
 7. **`ThemeMarketplace` + gestionnaires de thèmes** : non rendus (code mort à fusionner côté admin).

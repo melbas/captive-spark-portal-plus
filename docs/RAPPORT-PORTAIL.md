@@ -46,9 +46,13 @@ L'agent admin a modifié mon hook (`src/hooks/usePortalConfig.ts`) en y posant d
    "e2e": "playwright test --project=local",
    "e2e:staging": "E2E_TARGET=vercel playwright test --project=vercel"
    ```
+   **FAIT (session 2026-09-17)** : `@playwright/test@^1.47.2` en devDependency
+   (résolu en 1.63.0), scripts `e2e` + `e2e:staging` ajoutés, `package-lock.json`
+   régénéré (`npm install`), `.gitignore` : `playwright-report/` + `test-results/`.
+   `npm run e2e` **passe** (parcours démo complet, 25.8 s) — voir §3.
 2. **`App.tsx`** (déjà fait par l'agent admin, à valider) : route `/portal/:slug` → `WifiPortalContainer` ; `/` conserve le portail riche (fusion racine : décision Phase 1 ANALYSE-CROISEE §2.2, à trancher).
 3. **Env Vercel/CI** : `VITE_USE_EDGE_AUTH=true` en prod (une fois les policies anon verrouillées), `E2E_*` pour le staging e2e.
-4. **`.gitignore`** : `playwright-report/`, `test-results/`.
+4. **`.gitignore`** : `playwright-report/`, `test-results/`. **FAIT** (cf. point 1).
 
 ## 6. Ce que le BACKEND doit ajouter (bloquants / dettes)
 
@@ -64,4 +68,20 @@ L'agent admin a modifié mon hook (`src/hooks/usePortalConfig.ts`) en y posant d
 
 ## 7. Hardcodes restants (dette)
 
-Voir `docs/INVENTAIRE-PORTAIL.md` §8 : défauts démo (bornés à la démo isolée), OTP `123456` (voulu jusqu'à la prod), couleur/logo lus mais non appliqués au CSS, interval rotation 7 s, famille en mock, logos paiement statiques, gestionnaires de thèmes non routés.
+État session 2026-09-17 :
+
+- **RÉSOLU** : couleur principale + logo appliqués au CSS du portail
+  (`applyPortalBranding()` — voir INVENTAIRE-PORTAIL §8.3).
+- **RÉSOLU** : robustesse `ad_videos.type` — déduction d'extension avec
+  dégradation gracieuse (type absent/inconnu → `video` ; URL absente → ligne
+  ignorée ; lecture du futur `type` backend dès qu'existant — INVENTAIRE §1).
+- **MAINTENU (voulu)** : module famille en mock, masqué par défaut — tables
+  `family_profiles`/`family_members` **reportées** côté backend (priorité
+  Bictorys). Documentation et dépendance : INVENTAIRE-PORTAIL §8.5.
+- **AJOUT É2E (dette technique)** : `sessionService` étant désactivé (§6.2),
+  le parcours e2e passe par un bouchon local injecté par Playwright
+  (`e2e/portal-demo.spec.ts` + exposition conditionnelle `?e2e=1` dans
+  `wifi-portal-service.ts`). À retirer quand `authorize-guest` sera sécurisé.
+- **Reste** : voir `docs/INVENTAIRE-PORTAIL.md` §8 : défauts démo (bornés à la
+  démo isolée), OTP `123456` (voulu jusqu'à la prod), interval rotation 7 s,
+  logos paiement statiques, gestionnaires de thèmes non routés.
