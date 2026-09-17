@@ -17,6 +17,7 @@
 8. **Coût et fournisseur SMS au Sénégal** non arbitrés (Orange SMS API existe en self-service ; il existe aussi des agrégats locaux). Bloquant pour sortir du 123456.
 9. **Absence de gestion d'erreur utilisateur** : le portail avalise les échecs (erreurs UniFi ignorées, toasts génériques). Pour un non-technique dans un salon, un échec d'autorisation doit être diagnosable depuis le back office (statut de session, dernière erreur).
 10. **Performance mobile** : bundle 1,2 Mo (347 Ko gzip) sans code-splitting — le portail doit se charger vite sur le WiFi captif justement lent. Le portail captif est le pire endroit pour un gros bundle.
+11. **Le modèle multi-tenant SaaS (WaaS) n'est traité nulle part** : `resellers` est une table vide, `sites.reseller_id` existe mais n'est jamais exploité, aucune notion d'organisation/client, aucun plan tarifaire de la plateforme, aucune isolation de données par tenant. Or le produit EST un SaaS WiFi (WaaS) : un opérateur (nous) vend à des revendeurs, qui gèrent plusieurs sites/événements. L'isolation par tenant doit être une décision d'architecture dès le premier commit du back office, sinon on la rattrapera en refonte complète.
 
 ## 2. Incohérences entre les analyses (arbitrages)
 
@@ -46,7 +47,30 @@ Ce qu'il ne faut PAS faire : redessiner le back office en parallèle puis « con
 
 **L'inventaire de référence (à produire en premier)** : chaque élément du portail riche = {id, où il est dans le code, table/colonne cible, page admin qui le pilote, type de contrôle (toggle/texte/couleur/upload)}. C'est le contrat entre les deux agents.
 
-## 5. Missions des deux agents
+## 5. Modèle SaaS / WaaS multi-sites (PRINCIPE STRUCTURANT)
+
+Le produit est un **WiFi-as-a-Service** : un opérateur plateforme (nous) héberge des revendeurs (intégrateurs, agences événementielles), qui gèrent un ou plusieurs sites (salons, hôtels, campus). Tout le back office et le backend sont pensés multi-tenant dès le premier commit.
+
+**Hiérarchie des tenants** (déjà amorcée en base, à consolider) :
+```
+opérateur (nous, rôle super_admin)
+ └─ reseller (revendeur : melbas, agence X…)          → table resellers
+     └─ site / événement (Salon Habitat, Hôtel Y…)    → table sites (reseller_id)
+         └─ portail, forfaits, sessions, users, pubs… → tout scopé par site_id
+```
+
+**Règles d'architecture multi-tenant (non négociables)** :
+1. **Isolation RLS par tenant** : chaque ligne métier porte `site_id` (existant) et chaque site porte `reseller_id` (existant). Les policies admin ne laissent voir qu'un site dont le reseller_id correspond au rôle de l'utilisateur (`is_admin_user()` = super_admin voit tout ; rôle reseller voit SES sites uniquement).
+2. **4 rôles, pas un seul** : `super_admin` (opérateur), `reseller` (gère ses sites, voit ses revenus/commissions), `site_manager` (un site, config du portail), `viewer` (lecture seule). Tables `user_roles`/`pc_admin_users` existantes, à étendre avec `reseller_id`/`site_id`.
+3. **Modèle de facturation plateforme** : le reseller paie (abonnement WaaS ou % des transactions — colonne `commission_rate` existe déjà sur `resellers` et `commission_fcfa` sur `transactions`). Le back office doit calculer la commission due par revendeur (déjà listé dans les trous d'AdminResellers) et une vue « revenus plateforme » pour le super_admin.
+4. **Le sélecteur de site courant devient le pivot de l'UI admin** : le contexte (site sélectionné) filtre TOUTES les pages (dashboard, sessions, users, forfaits, pubs). Le super_admin/reseller bascule de site ; le site_manager est verrouillé sur le sien.
+5. **Chaque forfait de la plateforme a un périmètre** : nombre de sites simultanés, modules premium activables (le CHECK mandatory/optional/premium de `portal_modules` est déjà prêt pour un gating par plan), volume SMS. Simplifié en v1 : 1 offre WaaS = nombre de sites illimités + commission %.
+6. **Partage vs personnalisation** : les modules (jeux, quiz types), les thèmes et les modèles de forfaits sont des **bibliothèques partagées** (catalogue plateforme) que chaque site active et personnalise — c'est exactement le duo `portal_modules` (catalogue) / `portal_enabled_modules` (activation par site). Ne jamais dupliquer le catalogue par site.
+7. **Onboarding SaaS** : le wizard « créer un portail » crée site + config + forfaits modèles ; à terme il s'insérera dans un parcours d'inscription reseller self-service.
+
+**Impact sur les missions** : le sélecteur de site et les rôles multi-tenant sont intégrés aux « fondations admin » (avant toute page) ; les policies RLS backend sont écrites d'emblée avec `reseller_id → sites` dans le JOIN de scoping ; AdminResellers devient une vraie page (revenus, commissions, sites rattachés).
+
+## 6. Missions des deux agents
 
 ### Agent BACKEND
 1. **Inventaire front→DB** (avec l'agent back office) : le contrat ci-dessus.
@@ -72,11 +96,11 @@ Ce qu'il ne faut PAS faire : redessiner le back office en parallèle puis « con
 - Aucun déploiement client sans que la checklist P0 sécurité soit verte.
 - Chaque page admin livrée = démontrable par un non-technique (aperçu + aide contextuelle).
 
-## 6. Ordre de livraison proposé
+## 7. Ordre de livraison proposé
 
-1. Inventaire + P0 sécurité (backend) ∥ fondations admin (back office)
+1. Inventaire + P0 sécurité + **schéma multi-tenant (rôles, RLS par reseller)** (backend) ∥ fondations admin **(sélecteur de site + rôles)** (back office)
 2. Portail branché sur la config (backend livre les policies, back office livre Sites+Modules)
-3. Contenus + forfaits + UniFi
+3. Contenus + forfaits + UniFi + **page Revendeurs (commissions, revenus)**
 4. Wizard + exploitation + conformité
 
 ---
