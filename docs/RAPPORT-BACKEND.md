@@ -218,28 +218,144 @@
 - Statistiques : plus d'écriture front directe → Edge Function à créer
   (P1) qui appelle `rpc('increment_statistic', {p_field})` en service_role.
 
-## 7. Reste à faire (hors lot initial)
+## 7. Bictorys — abstraction de paiement provider-agnostic (tranche 2)
+
+> Décision produit (2026-09-17, Abdoulaye) : **Bictorys** (agrégateur ouest-africain)
+> devient le provider de paiement PRINCIPAL. Wave / Orange Money directs restent
+> disponibles en **fallback** sous la même abstraction — ils ne sont PAS supprimés.
+> Le paiement devient **asynchrone** : le webhook est la source de vérité.
+
+### 7.1 Couche d'abstraction — `supabase/functions/_shared/payment/`
+
+| Fichier | Rôle |
+|---|---|
+| `provider.ts` | Contrat `PaymentProvider` + types `ChargeParams`/`ChargeResult` + `PaymentProviderError` (retryable / invalidConfig) |
+| `registry.ts` | **Sélection** du provider : `sites.payment_provider` > `PAYMENT_PROVIDER` (env) > `bictorys`. Fail-closed : pas de bascule silencieuse de provider. `assertProviderConfigured()` rejette si les secrets manquent (503). |
+| `providers/bictorys.ts` | Provider principal : `POST {API_URL}/pay/v1/charges?payment_type=`, clé publique uniquement, backoff exponentiel sur 403 HTML (WAF rate-limit), 403 JSON = clé invalide (non retryable) |
+| `providers/wave.ts` | Fallback direct (API Wave checkout) |
+| `providers/orange.ts` | Fallback direct — fail-closed : l'API OM v2 SN n'est pas implémentée ; en pratique OM passe par Bictorys (`payment_type=orange_money`) qui renvoie le **code USSD** (`#144*82#`) |
+| `providers/index.ts` | Assemblage des providers (runtime Deno uniquement — garde `registry.ts` testable en Node sans réseau) |
+| `webhook.ts` | `verifyWebhookSignature()` : HMAC-SHA256(`${timestamp}.${rawBody}`), replay protection 5 min, comparaison à temps constant, fallback secret statique |
+| `status.ts` | Mapping des statuts providers → interne (`succeeded/processing/pending/failed/cancelled/refunded`) |
+| `env.ts` | Lecture d'env compatible Deno **et** Node (tests) |
+| `payment.test.cjs` | 47 tests (voir §7.4) |
+
+**Comment un site choisit son provider** : colonne `sites.payment_provider`
+(`bictorys` | `wave` | `orange`, NULL = `PAYMENT_PROVIDER` global, défaut
+`bictorys`). Surcharge ponctuelle : paramètre `provider` de `create-charge`.
+
+### 7.2 Edge Functions
+
+- **`create-charge`** (NOUVEAU, point d'entrée unique, `verify_jwt = true`) :
+  authentification serveur via `_shared/auth.ts` (admin `is_admin_user()` /
+  `can_access_site()`, **ou** preuve de session visiteur issue de `verify-otp`),
+  montant **toujours relu en base** (`wifi_plans.price_fcfa`, forfait du site et
+  actif), idempotence (`idempotencyKey` rejoue la transaction existante ; le
+  préfixe `pc-` est réservé au serveur pour éviter le rejeu d'une transaction),
+  URLs succès/erreur construites serveur, commission revendeur conservée,
+  audit `payment_initiated` (porte la MAC pour `authorize-guest`).
+- **`bictorys-webhook`** (NOUVEAU, `verify_jwt = false`) : fail-closed 503 si
+  `BICTORYS_WEBHOOK_SECRET` absent, HMAC + replay 5 min + fallback statique,
+  idempotence via `processed_webhook_events`, **vérification du montant payé**
+  (402 si insuffisant), mapping statut → `transactions.status`, déclenche
+  `authorize-guest` (appel interne authentifié) à la confirmation. **Les webhooks
+  test et prod sont séparés côté Bictorys — configurer les deux.**
+- **`create-wave-payment`** / **`create-om-payment`** (DURCIS — §3.3 était le
+  dernier trou) : ces deux fonctions historiques appliquent maintenant les mêmes
+  protections (identité, montant relu en base, idempotence, audit). Elles ne
+  réimplémentent rien : `create-wave-payment` utilise le provider `wave` de
+  l'abstraction. ⚠️ **DEPRECATED** : le front doit migrer vers `create-charge`.
+  Fini aussi la simulation de succès quand le secret manque : la transaction
+  reste `pending` (fail-closed, aucun accès Internet débloqué).
+- `wave-webhook` : **inchangé**.
+
+### 7.3 Migration — `20260918000000_payment_provider_abstraction.sql`
+
+Additive, idempotente, réversible (ROLLBACK documenté) :
+`transactions.provider` / `provider_transaction_id` / `provider_payment_reference`
+(+ index uniques pour l'idempotence), `sites.payment_provider`, `processed_webhook_events.payload`.
+Vérifiée contre `migrations_schema_dump.sql` (aucune de ces colonnes n'existe au live).
+⚠️ Contient 2 `UPDATE` de backfill des transactions legacy (provider implicite
+depuis `method`) — à exécuter en connaissance de cause lors du déploiement.
+
+### 7.4 Tests — 47/47 passent (`bash supabase/run-tests.sh`)
+
+Sans aucun appel réseau (sandbox `vm` + `Deno.env`/`fetch` stubbés) :
+sélection du provider (site > env > défaut, inconnu → erreur, casse), mapping de
+statut Bictorys→interne (fail-closed : statut inconnu = jamais `succeeded`),
+signature webhook (HMAC correct, mauvaise signature, replay > 5 min, replay
+futur, signature sans timestamp, cross-secret, fallback statique, aucun
+mécanisme), format téléphone E.164 strict (refus des numéros sans indicatif),
+`createCharge` (montant < 100, téléphone non E.164, méthode non supportée,
+clé absente, succès 201 complet, 403 JSON invalidConfig non retryable,
+403 HTML WAF retryable après backoff = 5 tentatives, retry réussit).
+
+## 8. Contrat front — LE PAIEMENT DEVIENT ASYNCHRONE
+
+À transmettre à l'agent portail (changement de parcours) :
+
+1. **Point d'entrée unique** : `POST /functions/v1/create-charge`
+   `{ planId, siteId, method, mac, idempotencyKey, customerPhone, customerEmail }`
+   (header `Authorization: Bearer <JWT visiteur ou admin>`).
+2. **La réponse n'est PAS un succès de paiement** : `{ transactionId, provider,
+   providerTransactionId, redirectUrl, link, qrCode, message, status }`.
+   - Wave : `link` = deep link à ouvrir dans l'app Wave (ou `redirectUrl`).
+   - Wave via Bictorys : peut renvoyer `qrCode` (base64 PNG) à afficher.
+   - Orange/MTN : `message` = **code USSD à afficher** (ex. `#144*82#`).
+   - Carte : `link` = page de checkout Bictorys (**mode CHECKOUT uniquement** —
+     aucune saisie de carte dans l'app, pas de PCI-DSS à notre charge).
+3. **Ne pas sonder `/status` en boucle** : le webhook est la source de vérité.
+   La confirmation vient du webhook (`authorize-guest` est déclenché serveur).
+4. **Idempotence** : envoyer un `idempotencyKey` (UUID) par tentative ; un rejeu
+   renvoie `{ ..., replayed: true }` sans double charge. Ne pas utiliser le
+   préfixe `pc-` (réservé serveur).
+5. **Échec provider** : 502 (réessayer) ou 503 (configuration invalide). La
+   transaction reste `pending` et peut être résolue par webhook.
+6. ⚠️ **`create-wave-payment` / `create-om-payment` sont dépréciés** mais
+   conservent leur contrat historique (`checkoutUrl` / `paymentUrl`) le temps de
+   la migration. Ils ne simulent plus un succès quand le provider n'est pas
+   configuré : la transaction reste pending, l'accès n'est pas débloqué.
+
+## 9. Secrets à définir (s'ajoutent à §4)
+
+| Secret | Rôle | Remarque |
+|---|---|---|
+| `BICTORYS_API_URL` | URL base | Sandbox `https://api.test.bictorys.com` / prod `https://api.bictorys.com`. Si absent : déduit de la clé (`test_*` → sandbox). |
+| `BICTORYS_API_KEY` | Clé PUBLIQUE (charges + status) | Sandbox : `test_public-...`. **Pas de saisie carte** (mode checkout). |
+| `BICTORYS_WEBHOOK_SECRET` | Secret DÉDIÉ du webhook | **Pas la private key.** Sans lui → 503. Webhooks test ET prod séparés. |
+| `BICTORYS_PRIVATE_KEY` | Payouts | JAMAIS lu par les fonctions de charge. Ne jamais exposer au front. |
+| `BICTORYS_MERCHANT_SECRET_CODE` | Payouts | Idem. |
+| `PAYMENT_PROVIDER` | Provider global | Défaut `bictorys`. Surcharge par site via `sites.payment_provider`. |
+
+`.env.local` (gitignoré) : ces noms exacts. Le CLI Supabase local (`supabase
+functions serve`) lit `.env.local` automatiquement pour les Edge Functions
+(tests locaux). Pour le live : `npx supabase secrets set ...` (jamais fait ici).
+
+## 10. Reste à faire (hors cette tranche)
 
 1. Déploiement : `supabase migration repair` (28 entrées) puis `db pull`,
-   `db push` des 3 migrations, redéploiement des 8 fonctions (sauf
-   wave-webhook en verify_jwt=false), définition des 4 secrets (§4).
-2. Re-chiffrer les mots de passe UniFi legacy (script admin one-shot).
-3. Durcir `create-wave-payment` / `create-om-payment` (identité de l'appelant,
-   MAC lu du contexte serveur, succès/erreur URLs propres).
-4. Qualification des 29 tables vides en revue produit (schéma archive).
-5. Nettoyage des policies dupliquées restantes (transactions, chat_messages,
-   events).
-6. Suppression de la colonne `loyalty_points` après refonte front.
-7. Tests pgTAP sur is_admin_user/can_access_site + e2e du parcours démo
-   post-policies.
-8. OTP hashés (SHA-256) + table dédiée (sortir de pc_audit_logs) ; UNIQUE
-   (site_id, phone/email) sur wifi_users.
-9. Tables `family_profiles`/`family_members` OU masquage du module famille.
-10. Contrat org/memberships complet (invitations, rôles par org) + tarif
-    WaaS — après validation produit.
+   `db push` de toutes les migrations, redéploiement des fonctions, définition
+   des secrets (§4 + §9).
+2. **REPORTÉ de §7 original** (non démarré — priorité Bictorys) :
+   - Script admin one-shot de re-chiffrement des mots de passe UniFi legacy
+     (`enc:gcm:<iv>:<ct>` via `_shared/crypto.ts`) ;
+   - Migration OTP hashés (SHA-256, table dédiée hors `pc_audit_logs`) +
+     UNIQUE (site_id, phone/email) sur `wifi_users` ;
+   - Tables `family_profiles` / `family_members` (module famille en mock) ;
+   - Bucket Storage `site-assets` + policies (`sites/<id>/`, logo public) ;
+   - Nettoyage policies RLS dupliquées : transactions (9), chat_messages (9),
+     events (5) ;
+   - Tests pgTAP sur `is_admin_user()` / `can_access_site()` / `is_viewer()`.
+3. Qualification des 29 tables vides en revue produit.
+4. Suppression de la colonne `loyalty_points` après refonte front.
+5. Contrat org/memberships complet (invitations, rôles par org) + tarif WaaS —
+   après validation produit.
+6. Implémentation réelle de l'API Orange Money v2 SN (provider `orange`) — en
+   attendant, OM passe par Bictorys.
 
-## 8. Mutations live effectuées par cet agent
+## 11. Mutations live effectuées par cet agent
 
-**Aucune.** Aucune requête d'écriture SQL, aucun db push/pull (dump = lecture
-seule), aucun secrets set, aucun redéploiement de fonction, aucun migration
-repair. Aucun identifiant de mutation à signaler.
+**Aucune.** Aucune requête d'écriture SQL, aucun db push/pull, aucun secrets set,
+aucun redéploiement de fonction, aucun migration repair. Lecture seule
+(`migrations_schema_dump.sql` = snapshot existant). Aucun commit/push/branche —
+tout est dans le working tree.

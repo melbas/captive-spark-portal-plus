@@ -26,6 +26,17 @@ verify_jwt = false
 [functions.create-om-payment]
 verify_jwt = true
 
+[functions.create-charge]
+# Création de charge générique (provider-agnostic : bictorys par défaut,
+# fallback wave/orange). Autorisation réelle côté serveur via _shared/auth.ts
+# (visiteur issu de verify-otp, ou admin).
+verify_jwt = true
+
+[functions.bictorys-webhook]
+# Appelé par Bictorys sans JWT — authentifié par secret dédié + HMAC
+# fail-closed (BICTORYS_WEBHOOK_SECRET obligatoire, replay 5 min, idempotence).
+verify_jwt = false
+
 [functions.revoke-session]
 verify_jwt = true
 
