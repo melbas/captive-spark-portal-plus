@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Playwright
+playwright-report/
+test-results/
+
+# Tests backend : harness de tests Node (transpilation TS en sandbox vm).
+# Les Edge Functions ne doivent pas embarquer les tests.
+supabase/**/*.test.cjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

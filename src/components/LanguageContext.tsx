@@ -283,6 +283,41 @@ export const translations: Record<string, Translations> = {
       fr: "Regardez la vidéo pour continuer",
       es: "Ver el video para continuar"
     },
+    connectedToSparkWifi: {
+      en: "You're connected to SparkWiFi",
+      fr: "Vous êtes connecté à SparkWiFi",
+      es: "Estás conectado a SparkWiFi"
+    },
+    continueToInternet: {
+      en: "Continue to Internet",
+      fr: "Continuer vers Internet",
+      es: "Continuar a Internet"
+    },
+    redirectingToInternet: {
+      en: "Redirecting to the internet in {seconds} seconds...",
+      fr: "Redirection vers Internet dans {seconds} secondes...",
+      es: "Redirigiendo a Internet en {seconds} segundos..."
+    },
+    duration: {
+      en: "Duration",
+      fr: "Durée",
+      es: "Duración"
+    },
+    download: {
+      en: "Download",
+      fr: "Téléchargement",
+      es: "Descarga"
+    },
+    upload: {
+      en: "Upload",
+      fr: "Envoi",
+      es: "Subida"
+    },
+    timeRemaining: {
+      en: "Time remaining:",
+      fr: "Temps restant :",
+      es: "Tiempo restante:"
+    },
   },
 
   // Rewards and games
