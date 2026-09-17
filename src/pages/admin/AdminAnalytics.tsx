@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,17 +5,28 @@ import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
+import { useCurrentSite } from '@/context/SiteContext';
+import { siteQueryKey } from '@/lib/admin/queries';
+import HelpTip from '@/components/admin/HelpTip';
 
 const COLORS = ['#5B4DFF', '#FF4D6A', '#10B981', '#F59E0B', '#6366F1', '#EC4899'];
 
 export default function AdminAnalytics() {
+  const { currentSite, loading } = useCurrentSite();
+  const siteId = currentSite?.id ?? null;
+
   const { data } = useQuery({
-    queryKey: ['admin-analytics'],
+    queryKey: siteQueryKey('admin-analytics', siteId),
+    enabled: !!siteId,
     queryFn: async () => {
+      // Les trois séries sont scopées au site courant.
       const [txRes, usersRes, sessionsRes] = await Promise.all([
-        supabase.from('transactions').select('amount_fcfa, method, created_at, status').eq('status', 'completed'),
-        supabase.from('wifi_users').select('churn_risk, ai_segment, loyalty_pts, created_at'),
-        supabase.from('wifi_sessions').select('started_at, status'),
+        supabase.from('transactions').select('amount_fcfa, method, created_at, status')
+          .eq('status', 'completed').eq('site_id', siteId as string),
+        supabase.from('wifi_users').select('churn_risk, ai_segment, loyalty_pts, created_at')
+          .eq('site_id', siteId as string),
+        supabase.from('wifi_sessions').select('started_at, status')
+          .eq('site_id', siteId as string),
       ]);
       return {
         transactions: txRes.data || [],
@@ -25,6 +35,18 @@ export default function AdminAnalytics() {
       };
     },
   });
+
+  if (loading) return <p className="text-muted-foreground">Chargement du site courant…</p>;
+
+  if (!currentSite) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-extrabold">Analytics</h1>
+        <HelpTip variant="banner" title="Aucun site sélectionné"
+          text="Choisissez un site en haut de l’écran pour voir ses analyses." />
+      </div>
+    );
+  }
 
   const transactions = data?.transactions || [];
   const users = data?.users || [];
@@ -84,7 +106,10 @@ export default function AdminAnalytics() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold">Analytics</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-extrabold">Analytics</h1>
+        <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+      </div>
 
       {/* KPI summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

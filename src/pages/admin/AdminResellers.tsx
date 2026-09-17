@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,12 +10,18 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrentSite } from '@/context/SiteContext';
+import HelpTip from '@/components/admin/HelpTip';
 
 export default function AdminResellers() {
   const qc = useQueryClient();
+  const { role, canEdit, currentSite } = useCurrentSite();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', commission_rate: '15' });
 
+  // Les revendeurs ne sont pas scopés par site : c'est un niveau de tenant
+  // au-dessus (un revendeur possèd plusieurs sites). Réservé super_admin ;
+  // un reseller ne voit que sa propre ligne via la RLS backend.
   const { data: resellers, isLoading } = useQuery({
     queryKey: ['admin-resellers'],
     queryFn: async () => {
@@ -45,12 +51,21 @@ export default function AdminResellers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold">Revendeurs</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button style={{ background: 'var(--brand-gradient)' }} className="text-white"><Plus className="h-4 w-4 mr-2" />Ajouter</Button>
-          </DialogTrigger>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-extrabold">Revendeurs</h1>
+          {role === 'reseller' && (
+            <span className="text-sm text-muted-foreground">Votre compte revendeur</span>
+          )}
+          {!canEdit && (
+            <span className="text-sm text-muted-foreground">Lecture seule pour votre rôle.</span>
+          )}
+        </div>
+        {canEdit && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button style={{ background: 'var(--brand-gradient)' }} className="text-white"><Plus className="h-4 w-4 mr-2" />Ajouter</Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Nouveau revendeur</DialogTitle></DialogHeader>
             <div className="space-y-4">
@@ -64,6 +79,7 @@ export default function AdminResellers() {
             </div>
           </DialogContent>
         </Dialog>
+        )}
       </div>
       <Card className="rounded-2xl shadow-[var(--shadow-card)]">
         <CardContent className="p-0">

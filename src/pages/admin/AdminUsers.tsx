@@ -1,12 +1,13 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { LOYALTY_CONFIG } from '@/types/premiumconnect';
 import type { LoyaltyLevel, AISegment } from '@/types/premiumconnect';
+import { useCurrentSite } from '@/context/SiteContext';
+import { siteQueryKey } from '@/lib/admin/queries';
+import HelpTip from '@/components/admin/HelpTip';
 
 const segmentColors: Record<string, string> = {
   new_user: 'bg-blue-100 text-blue-700',
@@ -19,21 +20,42 @@ const segmentColors: Record<string, string> = {
 };
 
 export default function AdminUsers() {
+  const { currentSite, loading } = useCurrentSite();
+  const siteId = currentSite?.id ?? null;
+
   const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: siteQueryKey('admin-users', siteId),
     queryFn: async () => {
+      // Utilisateurs du site courant uniquement.
       const { data } = await supabase
         .from('wifi_users')
         .select('*')
+        .eq('site_id', siteId as string)
         .order('created_at', { ascending: false })
         .limit(200);
       return data || [];
     },
+    enabled: !!siteId,
   });
+
+  if (loading) return <p className="text-muted-foreground">Chargement du site courant…</p>;
+
+  if (!currentSite) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-extrabold">Utilisateurs WiFi</h1>
+        <HelpTip variant="banner" title="Aucun site sélectionné"
+          text="Choisissez un site en haut de l’écran pour voir ses utilisateurs." />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold">Utilisateurs WiFi</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-extrabold">Utilisateurs WiFi</h1>
+        <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+      </div>
       <Card className="rounded-2xl shadow-[var(--shadow-card)]">
         <CardContent className="p-0 overflow-x-auto">
           <Table>

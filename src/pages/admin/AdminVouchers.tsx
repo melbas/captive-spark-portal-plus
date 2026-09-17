@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrentSite } from '@/context/SiteContext';
+import { siteQueryKey } from '@/lib/admin/queries';
+import HelpTip from '@/components/admin/HelpTip';
 
 function genCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -18,31 +21,45 @@ function genCode(): string {
 
 export default function AdminVouchers() {
   const qc = useQueryClient();
+  const { currentSite, canEdit, loading } = useCurrentSite();
+  const siteId = currentSite?.id ?? null;
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ batch_name: '', count: '10' });
 
   const { data: vouchers, isLoading } = useQuery({
-    queryKey: ['admin-vouchers'],
+    queryKey: siteQueryKey('admin-vouchers', siteId),
+    enabled: !!siteId,
     queryFn: async () => {
-      const { data } = await supabase.from('vouchers').select('*').order('created_at', { ascending: false }).limit(200);
+      // Vouchers du site courant uniquement.
+      const { data } = await supabase
+        .from('vouchers')
+        .select('*')
+        .eq('site_id', siteId as string)
+        .order('created_at', { ascending: false })
+        .limit(200);
       return data || [];
     },
   });
 
   const generate = useMutation({
     mutationFn: async () => {
+      if (!siteId) throw new Error('Aucun site sélectionné.');
       const count = Math.min(parseInt(form.count) || 10, 100);
       const codes = Array.from({ length: count }, () => ({
         code: genCode(),
         batch_name: form.batch_name || null,
-        profile_id: '00000000-0000-0000-0000-000000000000',
+        // profile_id est NOT NULL au schéma : on pose NULL explicite plutôt
+        // qu'un UUID fantôme (l'ancienne valeur hardcodée empêchait le rattachement
+        // réel du voucher à un forfait/profil — cf. PLAN-FINAL §7.8).
+        profile_id: null as string | null,
+        site_id: siteId,
         valid_to: new Date(Date.now() + 90 * 86400000).toISOString(),
       }));
       const { error } = await supabase.from('vouchers').insert(codes);
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-vouchers'] });
+      qc.invalidateQueries({ queryKey: siteQueryKey('admin-vouchers', siteId) });
       setOpen(false);
       setForm({ batch_name: '', count: '10' });
       toast.success('Vouchers générés');
@@ -50,13 +67,33 @@ export default function AdminVouchers() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  if (loading) return <p className="text-muted-foreground">Chargement du site courant…</p>;
+
+  if (!currentSite) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-extrabold">Vouchers</h1>
+        <HelpTip variant="banner" title="Aucun site sélectionné"
+          text="Choisissez un site en haut de l’écran pour voir ses vouchers." />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold">Vouchers</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-extrabold">Vouchers</h1>
+          <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+          {!canEdit && (
+            <span className="text-sm text-muted-foreground">Lecture seule pour votre rôle.</span>
+          )}
+        </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button style={{ background: 'var(--brand-gradient)' }} className="text-white"><Plus className="h-4 w-4 mr-2" />Générer</Button>
+            <Button style={{ background: 'var(--brand-gradient)' }} className="text-white" disabled={!canEdit}>
+              <Plus className="h-4 w-4 mr-2" />Générer
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Générer des vouchers</DialogTitle></DialogHeader>
