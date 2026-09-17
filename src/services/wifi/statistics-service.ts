@@ -15,59 +15,22 @@ export interface GameStatistic {
 }
 
 export const statisticsService = {
-  // Méthode existante
+  // Incrément SILENCIEUX : le parcours client ne doit jamais casser pour une statistique.
+  // Essaye la RPC atomique `increment_statistic` (SECURITY DEFINER, à créer côté backend —
+  // voir docs/RAPPORT-PORTAIL.md) ; sinon, échec ignoré (plus de read-modify-write client).
   async incrementStatistic(field: keyof PortalStatistic): Promise<boolean> {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Try to get today's record
-      const { data: existingRecord } = await supabase
-        .from('portal_statistics')
-        .select()
-        .eq('date', today)
-        .maybeSingle();
-      
-      if (existingRecord) {
-        // Update existing record
-        const { error } = await supabase
-          .from('portal_statistics')
-          .update({ [field]: ((existingRecord as any)[field] || 0) + 1 } as any)
-          .eq('id', existingRecord.id);
-        
-        if (error) {
-          console.error(`Error incrementing ${field}:`, error);
-          return false;
-        }
-        
-        return true;
-      } else {
-        // Create new record for today with incremented field
-        const newRecord: Record<string, any> = {
-          date: today,
-          total_connections: 0,
-          video_views: 0,
-          quiz_completions: 0,
-          games_played: 0,
-          leads_collected: 0
-        };
-        
-        newRecord[field] = 1;
-        
-        const { error } = await supabase
-          .from('portal_statistics')
-          .insert(newRecord as any);
-        
-        if (error) {
-          console.error(`Error creating statistic record for ${field}:`, error);
-          return false;
-        }
-        
-        return true;
-      }
-    } catch (error) {
-      console.error(`Failed to increment statistic ${field}:`, error);
-      return false;
+      // RPC à créer côté backend (absente du schéma généré aujourd'hui) — cast volontaire.
+      const rpc = (supabase as any).rpc("increment_statistic", {
+        p_field: field as string,
+      });
+      const { error } = await rpc;
+      if (!error) return true;
+    } catch {
+      // RPC absente / RLS en transition : on ignore volontairement.
     }
+    console.warn(`[statistics] incrément "${field}" ignoré (RPC increment_statistic indisponible).`);
+    return false;
   },
 
   // Nouvelle méthode pour récupérer les statistiques par période

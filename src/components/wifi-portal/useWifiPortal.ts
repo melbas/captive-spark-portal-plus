@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { EngagementKind } from "@/lib/portal-config-defaults";
 import { toast } from "sonner";
 import { wifiPortalService, WifiUser, WifiSession } from "@/services/wifi-portal-service";
 import { 
@@ -12,12 +13,26 @@ import {
   GameType
 } from "./types";
 
-export const useWifiPortal = () => {
+export interface WifiPortalRuntimeConfig {
+  /** Durée de session accordée après engagement (minutes) — config publiée, sinon valeur démo. */
+  sessionMinutes: number;
+  /** Points de départ d'un nouvel utilisateur — config publiée, sinon valeur démo. */
+  startingPoints: number;
+  /** Type d'engagement : config publiée ; "random" est le seul mode aléatoire (plus le défaut). */
+  engagementType: EngagementKind;
+}
+
+export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
+  const sessionMinutes = config?.sessionMinutes ?? 30;
+  const startingPoints = config?.startingPoints ?? 10;
+  const configuredEngagement = config?.engagementType ?? "quiz";
   const [currentStep, setCurrentStep] = useState<Step>(Step.AUTH);
-  const [engagementType, setEngagementType] = useState<EngagementType>(EngagementType.VIDEO);
+  const [engagementType, setEngagementType] = useState<EngagementType>(
+    configuredEngagement === "video" ? EngagementType.VIDEO : EngagementType.QUIZ
+  );
   const [userData, setUserData] = useState<UserData>({
-    timeRemainingMinutes: 30, // Default 30 minutes
-    points: 0,
+    timeRemainingMinutes: sessionMinutes,
+    points: startingPoints,
     level: UserLevel.BASIC,
     connectionHistory: [],
     isAdmin: false, // Default to non-admin
@@ -81,7 +96,7 @@ export const useWifiPortal = () => {
             // Auto-login returning user
             const sessionData: WifiSession = {
               user_id: existingUser.id!,
-              duration_minutes: 30
+              duration_minutes: sessionMinutes
             };
             
             const session = await wifiPortalService.createSession(sessionData);
@@ -99,7 +114,7 @@ export const useWifiPortal = () => {
                 name: existingUser.name,
                 macAddress: macAddress,
                 // Mock data for new features
-                points: Math.floor(Math.random() * 500),
+                points: startingPoints,
                 level: UserLevel.SILVER, 
                 referralCode: "WIFI" + existingUser.id?.substring(0, 4),
                 connectionHistory: [
@@ -166,7 +181,7 @@ export const useWifiPortal = () => {
       // Directly create user with error handling
       let createdUser;
       try {
-        createdUser = await wifiPortalService.createUser(user);
+        createdUser = await wifiPortalService.createUser({ ...user, code: data?.code });
         console.log("Utilisateur créé:", createdUser);
       } catch (err: any) {
         console.error("Error creating user:", err);
@@ -183,7 +198,7 @@ export const useWifiPortal = () => {
       // Create a new session
       const sessionData: WifiSession = {
         user_id: createdUser.id!,
-        duration_minutes: 30,
+        duration_minutes: sessionMinutes,
       };
       
       console.log("Création de session pour l'utilisateur:", sessionData);
@@ -198,21 +213,21 @@ export const useWifiPortal = () => {
           sessionId: session.id,
           authMethod: method,
           macAddress: macAddress,
-          points: 10, // Starting points for new users
+          points: startingPoints, // Points de départ (config publiée, sinon démo)
           level: UserLevel.BASIC,
           referralCode: "WIFI" + Math.floor(Math.random() * 10000),
           isAdmin: data.email === "admin@example.com", // Simple admin check
           ...data
         });
         
-        // Randomly choose engagement type (video or quiz)
-        // In a real implementation, this could be configured by the admin
-        const randomEngagement = Math.random() > 0.5 
-          ? EngagementType.VIDEO 
-          : EngagementType.QUIZ;
+        // Type d'engagement : config publiée (portal_customizations "journey").
+        // "random" est un choix explicite de config, plus le comportement par défaut.
+        const chosenEngagement = configuredEngagement === "random"
+          ? (Math.random() > 0.5 ? EngagementType.VIDEO : EngagementType.QUIZ)
+          : (configuredEngagement === "video" ? EngagementType.VIDEO : EngagementType.QUIZ);
         
-        console.log(`Type d'engagement choisi: ${randomEngagement}`);
-        setEngagementType(randomEngagement);
+        console.log(`Type d'engagement choisi: ${configuredEngagement} -> ${chosenEngagement}`);
+        setEngagementType(chosenEngagement);
         setCurrentStep(Step.ENGAGEMENT);
         
         toast.success(`Authentication successful via ${method}`);
@@ -239,7 +254,7 @@ export const useWifiPortal = () => {
           user_id: userData.id!,
           engagement_type: engagementType === EngagementType.VIDEO ? 'video' : 'quiz',
           engagement_data: data,
-          duration_minutes: userData.timeRemainingMinutes || 30
+          duration_minutes: userData.timeRemainingMinutes || sessionMinutes
         });
         
         // Update stats based on engagement type
@@ -509,8 +524,8 @@ export const useWifiPortal = () => {
     // Utiliser un état React pour éviter une redirection de page complète
     setLoading(true);
     setUserData({
-      timeRemainingMinutes: 30,
-      points: 0,
+      timeRemainingMinutes: sessionMinutes,
+      points: startingPoints,
       level: UserLevel.BASIC,
       connectionHistory: [],
       isAdmin: false

@@ -1,9 +1,19 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAuth, json } from "../_shared/auth.ts";
+import { decryptSecret } from "../_shared/crypto.ts";
 
+// ---------------------------------------------------------------------------
+// revoke-session — révocation d'une session WiFi (UniFi unauthorize-sta).
+// SÉCURITÉ (P0) :
+//  - Appelant : secret interne OU admin authentifié sur le périmètre du site
+//    de la session (JWT anon refusé) OU le visiteur propriétaire de la session.
+//  - Mot de passe UniFi déchiffré à l'usage (ENCRYPTION_KEY).
+//  - select() ciblé (plus de select * / join *).
+// ---------------------------------------------------------------------------
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-internal-secret",
 };
 
 Deno.serve(async (req) => {
@@ -15,10 +25,7 @@ Deno.serve(async (req) => {
     const { sessionId } = await req.json();
 
     if (!sessionId) {
-      return new Response(
-        JSON.stringify({ error: "sessionId requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ error: "sessionId requis" }, 400);
     }
 
     const supabase = createClient(
@@ -26,22 +33,38 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get session
-    const { data: session, error: sessErr } = await supabase
+    // Get session (colonnes ciblées)
+    const { data: session } = await supabase
       .from("wifi_sessions")
-      .select("*, sites!inner(id), hardware_integrations!inner(*)")
+      .select("id, site_id, user_id, mac_address, hardware_integrations(controller_url, unifi_site_id, api_username, api_password_enc, is_active)")
       .eq("id", sessionId)
-      .single();
+      .maybeSingle();
+
+    if (!session) {
+      return json({ error: "Session introuvable" }, 404);
+    }
+
+    // --- Authentification + autorisation serveur (après lookup du site) ----
+    const auth = await requireAuth(req, { siteId: session.site_id, allowVisitor: true });
+    if ("error" in auth) return auth.error;
+    const ctx = auth.ctx;
+    if (ctx.kind === "visitor" && ctx.userId !== session.user_id) {
+      return json({ error: "Périmètre refusé" }, 403);
+    }
 
     // Revoke on UniFi if hardware exists
-    if (session?.hardware_integrations) {
-      const hw = session.hardware_integrations as any;
+    const hw = session.hardware_integrations as any;
+    if (hw?.is_active) {
+      if (!Deno.env.get("ENCRYPTION_KEY")) {
+        return json({ error: "ENCRYPTION_KEY absente — révocation matérielle impossible" }, 503);
+      }
       try {
         const controllerUrl = hw.controller_url.replace(/\/$/, "");
+        const password = await decryptSecret(hw.api_password_enc);
         const loginRes = await fetch(`${controllerUrl}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: hw.api_username, password: hw.api_password_enc }),
+          body: JSON.stringify({ username: hw.api_username, password }),
         });
 
         if (loginRes.ok) {
@@ -64,8 +87,8 @@ Deno.serve(async (req) => {
             }
           );
         }
-      } catch (e: any) {
-        console.error("UniFi revoke error:", e.message);
+      } catch (e) {
+        console.error("UniFi revoke error:", (e as Error).message);
       }
     }
 
@@ -81,15 +104,9 @@ Deno.serve(async (req) => {
       entity_id: sessionId,
     });
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (err: any) {
+    return json({ success: true }, 200);
+  } catch (err) {
     console.error("revoke-session error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message || "Erreur interne" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ error: "Erreur interne" }, 500);
   }
 });

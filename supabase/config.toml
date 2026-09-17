@@ -1,25 +1,33 @@
 project_id = "pvplhqzzhmqseyzooags"
 
+# P0 sécurité : verify_jwt réactivé sur TOUTES les fonctions sauf wave-webhook.
+# ⚠️ verify_jwt garantit un JWT SIGNÉ (y compris le JWT anon) — ce n'est PAS
+# une autorisation utilisateur/admin. Les fonctions sensibles (authorize-guest,
+# revoke-session, test-hardware-connection) vérifient en plus identité +
+# périmètre côté serveur via supabase/functions/_shared/auth.ts.
+
 [functions.send-otp]
-verify_jwt = false
+verify_jwt = true
 
 [functions.verify-otp]
-verify_jwt = false
+verify_jwt = true
 
 [functions.authorize-guest]
-verify_jwt = false
+verify_jwt = true
 
 [functions.create-wave-payment]
-verify_jwt = false
+verify_jwt = true
 
 [functions.wave-webhook]
+# Seule exception : appelé par Wave sans JWT — authentifié par HMAC
+# fail-closed (WAVE_WEBHOOK_SECRET obligatoire).
 verify_jwt = false
 
 [functions.create-om-payment]
-verify_jwt = false
+verify_jwt = true
 
 [functions.revoke-session]
-verify_jwt = false
+verify_jwt = true
 
 [functions.test-hardware-connection]
-verify_jwt = false
+verify_jwt = true

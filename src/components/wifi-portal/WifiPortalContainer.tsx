@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { useWifiPortal } from "./useWifiPortal";
 import WifiPortalContent from "./WifiPortalContent";
 import { useLanguage } from "../LanguageContext";
@@ -11,70 +11,25 @@ import AdCarousel from "../ads/AdCarousel";
 import VideoAd from "../ads/VideoAd";
 import AudioPromo from "../ads/AudioPromo";
 import { Step } from "./types";
+import { usePortalConfig } from "@/hooks/usePortalConfig";
+import {
+  DEMO_AD_SLIDES,
+  DEMO_AUDIO_AD,
+  DEMO_ENGAGEMENT_TYPE,
+  DEMO_SESSION_MINUTES,
+  DEMO_STARTING_POINTS,
+  DEMO_SUPPORT_CONTACT,
+  DEMO_VIDEO_AD,
+  type LocalizedText,
+} from "@/lib/portal-config-defaults";
 
-// Mise à jour avec les nouvelles images téléchargées par l'utilisateur
-const adSlides = [
-  {
-    id: "ad1",
-    imageUrl: "/lovable-uploads/188625b4-1006-40a3-9d8f-4406793e432a.png", // Première image uploadée
-    fallbackUrl: "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=800&h=400", // Image de secours
-    title: {
-      en: "High-Speed WiFi Access",
-      fr: "Accès WiFi Haut Débit"
-    },
-    description: {
-      en: "Connect instantly to our nationwide network",
-      fr: "Connectez-vous instantanément à notre réseau national"
-    },
-    link: "#wifi-plans"
-  },
-  {
-    id: "ad2",
-    imageUrl: "/lovable-uploads/6d63d396-05e7-4d74-9fa2-4e65d7539370.png", // Deuxième image uploadée
-    fallbackUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=400", // Image de secours
-    title: {
-      en: "WiFi for Business",
-      fr: "WiFi pour Entreprises"
-    },
-    description: {
-      en: "Reliable connectivity for your company",
-      fr: "Connectivité fiable pour votre entreprise"
-    },
-    link: "#business-wifi"
-  },
-  {
-    id: "ad3",
-    imageUrl: "/lovable-uploads/a07006bb-2820-445b-ac39-fb06d95be8fe.png", // Troisième image uploadée
-    fallbackUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=400", // Image de secours
-    title: {
-      en: "Home WiFi Solutions",
-      fr: "Solutions WiFi Domicile"
-    },
-    description: {
-      en: "Stay connected at home with our premium plans",
-      fr: "Restez connecté chez vous avec nos forfaits premium"
-    },
-    link: "#home-wifi"
-  },
-  {
-    id: "ad4",
-    imageUrl: "/lovable-uploads/34c1a509-4608-4a3e-bcff-29e71eff2849.png", // Quatrième image uploadée
-    fallbackUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&h=400", // Image de secours
-    title: {
-      en: "Mobile WiFi Access",
-      fr: "Accès WiFi Mobile"
-    },
-    description: {
-      en: "Take your connection anywhere in Senegal",
-      fr: "Emportez votre connexion partout au Sénégal"
-    },
-    link: "#mobile-wifi"
-  }
-];
+const localizedText = (value: LocalizedText, language: string): string =>
+  (language === 'en' ? value.en : value.fr);
 
 const WifiPortalContainer = () => {
-  const [showAds, setShowAds] = useState(true);
-  
+  const [showAds] = useState(true);
+  const portal = usePortalConfig();
+
   const {
     currentStep,
     setCurrentStep,
@@ -93,34 +48,76 @@ const WifiPortalContainer = () => {
     getMacAddress,
     handleGameComplete,
     handlePaymentComplete
-  } = useWifiPortal();
-  
+  } = useWifiPortal({
+    sessionMinutes: portal.sessionMinutes ?? DEMO_SESSION_MINUTES,
+    startingPoints: portal.startingPoints ?? DEMO_STARTING_POINTS,
+    engagementType: portal.engagementType ?? DEMO_ENGAGEMENT_TYPE,
+  });
+
   const { t, language } = useLanguage();
-  
+
   const handleAdSlideChange = (index: number) => {
     console.log(`Ad changed to slide ${index}`);
-    // Track ad impressions or implement other analytics here
   };
-  
+
   const handleAdSlideClick = (slide: any) => {
-    console.log(`Ad clicked: ${slide.title[language]}`);
-    // Track ad clicks or implement other analytics here
+    console.log(`Ad clicked: ${slide.title?.[language] ?? slide.title}`);
   };
-  
+
+  // Slides : config publiée (ad_videos) ; repli visuel UNIQUEMENT en démo isolée
+  const slides = portal.slides.length > 0
+    ? portal.slides
+    : portal.isDemo
+      ? DEMO_AD_SLIDES
+      : [];
+
+  const videoAd = portal.mediaAds.find((a) => a.kind === "video");
+  const audioAd = portal.mediaAds.find((a) => a.kind === "audio");
+  const supportContact = portal.supportContact ?? (portal.isDemo ? DEMO_SUPPORT_CONTACT : null);
+
+  if (portal.loading) {
+    return (
+      <Layout withGradientBg>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">{t("loading")}</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Fail-closed : un vrai site sans config publiée affiche l'erreur, jamais un fallback visuel
+  if (portal.error && !portal.isDemo) {
+    return (
+      <Layout withGradientBg>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] py-8 px-4">
+          <Card className="w-full max-w-md p-6 text-center glass-card">
+            <p className="text-status-error font-semibold mb-2">{portal.error}</p>
+            <p className="text-sm text-muted-foreground">
+              La configuration publiée de ce portail est indisponible. Veuillez réessayer plus tard.
+            </p>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout withGradientBg>
       <div className="flex flex-col items-center justify-center min-h-[80vh] py-8">
         <div className="w-full max-w-md mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h1 className="text-4xl font-bold text-center md:text-left text-foreground">
-              {t("portal")}
+              {portal.portalName ?? t("portal")}
             </h1>
           </div>
-          
+
           <p className="text-center md:text-left text-muted-foreground mt-2">
-            {t("connectToWifi")}
+            {portal.welcomeMessage
+              ? localizedText(portal.welcomeMessage, language)
+              : t("connectToWifi")}
           </p>
-          
+
           {/* For demo purposes - show the simulated MAC address */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
             <p className="text-xs text-muted-foreground">
@@ -130,13 +127,18 @@ const WifiPortalContainer = () => {
               <ChevronLeft className="h-3 w-3 mr-1" /> {t("reset")}
             </Button>
           </div>
+          {supportContact && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Support : {supportContact}
+            </p>
+          )}
         </div>
-        
+
         {/* Advertisement Section - Shown conditionally */}
-        {showAds && (
+        {showAds && slides.length > 0 && (
           <div className="w-full max-w-md mb-8">
-            <AdCarousel 
-              slides={adSlides}
+            <AdCarousel
+              slides={slides}
               autoRotate={true}
               interval={7000}
               onSlideChange={handleAdSlideChange}
@@ -145,7 +147,7 @@ const WifiPortalContainer = () => {
             />
           </div>
         )}
-        
+
         {loading ? (
           <Card className="w-full max-w-md p-6 wifi-card">
             <div className="flex flex-col items-center justify-center">
@@ -154,7 +156,7 @@ const WifiPortalContainer = () => {
             </div>
           </Card>
         ) : (
-          <WifiPortalContent 
+          <WifiPortalContent
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
             engagementType={engagementType}
@@ -169,31 +171,44 @@ const WifiPortalContainer = () => {
             handleInvite={handleInvite}
             handleGameComplete={handleGameComplete}
             handlePaymentComplete={handlePaymentComplete}
+            modules={portal.enabledModules}
           />
         )}
-        
-        {/* Video or Audio Ad - Shown conditionally */}
-        {showAds && currentStep !== Step.AUTH && (
+
+        {/* Video or Audio Ad - from published config (ad_videos); demo URLs only in demo */}
+        {showAds && currentStep !== Step.AUTH && (videoAd || (portal.isDemo && DEMO_VIDEO_AD) || audioAd || (portal.isDemo && DEMO_AUDIO_AD)) && (
           <div className="w-full max-w-md mt-8">
-            <VideoAd
-              videoUrl="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
-              title={language === 'en' ? "Upgrade Your WiFi Experience" : "Améliorez votre expérience WiFi"}
-              description={language === 'en' ? "Faster speeds, better coverage" : "Vitesses plus rapides, meilleure couverture"}
-              poster="https://images.unsplash.com/photo-1511300636408-a63a89df3482?auto=format&fit=crop&w=800&h=450"
-              autoPlay={false}
-              className="mb-4 wifi-card"
-            />
-            
-            <AudioPromo
-              audioUrl="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-              title={language === 'en' ? "Special WiFi Offer" : "Offre WiFi Spéciale"}
-              subtitle={language === 'en' ? "Listen to learn about our latest deals" : "Écoutez pour découvrir nos dernières offres"}
-              coverImage="https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=200&h=200"
-              className="wifi-card"
-            />
+            {(videoAd || (portal.isDemo && DEMO_VIDEO_AD)) && (
+              <VideoAd
+                videoUrl={videoAd?.url ?? DEMO_VIDEO_AD.videoUrl}
+                title={videoAd?.title ?? localizedText(DEMO_VIDEO_AD.title, language)}
+                description={
+                  videoAd
+                    ? ""
+                    : localizedText(DEMO_VIDEO_AD.description, language)
+                }
+                poster={videoAd?.thumbnailUrl ?? DEMO_VIDEO_AD.poster}
+                autoPlay={false}
+                className="mb-4 wifi-card"
+              />
+            )}
+
+            {(audioAd || (portal.isDemo && DEMO_AUDIO_AD)) && (
+              <AudioPromo
+                audioUrl={audioAd?.url ?? DEMO_AUDIO_AD.audioUrl}
+                title={audioAd?.title ?? localizedText(DEMO_AUDIO_AD.title, language)}
+                subtitle={
+                  audioAd
+                    ? ""
+                    : localizedText(DEMO_AUDIO_AD.subtitle, language)
+                }
+                coverImage={audioAd?.thumbnailUrl ?? DEMO_AUDIO_AD.coverImage}
+                className="wifi-card"
+              />
+            )}
           </div>
         )}
-        
+
         <Card className="w-full max-w-md mt-8 p-4 glass-card">
           <p className="text-sm text-center text-muted-foreground">
             {t("byConnecting")}{" "}
@@ -203,7 +218,7 @@ const WifiPortalContainer = () => {
           </p>
         </Card>
       </div>
-      
+
     </Layout>
   );
 };

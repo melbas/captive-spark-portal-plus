@@ -13,9 +13,12 @@ import WifiPortalContainer from "./components/wifi-portal/WifiPortalContainer";
 import { LanguageProvider } from "./components/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AdminLayout from "./components/admin/AdminLayout";
+import { SiteProvider } from "./context/SiteContext";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminResellers from "./pages/admin/AdminResellers";
 import AdminSites from "./pages/admin/AdminSites";
+import AdminModules from "./pages/admin/AdminModules";
+import AdminPlans from "./pages/admin/AdminPlans";
 import AdminSessions from "./pages/admin/AdminSessions";
 import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -48,11 +51,13 @@ const App = () => (
                 <Route path="/portal/:slug" element={<Portal />} />
                 <Route path="/legacy" element={<Index />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin" element={<AdminLayout />}>
+                <Route path="/admin" element={<SiteProvider><AdminLayout /></SiteProvider>}>
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="resellers" element={<AdminResellers />} />
                   <Route path="sites" element={<AdminSites />} />
+                  <Route path="modules" element={<AdminModules />} />
+                  <Route path="plans" element={<AdminPlans />} />
                   <Route path="sessions" element={<AdminSessions />} />
                   <Route path="transactions" element={<AdminTransactions />} />
                   <Route path="users" element={<AdminUsers />} />

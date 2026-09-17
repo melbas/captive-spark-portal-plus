@@ -1,9 +1,19 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAuth, json } from "../_shared/auth.ts";
+import { decryptSecret } from "../_shared/crypto.ts";
 
+// ---------------------------------------------------------------------------
+// test-hardware-connection — outil de diagnostic admin.
+// SÉCURITÉ (P0) :
+//  - Appelant : admin authentifié UNIQUEMENT (JWT vérifié + is_super_admin()
+//    ou can_access_site(siteId)) OU secret interne. JWT anon refusé.
+//  - Mot de passe UniFi déchiffré à l'usage (ENCRYPTION_KEY).
+//  - select() ciblé.
+// ---------------------------------------------------------------------------
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-internal-secret",
 };
 
 Deno.serve(async (req) => {
@@ -15,11 +25,12 @@ Deno.serve(async (req) => {
     const { siteId } = await req.json();
 
     if (!siteId) {
-      return new Response(
-        JSON.stringify({ error: "siteId requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ error: "siteId requis" }, 400);
     }
+
+    // --- Authentification + autorisation serveur (admin ou interne) --------
+    const auth = await requireAuth(req, { siteId });
+    if ("error" in auth) return auth.error;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -28,17 +39,18 @@ Deno.serve(async (req) => {
 
     const { data: hw, error: hwErr } = await supabase
       .from("hardware_integrations")
-      .select("*")
+      .select("id, brand, controller_url, unifi_site_id, api_username, api_password_enc")
       .eq("site_id", siteId)
       .eq("is_active", true)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (hwErr || !hw) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Aucune intégration matérielle trouvée" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: false, message: "Aucune intégration matérielle trouvée" }, 200);
+    }
+
+    if (!Deno.env.get("ENCRYPTION_KEY")) {
+      return json({ error: "ENCRYPTION_KEY absente — test matériel impossible" }, 503);
     }
 
     const controllerUrl = hw.controller_url.replace(/\/$/, "");
@@ -48,10 +60,11 @@ Deno.serve(async (req) => {
     let message = "";
 
     try {
+      const password = await decryptSecret(hw.api_password_enc);
       const loginRes = await fetch(`${controllerUrl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: hw.api_username, password: hw.api_password_enc }),
+        body: JSON.stringify({ username: hw.api_username, password }),
       });
 
       if (loginRes.ok) {
@@ -62,9 +75,7 @@ Deno.serve(async (req) => {
         // Get system info
         const sysRes = await fetch(
           `${controllerUrl}/proxy/network/api/s/${unifiSiteId}/stat/sysinfo`,
-          {
-            headers: { Cookie: cookies, "X-Csrf-Token": csrfToken },
-          }
+          { headers: { Cookie: cookies, "X-Csrf-Token": csrfToken } }
         );
 
         if (sysRes.ok) {
@@ -75,9 +86,7 @@ Deno.serve(async (req) => {
         // Get active clients count
         const staRes = await fetch(
           `${controllerUrl}/proxy/network/api/s/${unifiSiteId}/stat/sta`,
-          {
-            headers: { Cookie: cookies, "X-Csrf-Token": csrfToken },
-          }
+          { headers: { Cookie: cookies, "X-Csrf-Token": csrfToken } }
         );
 
         if (staRes.ok) {
@@ -90,8 +99,8 @@ Deno.serve(async (req) => {
       } else {
         message = `Échec de connexion: HTTP ${loginRes.status}`;
       }
-    } catch (e: any) {
-      message = `Erreur réseau: ${e.message}`;
+    } catch (e) {
+      message = `Erreur réseau: ${(e as Error).message}`;
     }
 
     // Update last test result
@@ -114,11 +123,8 @@ Deno.serve(async (req) => {
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error("test-hardware-connection error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message || "Erreur interne" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ error: "Erreur interne" }, 500);
   }
 });

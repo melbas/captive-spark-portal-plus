@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { encode as hexEncode } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+import { timingSafeEqual } from "../_shared/crypto.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,8 +22,17 @@ Deno.serve(async (req) => {
     const body = await req.text();
     const webhookSecret = Deno.env.get("WAVE_WEBHOOK_SECRET");
 
-    // Verify HMAC signature if secret is configured
-    if (webhookSecret) {
+    // FAIL-CLOSED (P0) : pas de secret configuré → rejet 503, aucun traitement.
+    if (!webhookSecret) {
+      console.error("wave-webhook: WAVE_WEBHOOK_SECRET absent → rejet 503");
+      return new Response(JSON.stringify({ error: "Webhook non configuré" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify HMAC signature — OBLIGATOIRE, comparaison à temps constant
+    {
       const signature = req.headers.get("wave-signature") || "";
       const key = await crypto.subtle.importKey(
         "raw",
@@ -32,9 +42,9 @@ Deno.serve(async (req) => {
         ["sign"]
       );
       const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
-      const expectedSig = new TextDecoder().decode(hexEncode(new Uint8Array(sig)));
+      const expectedSig = new TextDecoder().decode(encodeHex(new Uint8Array(sig)));
 
-      if (signature !== expectedSig) {
+      if (!timingSafeEqual(signature, expectedSig)) {
         console.error("Invalid Wave webhook signature");
         return new Response(JSON.stringify({ error: "Invalid signature" }), {
           status: 401,
@@ -54,15 +64,48 @@ Deno.serve(async (req) => {
       });
     }
 
+    // --- Idempotence : événement déjà traité ? (table processed_webhook_events)
+    const eventId: string = event.id ||
+      (await crypto.subtle.digest("SHA-256", new TextEncoder().encode(body))).toString();
+    const { data: already } = await supabase
+      .from("processed_webhook_events")
+      .select("event_id")
+      .eq("event_id", eventId)
+      .maybeSingle();
+    if (already) {
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (eventType === "checkout.session.completed") {
-      // Get transaction
+      // Get transaction (colonnes nécessaires uniquement)
       const { data: tx } = await supabase
         .from("transactions")
-        .select("*, wifi_plans(duration_min)")
+        .select("id, status, amount, site_id, plan_id, user_id")
         .eq("id", clientReference)
         .single();
 
       if (tx && tx.status === "pending") {
+        // --- Vérification du montant payé vs transaction (P0) --------------
+        // Wave exprime les montants en XOF entiers ; on exige >= tx.amount.
+        const paidAmount = Number(event.data?.amount);
+        if (!Number.isFinite(paidAmount) || paidAmount < Number(tx.amount)) {
+          console.error(
+            `wave-webhook: montant insuffisant — payé ${paidAmount}, attendu ${tx.amount}`
+          );
+          await supabase.from("processed_webhook_events").insert({
+            event_id: eventId,
+            provider: "wave",
+            transaction_id: tx.id,
+          });
+          return new Response(
+            JSON.stringify({ error: "Montant payé insuffisant" }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
         // Call authorize-guest internally
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 
@@ -72,15 +115,19 @@ Deno.serve(async (req) => {
           .select("details")
           .eq("entity_id", clientReference)
           .eq("action", "payment_initiated")
-          .single();
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
         const mac = (auditLog?.details as any)?.mac || "unknown";
 
+        // Appel interne : authentifié par secret partagé (x-internal-secret).
+        // authorize-guest n'accepte plus un simple JWT anon ni un appel nu.
         const authRes = await fetch(`${supabaseUrl}/functions/v1/authorize-guest`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+            "x-internal-secret": Deno.env.get("INTERNAL_FUNCTION_SECRET") || "",
           },
           body: JSON.stringify({
             mac,
@@ -101,12 +148,18 @@ Deno.serve(async (req) => {
         .eq("id", clientReference);
     }
 
+    // Marquer l'événement comme traité (idempotence)
+    await supabase.from("processed_webhook_events").upsert(
+      { event_id: eventId, provider: "wave" },
+      { onConflict: "event_id" }
+    );
+
     // Log webhook
     await supabase.from("pc_audit_logs").insert({
       action: "wave_webhook",
       entity_type: "transaction",
       entity_id: clientReference,
-      details: { eventType, data: event.data },
+      details: { eventType },
     });
 
     return new Response(JSON.stringify({ received: true }), {

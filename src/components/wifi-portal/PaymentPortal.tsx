@@ -14,9 +14,12 @@ interface PaymentPortalProps {
   userData: UserData;
   onBack: () => void;
   onPaymentComplete: (packageId: string, minutes: number) => void;
+  /** "live" exige un contrat backend sécurisé (create-wave-payment/om + webhook signé) —
+   *  non livré à ce jour : le portail reste en "demo" et l'affiche explicitement. */
+  mode?: "demo" | "live";
 }
 
-const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPaymentComplete }) => {
+const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPaymentComplete, mode = "demo" }) => {
   const [selectedPackage, setSelectedPackage] = useState<PaymentPackage | null>(null);
   const [isFamilyView, setIsFamilyView] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.MOBILE_MONEY);
@@ -112,6 +115,11 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ userData, onBack, onPayme
   
   return (
     <Card className="w-full max-w-2xl mx-auto glass-card animate-fade-in">
+      {mode !== "live" && (
+        <div className="bg-amber-500/15 border-b border-amber-500/40 px-4 py-2 text-xs text-amber-700 dark:text-amber-400 text-center">
+          Mode démonstration — aucun paiement réel n'est débité. Le paiement réel (Wave/Orange Money via Edge Functions) n'est pas encore activé sur ce site.
+        </div>
+      )}
       <CardHeader className="relative">
         <Button 
           variant="ghost" 

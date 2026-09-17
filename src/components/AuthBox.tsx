@@ -193,7 +193,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         if (result.success) {
           toast.success(t("verificationSuccessful"));
           await onAuth('sms', { 
-            phoneNumber: fullPhoneNumber
+            phoneNumber: fullPhoneNumber,
+            code: otp
           });
         } else {
           // Handle different error types
@@ -215,7 +216,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         if (otp === verificationCode || otp === DEV_OTP_CODE) {
           toast.success(t("verificationSuccessful"));
           await onAuth('email', { 
-            email: email
+            email: email,
+            code: otp
           });
         } else {
           toast.error(t("invalidCode"));

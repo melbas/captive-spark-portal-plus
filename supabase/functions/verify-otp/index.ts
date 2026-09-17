@@ -1,9 +1,17 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { json } from "../_shared/auth.ts";
 
+// ---------------------------------------------------------------------------
+// verify-otp — vérifie l'OTP et retourne l'identité visiteur.
+// SÉCURITÉ (P0) : le code démo 123456 n'est accepté QUE si le secret
+// DEV_OTP_MODE=true est défini sur la fonction. Sinon il est rejeté comme
+// n'importe quel mauvais code. En mode démo la réponse porte demo:true —
+// authorize-guest REFUSE alors d'autoriser du matériel UniFi réel.
+// ---------------------------------------------------------------------------
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type",
 };
 
 Deno.serve(async (req) => {
@@ -15,20 +23,14 @@ Deno.serve(async (req) => {
     const { phone, email, code, siteId } = await req.json();
 
     if (!siteId || !code) {
-      return new Response(JSON.stringify({ error: "siteId et code requis" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ error: "siteId et code requis" }, 400);
     }
 
     const identifier = phone || email;
     const identifierType = phone ? "phone" : "email";
 
     if (!identifier) {
-      return new Response(
-        JSON.stringify({ error: "phone ou email requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ error: "phone ou email requis" }, 400);
     }
 
     const supabase = createClient(
@@ -36,63 +38,57 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // ⚠️ BYPASS DÉMO/TEST — code universel 123456 accepté
-    // À retirer en production stricte
-    const isDemoCode = code === "123456";
+    // Bypass démo UNIQUEMENT via secret — plus aucun comportement par défaut
+    const isDemoCode =
+      Deno.env.get("DEV_OTP_MODE") === "true" && code === "123456";
 
-    // Retrieve stored OTP
+    // Retrieve stored OTP (colonnes nécessaires uniquement — plus de select *)
     const { data: otpRecord, error: otpErr } = await supabase
       .from("pc_audit_logs")
-      .select("*")
+      .select("id, details")
       .eq("action", "otp_pending")
       .eq("entity_type", identifierType)
       .eq("ip_address", identifier)
       .eq("entity_id", siteId)
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if ((otpErr || !otpRecord) && !isDemoCode) {
-      return new Response(
-        JSON.stringify({ error: "Aucun code en attente. Renvoyez un code." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      return json(
+        { error: "Aucun code en attente. Renvoyez un code." },
+        400
       );
     }
 
     const details = (otpRecord?.details as any) || {};
 
     if (!isDemoCode) {
-      // Check expiration
       if (new Date() > new Date(details.expires_at)) {
-        await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
-        return new Response(
-          JSON.stringify({ error: "Code expiré. Renvoyez un nouveau code." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        await supabase.from("pc_audit_logs").delete().eq("id", otpRecord!.id);
+        return json({ error: "Code expiré. Renvoyez un nouveau code." }, 400);
       }
 
-      // Check attempts
       if ((details.attempts || 0) >= 5) {
-        await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
-        return new Response(
-          JSON.stringify({ error: "Trop de tentatives. Renvoyez un nouveau code." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        await supabase.from("pc_audit_logs").delete().eq("id", otpRecord!.id);
+        return json(
+          { error: "Trop de tentatives. Renvoyez un nouveau code." },
+          400
         );
       }
 
-      // Verify code
       if (details.code !== code) {
         await supabase
           .from("pc_audit_logs")
           .update({
             details: { ...details, attempts: (details.attempts || 0) + 1 },
           })
-          .eq("id", otpRecord.id);
+          .eq("id", otpRecord!.id);
 
         const remaining = 5 - ((details.attempts || 0) + 1);
-        return new Response(
-          JSON.stringify({ error: `Code incorrect. ${remaining} tentative(s) restante(s).` }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        return json(
+          { error: `Code incorrect. ${remaining} tentative(s) restante(s).` },
+          400
         );
       }
     }
@@ -102,27 +98,31 @@ Deno.serve(async (req) => {
       await supabase.from("pc_audit_logs").delete().eq("id", otpRecord.id);
     }
 
-    // Find or create wifi_user
+    // Find or create wifi_user (service_role — le front n'écrit plus direct)
     const userFilter = identifierType === "phone"
       ? { phone: identifier, site_id: siteId }
       : { email: identifier, site_id: siteId };
 
     let { data: existingUser } = await supabase
       .from("wifi_users")
-      .select("id")
+      .select("id, is_blocked")
       .match(userFilter)
-      .single();
+      .maybeSingle();
 
     let isNew = false;
 
     if (!existingUser) {
       isNew = true;
-      // Generate referral code
       const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-      const insertData = identifierType === "phone"
-        ? { phone: identifier, site_id: siteId, auth_method: "phone", referral_code: referralCode }
-        : { email: identifier, site_id: siteId, auth_method: "email", referral_code: referralCode };
+      const insertData: Record<string, unknown> = {
+        site_id: siteId,
+        auth_method: identifierType,
+        referral_code: referralCode,
+        loyalty_pts: 0,
+        is_blocked: false,
+      };
+      insertData[identifierType] = identifier;
 
       const { data: newUser, error: insertErr } = await supabase
         .from("wifi_users")
@@ -132,23 +132,27 @@ Deno.serve(async (req) => {
 
       if (insertErr) {
         console.error("Error creating user:", insertErr);
-        return new Response(
-          JSON.stringify({ error: "Erreur lors de la création du compte" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ error: "Erreur lors de la création du compte" }, 500);
       }
-      existingUser = newUser;
+      existingUser = { ...newUser, is_blocked: false };
+    }
+
+    if (existingUser.is_blocked) {
+      return json({ error: "Compte bloqué" }, 403);
     }
 
     return new Response(
-      JSON.stringify({ success: true, userId: existingUser!.id, isNew }),
+      JSON.stringify({
+        success: true,
+        userId: existingUser.id,
+        siteId,
+        isNew,
+        demo: isDemoCode,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("verify-otp error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message || "Erreur interne" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ error: "Erreur interne" }, 500);
   }
 });

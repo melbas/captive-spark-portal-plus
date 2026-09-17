@@ -1,23 +1,26 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import AuthBox from "@/components/AuthBox";
 import VideoForWifi from "@/components/VideoForWifi";
 import MarketingQuiz from "@/components/MarketingQuiz";
 import AccessGranted from "@/components/AccessGranted";
-import ExtendTimeForWifi from "@/components/ExtendTimeForWifi";
 import LeadCollectionGame from "@/components/LeadCollectionGame";
 import { Button } from "@/components/ui/button";
 import { Timer, Trophy, Award, Users, AlertTriangle } from 'lucide-react';
 import { Step, EngagementType, UserData, Reward, MiniGameData } from "./types";
-import UserDashboard from "./UserDashboard";
-import RewardSystem from "./RewardSystem";
-import ReferralSystem from "./ReferralSystem";
-import MiniGamesHub from "./MiniGamesHub";
-import AdminDashboard from "./AdminDashboard";
-import FamilyManagement from "./FamilyManagement";
-import PaymentPortal from "./PaymentPortal";
 import { useLanguage } from "../LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { PortalModuleGating } from "@/lib/portal-config-defaults";
+
+// Code-splitting : les modules du parcours (le plus lourd du bundle) sont chargés à la demande.
+const ExtendTimeForWifi = lazy(() => import("@/components/ExtendTimeForWifi"));
+const UserDashboard = lazy(() => import("./UserDashboard"));
+const RewardSystem = lazy(() => import("./RewardSystem"));
+const ReferralSystem = lazy(() => import("./ReferralSystem"));
+const MiniGamesHub = lazy(() => import("./MiniGamesHub"));
+const FamilyManagement = lazy(() => import("./FamilyManagement"));
+const PaymentPortal = lazy(() => import("./PaymentPortal"));
+const AdminDashboard = lazy(() => import("./AdminDashboard"));
 
 interface WifiPortalContentProps {
   currentStep: Step;
@@ -36,6 +39,8 @@ interface WifiPortalContentProps {
   handlePaymentComplete: (packageId: string, minutes: number) => void;
   loading?: boolean;
   error?: string | null;
+  /** Gating des modules du parcours (portal_enabled_modules). null = fail-closed. */
+  modules: PortalModuleGating;
 }
 
 const WifiPortalContent = ({
@@ -54,43 +59,53 @@ const WifiPortalContent = ({
   handleGameComplete,
   handlePaymentComplete,
   loading,
-  error
+  error,
+  modules
 }: WifiPortalContentProps) => {
   const { t } = useLanguage();
-  
+  // Fail-closed : sans config publiée sur un vrai site, seul l'essentiel reste visible
+  const moduleOn = (key: 'quiz' | 'video' | 'extend_time' | 'mini_games' | 'rewards' | 'referral' | 'family' | 'payment') =>
+    modules ? modules[key] === true : false;
+
   // Helper function for showing the main actions grid
   const renderMainActions = () => (
     <>
       <div className="w-full max-w-md mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
-        <Button 
-          variant="outline" 
-          onClick={() => setCurrentStep(Step.EXTEND_TIME)}
-          className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
-        >
-          <Timer className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
-          <span className="text-center sm:text-left">{t("watchVideo")}</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => setCurrentStep(Step.MINI_GAMES)}
-          className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
-        >
-          <Trophy className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
-          <span className="text-center sm:text-left">{t("playGame")}</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => handleNavigate("rewards")}
-          className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
-        >
-          <Award className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
-          <span className="text-center sm:text-left">{t("rewards")}</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
+        {moduleOn("extend_time") && (
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep(Step.EXTEND_TIME)}
+            className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
+          >
+            <Timer className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
+            <span className="text-center sm:text-left">{t("watchVideo")}</span>
+          </Button>
+        )}
+
+        {moduleOn("mini_games") && (
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep(Step.MINI_GAMES)}
+            className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
+          >
+            <Trophy className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
+            <span className="text-center sm:text-left">{t("playGame")}</span>
+          </Button>
+        )}
+
+        {moduleOn("rewards") && (
+          <Button
+            variant="outline"
+            onClick={() => handleNavigate("rewards")}
+            className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
+          >
+            <Award className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
+            <span className="text-center sm:text-left">{t("rewards")}</span>
+          </Button>
+        )}
+
+        <Button
+          variant="outline"
           onClick={() => handleNavigate("dashboard")}
           className="flex flex-col items-center justify-center p-3 h-auto min-h-[80px] sm:flex-row sm:justify-start"
         >
@@ -98,35 +113,39 @@ const WifiPortalContent = ({
           <span className="text-center sm:text-left">{t("profile")}</span>
         </Button>
       </div>
-      
+
       <div className="w-full max-w-md mt-3 grid grid-cols-2 gap-3">
-        <Button 
-          variant="outline" 
-          onClick={() => handleNavigate("payment")}
-          className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
-        >
-          <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-          </svg>
-          <span className="text-center sm:text-left">{t("buyTime")}</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => handleNavigate("family-management")}
-          className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
-        >
-          <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-          </svg>
-          <span className="text-center sm:text-left">{t("familyPlan")}</span>
-        </Button>
+        {moduleOn("payment") && (
+          <Button
+            variant="outline"
+            onClick={() => handleNavigate("payment")}
+            className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
+          >
+            <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+            </svg>
+            <span className="text-center sm:text-left">{t("buyTime")}</span>
+          </Button>
+        )}
+
+        {moduleOn("family") && (
+          <Button
+            variant="outline"
+            onClick={() => handleNavigate("family-management")}
+            className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
+          >
+            <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+            </svg>
+            <span className="text-center sm:text-left">{t("familyPlan")}</span>
+          </Button>
+        )}
       </div>
-      
+
       <div className="w-full max-w-md mt-3 grid grid-cols-1 gap-3">
         {userData.isAdmin && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => handleNavigate("admin")}
             className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
           >
@@ -137,10 +156,10 @@ const WifiPortalContent = ({
             <span className="text-center sm:text-left">{t("administration")}</span>
           </Button>
         )}
-        
-        {!userData.isAdmin && (
-          <Button 
-            variant="outline" 
+
+        {!userData.isAdmin && moduleOn("referral") && (
+          <Button
+            variant="outline"
             onClick={() => handleNavigate("referral")}
             className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
           >
@@ -154,7 +173,7 @@ const WifiPortalContent = ({
       </div>
     </>
   );
-  
+
   // Helper function for displaying connection stats
   const renderConnectionStats = () => (
     <Card className="w-full max-w-md mt-4 overflow-hidden border border-primary/20">
@@ -167,7 +186,7 @@ const WifiPortalContent = ({
               <p className="font-medium">{userData.timeRemainingMinutes} {t("minutes")}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center">
             <Trophy className="h-5 w-5 text-primary mr-2" />
             <div>
@@ -190,8 +209,8 @@ const WifiPortalContent = ({
             <AlertDescription className="font-medium">{error}</AlertDescription>
           </Alert>
           <div className="text-center">
-            <Button 
-              className="mt-4" 
+            <Button
+              className="mt-4"
               onClick={() => window.location.reload()}
             >
               {t("retry")}
@@ -213,96 +232,112 @@ const WifiPortalContent = ({
       </Card>
     );
   }
-  
-  return (
-    <>
-      {currentStep === Step.AUTH && (
-        <AuthBox onAuth={handleAuth} />
-      )}
-      
-      {currentStep === Step.ENGAGEMENT && engagementType === EngagementType.VIDEO && (
-        <VideoForWifi onComplete={handleEngagementComplete} />
-      )}
-      
-      {currentStep === Step.ENGAGEMENT && engagementType === EngagementType.QUIZ && (
-        <MarketingQuiz onComplete={handleEngagementComplete} />
-      )}
-      
-      {currentStep === Step.SUCCESS && (
-        <>
-          <AccessGranted 
-            duration={userData.timeRemainingMinutes} 
-            onContinue={handleContinue} 
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case Step.AUTH:
+        return <AuthBox onAuth={handleAuth} />;
+      case Step.ENGAGEMENT:
+        if (engagementType === EngagementType.VIDEO && moduleOn("video")) {
+          return <VideoForWifi onComplete={handleEngagementComplete} />;
+        }
+        if (engagementType === EngagementType.QUIZ && moduleOn("quiz")) {
+          return <MarketingQuiz onComplete={handleEngagementComplete} />;
+        }
+        // Module d'engagement désactivé : pas de contournement simulé
+        return null;
+      case Step.SUCCESS:
+        return (
+          <>
+            <AccessGranted
+              duration={userData.timeRemainingMinutes}
+              onContinue={handleContinue}
+            />
+            {renderConnectionStats()}
+            {renderMainActions()}
+          </>
+        );
+      case Step.EXTEND_TIME:
+        return moduleOn("extend_time") ? (
+          <ExtendTimeForWifi onComplete={handleExtendTime} />
+        ) : null;
+      case Step.LEAD_GAME:
+        return moduleOn("mini_games") ? (
+          <LeadCollectionGame onComplete={handleLeadGameComplete} />
+        ) : null;
+      case Step.DASHBOARD:
+        return (
+          <UserDashboard
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+            onNavigate={handleNavigate}
+            onExtendTime={() => setCurrentStep(Step.EXTEND_TIME)}
           />
-          
-          {renderConnectionStats()}
-          {renderMainActions()}
-        </>
-      )}
-      
-      {currentStep === Step.EXTEND_TIME && (
-        <ExtendTimeForWifi onComplete={handleExtendTime} />
-      )}
-      
-      {currentStep === Step.LEAD_GAME && (
-        <LeadCollectionGame onComplete={handleLeadGameComplete} />
-      )}
-      
-      {currentStep === Step.DASHBOARD && (
-        <UserDashboard 
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-          onNavigate={handleNavigate}
-          onExtendTime={() => setCurrentStep(Step.EXTEND_TIME)}
-        />
-      )}
-      
-      {currentStep === Step.REWARDS && (
-        <RewardSystem 
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-          onRedeem={handleRedeemReward}
-        />
-      )}
-      
-      {currentStep === Step.REFERRAL && (
-        <ReferralSystem 
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-          onInvite={handleInvite}
-        />
-      )}
-      
-      {currentStep === Step.MINI_GAMES && (
-        <MiniGamesHub 
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-          onGameComplete={handleGameComplete}
-        />
-      )}
-      
-      {currentStep === Step.ADMIN_STATS && (
-        <AdminDashboard 
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-        />
-      )}
-      
-      {currentStep === Step.FAMILY_MANAGEMENT && (
-        <FamilyManagement
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-        />
-      )}
-      
-      {currentStep === Step.PAYMENT && (
-        <PaymentPortal 
-          userData={userData}
-          onBack={() => setCurrentStep(Step.SUCCESS)}
-          onPaymentComplete={handlePaymentComplete}
-        />
-      )}
-    </>
+        );
+      case Step.REWARDS:
+        return moduleOn("rewards") ? (
+          <RewardSystem
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+            onRedeem={handleRedeemReward}
+          />
+        ) : null;
+      case Step.REFERRAL:
+        return moduleOn("referral") ? (
+          <ReferralSystem
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+            onInvite={handleInvite}
+          />
+        ) : null;
+      case Step.MINI_GAMES:
+        return moduleOn("mini_games") ? (
+          <MiniGamesHub
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+            onGameComplete={handleGameComplete}
+          />
+        ) : null;
+      case Step.ADMIN_STATS:
+        return (
+          <AdminDashboard
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+          />
+        );
+      case Step.FAMILY_MANAGEMENT:
+        return moduleOn("family") ? (
+          <FamilyManagement
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+          />
+        ) : null;
+      case Step.PAYMENT:
+        return moduleOn("payment") ? (
+          <PaymentPortal
+            userData={userData}
+            onBack={() => setCurrentStep(Step.SUCCESS)}
+            onPaymentComplete={handlePaymentComplete}
+          />
+        ) : null;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Suspense
+      fallback={
+        <Card className="w-full max-w-md mx-auto glass-card animate-fade-in">
+          <CardContent className="p-6 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
+            <p className="text-muted-foreground">{t("loading")}</p>
+          </CardContent>
+        </Card>
+      }
+    >
+      {renderStep()}
+    </Suspense>
   );
 };
 
