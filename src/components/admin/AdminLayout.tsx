@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-route
 import {
   LayoutDashboard, Users, MapPin, Wifi, CreditCard,
   Ticket, UserCheck, BarChart2, FileText, Settings, LogOut,
-  Puzzle, Wallet, Menu, Lock, Globe,
+  Puzzle, Wallet, Menu, Lock, Globe, Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -31,6 +31,7 @@ const NAV_ITEMS = [
   { to: '/admin/vouchers', icon: Ticket, label: 'Vouchers' },
   { to: '/admin/transactions', icon: CreditCard, label: 'Transactions' },
   { to: '/admin/analytics', icon: BarChart2, label: 'Analyses' },
+  { to: '/admin/ads', icon: Megaphone, label: 'Publicités' },
   { to: '/admin/resellers', icon: UserCheck, label: 'Revendeurs' },
   { to: '/admin/logs', icon: FileText, label: 'Journal' },
   { to: '/admin/settings', icon: Settings, label: 'Paramètres' },
@@ -40,6 +41,7 @@ const CRUMB_LABELS: Record<string, string> = {
   dashboard: 'Accueil', sites: 'Sites', modules: 'Modules du parcours',
   plans: 'Forfaits', sessions: 'Sessions', users: 'Utilisateurs',
   vouchers: 'Vouchers', transactions: 'Transactions', analytics: 'Analyses',
+  ads: 'Publicités',
   resellers: 'Revendeurs', logs: 'Journal', settings: 'Paramètres',
   login: 'Connexion',
 };

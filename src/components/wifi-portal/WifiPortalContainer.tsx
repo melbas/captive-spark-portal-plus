@@ -10,6 +10,7 @@ import { useLanguage } from "../LanguageContext";
 import AdCarousel from "../ads/AdCarousel";
 import VideoAd from "../ads/VideoAd";
 import AudioPromo from "../ads/AudioPromo";
+import { trackingService } from "@/services/tracking-service";
 import { Step } from "./types";
 import { usePortalConfig, applyPortalBranding } from "@/hooks/usePortalConfig";
 import {
@@ -59,16 +60,18 @@ const WifiPortalContainer = () => {
     sessionMinutes: portal.sessionMinutes ?? DEMO_SESSION_MINUTES,
     startingPoints: portal.startingPoints ?? DEMO_STARTING_POINTS,
     engagementType: portal.engagementType ?? DEMO_ENGAGEMENT_TYPE,
+    siteId: portal.siteId,
   });
 
   const { t, language } = useLanguage();
 
   const handleAdSlideChange = (index: number) => {
-    console.log(`Ad changed to slide ${index}`);
+    const ad = portal.slides[index];
+    if (ad) trackingService.adView(portal.siteId, ad.id);
   };
 
   const handleAdSlideClick = (slide: any) => {
-    console.log(`Ad clicked: ${slide.title?.[language] ?? slide.title}`);
+    if (slide?.id) trackingService.adClick(portal.siteId, slide.id);
   };
 
   // Slides : config publiée (ad_videos) ; repli visuel UNIQUEMENT en démo isolée
@@ -211,6 +214,10 @@ const WifiPortalContainer = () => {
                 poster={videoAd?.thumbnailUrl ?? DEMO_VIDEO_AD.poster}
                 autoPlay={false}
                 className="mb-4 wifi-card"
+                // Tracking : visionnage complet = contenu réellement regardé.
+                onEnd={() => {
+                  if (videoAd) trackingService.adProgress(portal.siteId, videoAd.id, 100);
+                }}
               />
             )}
 
@@ -225,6 +232,9 @@ const WifiPortalContainer = () => {
                 }
                 coverImage={audioAd?.thumbnailUrl ?? DEMO_AUDIO_AD.coverImage}
                 className="wifi-card"
+                onEnd={() => {
+                  if (audioAd) trackingService.adProgress(portal.siteId, audioAd.id, 100);
+                }}
               />
             )}
           </div>

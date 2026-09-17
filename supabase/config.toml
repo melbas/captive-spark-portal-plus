@@ -42,3 +42,9 @@ verify_jwt = true
 
 [functions.test-hardware-connection]
 verify_jwt = true
+
+[functions.track-event]
+# Tracking des événements du portail (visiteurs, pubs, clics) — alimente la
+# table `events` (jamais alimentée jusqu'ici). Visiteur authentifié accepté
+# (preuve de session visiteur), jamais d'écriture anonyme.
+verify_jwt = true

@@ -25,6 +25,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminVouchers from "./pages/admin/AdminVouchers";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminAds from "./pages/admin/AdminAds";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogin from "./pages/admin/AdminLogin";
 
@@ -64,6 +65,7 @@ const App = () => (
                   <Route path="vouchers" element={<AdminVouchers />} />
                   <Route path="logs" element={<AdminLogs />} />
                   <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="ads" element={<AdminAds />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

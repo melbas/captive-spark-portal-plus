@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { EngagementKind } from "@/lib/portal-config-defaults";
 import { toast } from "sonner";
 import { normalizeStoredPhone } from "@/lib/phone";
+import { trackingService } from "@/services/tracking-service";
 import { wifiPortalService, WifiUser, WifiSession } from "@/services/wifi-portal-service";
 import { 
   Step, 
@@ -21,6 +22,8 @@ export interface WifiPortalRuntimeConfig {
   startingPoints: number;
   /** Type d'engagement : config publiée ; "random" est le seul mode aléatoire (plus le défaut). */
   engagementType: EngagementKind;
+  /** Identifiant du site — requis pour écrire les events de tracking. */
+  siteId?: string | null;
 }
 
 export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
@@ -264,6 +267,7 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
         // Update stats based on engagement type
         if (engagementType === EngagementType.VIDEO) {
           await wifiPortalService.incrementStatistic('video_views');
+          trackingService.engagementComplete(config?.siteId ?? "", "video");
           // Add points for completing a video
           setUserData(prev => ({
             ...prev,
@@ -272,6 +276,7 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
           }));
         } else {
           await wifiPortalService.incrementStatistic('quiz_completions');
+          trackingService.engagementComplete(config?.siteId ?? "", "quiz");
           // Add points for completing a quiz
           setUserData(prev => ({
             ...prev,
