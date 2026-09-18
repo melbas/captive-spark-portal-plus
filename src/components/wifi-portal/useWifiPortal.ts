@@ -24,7 +24,17 @@ export interface WifiPortalRuntimeConfig {
   engagementType: EngagementKind;
   /** Identifiant du site — requis pour écrire les events de tracking. */
   siteId?: string | null;
+  /**
+   * Ordre du parcours publié par la Forge (module_name actifs, dans l'ordre).
+   * Source de vérité du séquencement : remplace le switch codé en dur.
+   * Tableau vide → ordre par défaut (catalogue), comportement inchangé.
+   */
+  flowOrder?: string[];
 }
+
+// Séquenceur déplacé dans flow-sequence.ts (module pur, testable sans navigateur).
+import { nextStepInFlow } from "./flow-sequence";
+export { resolveFlowSequence, nextStepInFlow } from "./flow-sequence";
 
 export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
   const sessionMinutes = config?.sessionMinutes ?? 30;
@@ -249,7 +259,10 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
         
         console.log(`Type d'engagement choisi: ${configuredEngagement} -> ${chosenEngagement}`);
         setEngagementType(chosenEngagement);
-        setCurrentStep(Step.ENGAGEMENT);
+        // Premier précepte du parcours publié (et non plus ENGAGEMENT en dur).
+        // Si le parcours n'a pas d'engagement actif, on va directement au
+        // précepte suivant (ex: learning_center) puis SUCCESS.
+        setCurrentStep(nextStepInFlow(Step.AUTH, config?.flowOrder) as unknown as Step);
         
         toast.success(`Authentication successful via ${method}`);
       } else {
@@ -300,7 +313,8 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
         }
       }
       
-      setCurrentStep(Step.SUCCESS);
+      // Passage au précepte suivant du parcours publié (plus de SUCCESS en dur)
+      setCurrentStep(nextStepInFlow(Step.ENGAGEMENT, config?.flowOrder) as unknown as Step);
       toast.success("Access granted!");
     } catch (error) {
       console.error("Error completing engagement:", error);
@@ -348,6 +362,7 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
         points: (prev.points || 0) + 15
       }));
       
+      // Retour au hub SUCCESS — l'utilisateur a choisi ce précepte depuis le hub
       setCurrentStep(Step.SUCCESS);
       toast.success(`Great! You've earned ${additionalMinutes} more minutes of WiFi time.`);
     } catch (error) {

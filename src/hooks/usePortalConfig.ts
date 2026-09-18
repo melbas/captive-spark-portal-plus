@@ -51,6 +51,8 @@ export interface PortalRuntimeConfig {
   slides: PortalAdSlide[];
   mediaAds: PortalMediaAd[];
   enabledModules: PortalModuleGating;
+  /** Ordre du parcours publié par la Forge (module_name actifs, dans l'ordre). */
+  flowOrder: string[];
   isDemo: boolean;
   loading: boolean;
   error: string | null;
@@ -180,6 +182,8 @@ interface PortalConfigRow {
   logo_url: string | null;
   theme_color: string | null;
   welcome_message: string | null;
+  /** Ordre du parcours (Forge) — colonne nouvelle, absente des types générés. */
+  flow_order?: unknown;
 }
 interface CustomizationRow {
   customization_type: string | null;
@@ -252,6 +256,7 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
     slides: [],
     mediaAds: [],
     enabledModules: detectDemo() ? EMPTY_GATING_FALLBACK : null,
+    flowOrder: [],
     isDemo: detectDemo(),
     loading: true,
     error: null,
@@ -309,7 +314,7 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
           // exploser l'inférence TS2589) — même sémantique, exécution parallèle conservée.
           // Colonnes explicites + projection typée : pas de `any` (contrat de colonnes).
           const cfgResP = table("portal_config")
-            .select("id, portal_name, logo_url, theme_color, welcome_message")
+            .select("id, portal_name, logo_url, theme_color, welcome_message, flow_order")
             .eq("site_id", site.id)
             .eq("portal_status", "active")
             .maybeSingle() as unknown as QueryResult<PortalConfigRow>;
@@ -426,6 +431,18 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
             title: a.title ?? "",
           }));
 
+        // 5. Ordre du parcours publié par la Forge (portal_config.flow_order).
+        // Validation stricte : on n'accepte qu'un tableau de chaînes connues.
+        // Toute autre forme (null, objet, noms inconnus) → [] (ordre par défaut
+        // = celui du catalogue). Pas de trust sur un jsonb arbitraire.
+        const flowOrder: string[] = Array.isArray(portalConfig?.flow_order)
+          ? (portalConfig.flow_order as unknown[])
+              .filter((m): m is string => typeof m === "string")
+              // Uniquement les préceptes réellement activés : l'ordre ne peut
+              // pas contredire le gating (fail-closed).
+              .filter((m) => (enabledModules as Record<string, boolean>)[m] === true)
+          : [];
+
         const value: PortalRuntimeConfig = {
           siteId: site?.id ?? null,
           siteName: site?.name ?? null,
@@ -440,6 +457,7 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
           slides,
           mediaAds,
           enabledModules,
+          flowOrder,
           isDemo,
           loading: false,
           error: null,

@@ -61,6 +61,7 @@ const WifiPortalContainer = () => {
     startingPoints: portal.startingPoints ?? DEMO_STARTING_POINTS,
     engagementType: portal.engagementType ?? DEMO_ENGAGEMENT_TYPE,
     siteId: portal.siteId,
+    flowOrder: portal.flowOrder,
   });
 
   const { t, language } = useLanguage();
