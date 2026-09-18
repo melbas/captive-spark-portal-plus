@@ -11,7 +11,6 @@ import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { untypedClient } from "@/lib/supabase-untyped";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,15 +51,12 @@ export default function AdminKits() {
   const kits = useQuery({
     queryKey: ["portal-kits"],
     queryFn: async () => {
-      // portal_kits est nouvelle (types Supabase non régénérés) : client non
-      // typé (cf lib/supabase-untyped). Revenir au client typé après gen-types.
-      const raw = untypedClient();
-      const { data, error } = await raw
+      const { data, error } = await supabase
         .from("portal_kits")
         .select("*")
         .eq("is_active", true)
         .order("sort_order");
-      if (error) throw new Error(error.message);
+      if (error) throw error;
       return (data ?? []) as unknown as Kit[];
     },
   });

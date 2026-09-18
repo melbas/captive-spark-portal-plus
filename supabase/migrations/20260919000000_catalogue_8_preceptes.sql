@@ -32,7 +32,17 @@ delete from public.portal_enabled_modules;
 delete from public.portal_modules;
 
 -- ---------------------------------------------------------------------------
--- 2. Les 8 préceptes
+-- 2. Colonnes du catalogue (la table de base n'a ni flow_step ni sort_order)
+-- ---------------------------------------------------------------------------
+alter table public.portal_modules
+  add column if not exists flow_step text,
+  add column if not exists sort_order integer default 0;
+
+create index if not exists portal_modules_flow_step_idx
+  on public.portal_modules (flow_step);
+
+-- ---------------------------------------------------------------------------
+-- 3. Les 8 préceptes
 --    module_name  = clé technique lue par usePortalConfig.ts (NE PAS RENOMMER)
 --    flow_step    = valeur de l'énum Step côté portail (doc/cohérence)
 -- ---------------------------------------------------------------------------
@@ -89,17 +99,7 @@ values
    'optional', 'Valeur', 'learning-center', 8);
 
 -- ---------------------------------------------------------------------------
--- 3. Colonne flow_step + index
---    (le catalogue décrit désormais le flow ; l'ordre est lisible en une requête)
--- ---------------------------------------------------------------------------
-alter table public.portal_modules
-  add column if not exists flow_step text;
-
-create index if not exists portal_modules_flow_step_idx
-  on public.portal_modules (flow_step);
-
--- ---------------------------------------------------------------------------
--- 4. Ordre du parcours, propre au site
+-- 3. Ordre du parcours, propre au site
 --    portal_config.flow_order : jsonb des module_name actifs, dans l'ordre
 --    choisi dans la Forge. Lecture par useWifiPortal (remplace le switch codé
 --    en dur — l'onglet "Parcours" réordonne pour de vrai).
@@ -263,16 +263,16 @@ values
 -- ---------------------------------------------------------------------------
 -- 9. Garde-fou : recommended_modules ne peut contenir que les 8 préceptes
 -- ---------------------------------------------------------------------------
+-- Une sous-requête scalaire ne peut pas renvoyer plusieurs lignes (un kit
+-- par ligne) : on déplie avec un LATERAL join, ce qui reste un test unique.
 do $$
 begin
   if exists (
     select 1
-    from jsonb_array_elements_text(
-      (select recommended_modules from public.portal_kits where recommended_modules is not null)
-    ) as m
-    where m not in (
-      select module_name from public.portal_modules
-    )
+    from public.portal_kits k,
+         jsonb_array_elements_text(k.recommended_modules) as m
+    where k.recommended_modules is not null
+      and m not in (select module_name from public.portal_modules)
   ) then
     raise exception 'Kit avec un module recommandé inexistant dans le catalogue des 8';
   end if;
