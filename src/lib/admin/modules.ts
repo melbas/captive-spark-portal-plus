@@ -9,6 +9,10 @@ export interface CatalogueModule {
   display_name: string;
   description?: string | null;
   category?: string | null;
+  /** Étape du flow portail (miroir 1:1 — cf. migration catalogue_8_preceptes) */
+  flow_step?: string | null;
+  /** Position par défaut dans le parcours (catalogue) */
+  sort_order?: number | null;
 }
 
 export interface EnabledRow {
@@ -44,19 +48,24 @@ export function portalUrl(origin: string, slug: string, draft: boolean): string 
   return draft ? `${base}?preview=1` : base;
 }
 
+/**
+ * Catalogue des 8 préceptes — miroir 1:1 du flow portail.
+ * Chaque clé est un module_name en base (migration catalogue_8_preceptes)
+ * ET un flag lu dans usePortalConfig.ts. Aucune clé orpheline.
+ *
+ * Réglages hors catalogue (gérés par les onglets de la Forge) :
+ *  - social_integration → méthode d'auth (sites.auth_method / AuthBox)
+ *  - targeted_marketing → segmentation admin (audiences)
+ */
 const ICONS: Record<string, string> = {
-  auth_sms: 'message-square',
-  auth_email: 'mail',
-  auth_social: 'share-2',
+  payment: 'wallet',
+  quiz: 'brain',
+  video: 'monitor-play',
+  extend_time: 'timer',
   mini_games: 'gamepad-2',
-  loyalty_program: 'gift',
-  video_system: 'monitor-play',
-  mobile_money: 'wallet',
-  ecommerce_light: 'shopping-cart',
+  rewards: 'gift',
+  referral: 'users',
   learning_center: 'graduation-cap',
-  social_integration: 'share-2',
-  targeted_marketing: 'megaphone',
-  ai_chat_multilingual: 'sparkles',
 };
 
 /** Nom de lucide-icon (string) par module ; fallback générique 'puzzle'. */

@@ -413,8 +413,8 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
       case "payment":
         setCurrentStep(Step.PAYMENT);
         break;
-      case "family-management":
-        setCurrentStep(Step.FAMILY_MANAGEMENT);
+      case "learning-center":
+        setCurrentStep(Step.LEARNING_CENTER);
         break;
       default:
         setCurrentStep(Step.SUCCESS);

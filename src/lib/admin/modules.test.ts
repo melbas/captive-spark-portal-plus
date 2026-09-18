@@ -1,12 +1,12 @@
 // Tests ciblés — modules du parcours (catalogue × activations par site).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeModuleStates, portalUrl, moduleIcon } from './modules';
+import { mergeModuleStates, portalUrl, moduleIcon } from './modules.ts';
 
 const CATALOGUE = [
-  { id: 'm1', module_name: 'auth_sms', display_name: 'Authentification SMS' },
-  { id: 'm2', module_name: 'mini_games', display_name: 'Mini-jeux' },
-  { id: 'm3', module_name: 'loyalty_program', display_name: 'Programme de Fidélité' },
+  { id: 'm1', module_name: 'payment', display_name: 'Accès Payant' },
+  { id: 'm2', module_name: 'mini_games', display_name: 'Mini-Jeux' },
+  { id: 'm3', module_name: 'learning_center', display_name: 'Learning Center' },
 ];
 
 test('sans ligne portal_enabled_modules → tous les modules sont désactivés (off)', () => {
@@ -28,7 +28,7 @@ test('les activations connues sont appliquées, l\'ordre du catalogue est conser
     states.map((s) => s.enabled),
     [false, true, false],
   );
-  assert.equal(states[0].module_name, 'auth_sms');
+  assert.equal(states[0].module_name, 'payment');
 });
 
 test('is_enabled false explicite désactive (pas seulement « absent »)', () => {

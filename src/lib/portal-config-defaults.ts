@@ -128,7 +128,7 @@ export type PortalModuleKey =
   | "mini_games"
   | "rewards"
   | "referral"
-  | "family"
+  | "learning_center"
   | "payment";
 
 /** État de gating : `null` = aucune config publiée (fail-closed sur un vrai site). */
@@ -142,7 +142,7 @@ export const ALL_MODULES_ENABLED: PortalModuleGating = {
   mini_games: true,
   rewards: true,
   referral: true,
-  family: true,
+  learning_center: true,
   payment: true,
 };
 
@@ -157,6 +157,6 @@ export const MANDATORY_ONLY_GATING: PortalModuleGating = {
   mini_games: false,
   rewards: false,
   referral: false,
-  family: false,
+  learning_center: false,
   payment: false,
 };

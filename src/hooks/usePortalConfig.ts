@@ -394,7 +394,7 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
             mini_games: byName.has("mini_games"),
             rewards: byName.has("rewards"),
             referral: byName.has("referral"),
-            family: byName.has("family"),
+            learning_center: byName.has("learning_center"),
             payment: byName.has("payment"),
           };
         } else {

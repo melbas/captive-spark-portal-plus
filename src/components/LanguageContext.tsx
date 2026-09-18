@@ -258,6 +258,21 @@ export const translations: Record<string, Translations> = {
       fr: "Acheter du temps",
       es: "Comprar tiempo"
     },
+    back: {
+      en: "Back",
+      fr: "Retour",
+      es: "Volver"
+    },
+    learningCenter: {
+      en: "Learning Center",
+      fr: "Centre d'apprentissage",
+      es: "Centro de aprendizaje"
+    },
+    learningCenterEmpty: {
+      en: "No resource available yet.",
+      fr: "Aucune ressource disponible pour le moment.",
+      es: "Ningún recurso disponible todavía."
+    },
     extendTime: {
       en: "Extend Time",
       fr: "Prolonger le temps",

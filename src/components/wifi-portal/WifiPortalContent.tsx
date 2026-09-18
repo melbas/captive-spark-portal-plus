@@ -5,12 +5,12 @@ import MarketingQuiz from "@/components/MarketingQuiz";
 import AccessGranted from "@/components/AccessGranted";
 import LeadCollectionGame from "@/components/LeadCollectionGame";
 import { Button } from "@/components/ui/button";
-import { Timer, Trophy, Award, Users, AlertTriangle } from 'lucide-react';
+import { Timer, Trophy, Award, Users, AlertTriangle, GraduationCap } from 'lucide-react';
 import { Step, EngagementType, UserData, Reward, MiniGameData } from "./types";
 import { useLanguage } from "../LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { PortalModuleGating } from "@/lib/portal-config-defaults";
+import type { PortalModuleGating, PortalModuleKey } from "@/lib/portal-config-defaults";
 
 // Code-splitting : les modules du parcours (le plus lourd du bundle) sont chargés à la demande.
 const ExtendTimeForWifi = lazy(() => import("@/components/ExtendTimeForWifi"));
@@ -18,7 +18,7 @@ const UserDashboard = lazy(() => import("./UserDashboard"));
 const RewardSystem = lazy(() => import("./RewardSystem"));
 const ReferralSystem = lazy(() => import("./ReferralSystem"));
 const MiniGamesHub = lazy(() => import("./MiniGamesHub"));
-const FamilyManagement = lazy(() => import("./FamilyManagement"));
+const LearningCenter = lazy(() => import("./LearningCenter"));
 const PaymentPortal = lazy(() => import("./PaymentPortal"));
 const AdminDashboard = lazy(() => import("./AdminDashboard"));
 
@@ -64,7 +64,7 @@ const WifiPortalContent = ({
 }: WifiPortalContentProps) => {
   const { t } = useLanguage();
   // Fail-closed : sans config publiée sur un vrai site, seul l'essentiel reste visible
-  const moduleOn = (key: 'quiz' | 'video' | 'extend_time' | 'mini_games' | 'rewards' | 'referral' | 'family' | 'payment') =>
+  const moduleOn = (key: PortalModuleKey) =>
     modules ? modules[key] === true : false;
 
   // Helper function for showing the main actions grid
@@ -128,16 +128,14 @@ const WifiPortalContent = ({
           </Button>
         )}
 
-        {moduleOn("family") && (
+        {moduleOn("learning_center") && (
           <Button
             variant="outline"
-            onClick={() => handleNavigate("family-management")}
+            onClick={() => setCurrentStep(Step.LEARNING_CENTER)}
             className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
           >
-            <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
-            <span className="text-center sm:text-left">{t("familyPlan")}</span>
+            <GraduationCap className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+            <span className="text-center sm:text-left">{t("learningCenter")}</span>
           </Button>
         )}
       </div>
@@ -305,12 +303,9 @@ const WifiPortalContent = ({
             onBack={() => setCurrentStep(Step.SUCCESS)}
           />
         );
-      case Step.FAMILY_MANAGEMENT:
-        return moduleOn("family") ? (
-          <FamilyManagement
-            userData={userData}
-            onBack={() => setCurrentStep(Step.SUCCESS)}
-          />
+      case Step.LEARNING_CENTER:
+        return moduleOn("learning_center") ? (
+          <LearningCenter userData={userData} onBack={() => setCurrentStep(Step.SUCCESS)} />
         ) : null;
       case Step.PAYMENT:
         return moduleOn("payment") ? (

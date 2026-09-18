@@ -12,7 +12,8 @@ export enum Step {
   MINI_GAMES = "mini-games",
   ADMIN_STATS = "admin-stats",
   FAMILY_MANAGEMENT = "family-management",
-  PAYMENT = "payment"
+  PAYMENT = "payment",
+  LEARNING_CENTER = "learning-center"
 }
 
 export enum EngagementType {
