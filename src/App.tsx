@@ -19,6 +19,7 @@ import AdminResellers from "./pages/admin/AdminResellers";
 import AdminSites from "./pages/admin/AdminSites";
 import AdminModules from "./pages/admin/AdminModules";
 import AdminForge from "./pages/admin/AdminForge";
+import AdminKits from "./pages/admin/AdminKits";
 import AdminPlans from "./pages/admin/AdminPlans";
 import AdminSessions from "./pages/admin/AdminSessions";
 import AdminTransactions from "./pages/admin/AdminTransactions";
@@ -60,6 +61,7 @@ const App = () => (
                   <Route path="sites" element={<AdminSites />} />
                   <Route path="modules" element={<AdminModules />} />
                   <Route path="forge" element={<AdminForge />} />
+                  <Route path="kits" element={<AdminKits />} />
                   <Route path="plans" element={<AdminPlans />} />
                   <Route path="sessions" element={<AdminSessions />} />
                   <Route path="transactions" element={<AdminTransactions />} />
