@@ -27,7 +27,7 @@ export interface DemoAdSlide {
 export const DEMO_AD_SLIDES: DemoAdSlide[] = [
   {
     id: "ad1",
-    imageUrl: "/lovable-uploads/188625b4-1006-40a3-9d8f-4406793e432a.png",
+    imageUrl: "/slides/slide-1.png",
     fallbackUrl:
       "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=800&h=400",
     title: { en: "High-Speed WiFi Access", fr: "Accès WiFi Haut Débit" },
@@ -39,7 +39,7 @@ export const DEMO_AD_SLIDES: DemoAdSlide[] = [
   },
   {
     id: "ad2",
-    imageUrl: "/lovable-uploads/6d63d396-05e7-4d74-9fa2-4e65d7539370.png",
+    imageUrl: "/slides/slide-2.png",
     fallbackUrl:
       "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=400",
     title: { en: "WiFi for Business", fr: "WiFi pour Entreprises" },
@@ -51,7 +51,7 @@ export const DEMO_AD_SLIDES: DemoAdSlide[] = [
   },
   {
     id: "ad3",
-    imageUrl: "/lovable-uploads/a07006bb-2820-445b-ac39-fb06d95be8fe.png",
+    imageUrl: "/slides/slide-3.png",
     fallbackUrl:
       "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=400",
     title: { en: "Home WiFi Solutions", fr: "Solutions WiFi Domicile" },
@@ -63,7 +63,7 @@ export const DEMO_AD_SLIDES: DemoAdSlide[] = [
   },
   {
     id: "ad4",
-    imageUrl: "/lovable-uploads/34c1a509-4608-4a3e-bcff-29e71eff2849.png",
+    imageUrl: "/slides/slide-4.png",
     fallbackUrl:
       "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&h=400",
     title: { en: "Mobile WiFi Access", fr: "Accès WiFi Mobile" },

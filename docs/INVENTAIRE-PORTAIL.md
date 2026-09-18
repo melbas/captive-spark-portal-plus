@@ -10,7 +10,7 @@
 
 | Élément | Fichier:ligne | Valeur actuelle | Table/colonne cible | Page admin | Contrôle |
 |---|---|---|---|---|---|
-| Slide pub 1 | `WifiPortalContainer.tsx:68-72` (lecture) ; défaut `portal-config-defaults.ts:29-39` | « Accès WiFi Haut Débit » + image `/lovable-uploads/188625b4…png` | `ad_videos` (ligne `active`, `video_url`=image, `title`, `priority=1`) | Contenus → Pubs (à créer, Phase 2) | upload image + textes FR/EN + ordre |
+| Slide pub 1 | `WifiPortalContainer.tsx:68-72` (lecture) ; défaut `portal-config-defaults.ts:29-39` | « Accès WiFi Haut Débit » + image `/slides/slide-1.png` | `ad_videos` (ligne `active`, `video_url`=image, `title`, `priority=1`) | Contenus → Pubs (à créer, Phase 2) | upload image + textes FR/EN + ordre |
 | Slide pub 2 | idem ; défaut `:41-51` | « WiFi pour Entreprises » | `ad_videos` `priority=2` | Pubs | idem |
 | Slide pub 3 | idem ; défaut `:53-63` | « Solutions WiFi Domicile » | `ad_videos` `priority=3` | Pubs | idem |
 | Slide pub 4 | idem ; défaut `:65-75` | « Accès WiFi Mobile » | `ad_videos` `priority=4` | Pubs | idem |

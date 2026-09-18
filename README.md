@@ -1,73 +1,44 @@
-# Welcome to your portal plus project
+# Captive Spark Portal Plus
 
-## Project info
+Portail captif WiFi SaaS multi-clients — Sénégal / Afrique de l'Ouest.
 
-**URL**: https://lovable.dev/projects/bd34af53-4061-461a-8bb2-3c22b9e1f8c7
+Stack : React 18 + Vite + TypeScript + Supabase (PostgreSQL) + Tailwind + shadcn-ui.
 
-## How can I edit this code?
+## Structure
 
-There are several ways of editing your application.
+- `src/` — application (portail invité + back office admin)
+  - `components/wifi-portal/` — parcours invité (auth → engagement → accès)
+  - `components/admin/forge/` — Forge (studio de conception)
+  - `pages/admin/` — back office
+  - `hooks/usePortalConfig.ts` — config publiée → gating + branding
+  - `components/wifi-portal/flow-sequence.ts` — séquenceur de parcours
+- `supabase/migrations/` — schéma SQL versionné
+- `e2e/` — tests Playwright (projet `local`)
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/bd34af53-4061-461a-8bb2-3c22b9e1f8c7) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Démarrage
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm run dev      # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+Variables d'environnement (`.env`, jamais committées) :
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
 
-**Use GitHub Codespaces**
+## Scripts
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+npm run dev      # dev server
+npm run build    # build de production
+npm run e2e      # tests Playwright (local)
+bash supabase/run-tests.sh   # tests backend
+node --test src/lib/admin/modules.test.ts src/components/wifi-portal/flow-sequence.test.ts
+```
 
-## What technologies are used for this project?
+## Docs
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/bd34af53-4061-461a-8bb2-3c22b9e1f8c7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- `docs/forge.md` — studio de conception (Kit / Forge / Portail)
+- `docs/catalogue-preceptes.md` — catalogue des 8 préceptes
+- `docs/RAPPORT-PORTAIL.md` — inventaire et dette technique

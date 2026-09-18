@@ -10,7 +10,7 @@
 ## 1. Ce que c'est
 Portail captif WiFi monétisé (OTP SMS, paiements Wave/Orange Money, admin multi-sites, profils famille).
 Stack : React 18 + Vite + TS + Tailwind + shadcn/ui — backend Supabase (DB + 8 Edge Functions).
-Généré via Lovable. Repo : https://github.com/melbas/captive-spark-portal-plus (public).
+Repo : https://github.com/melbas/captive-spark-portal-plus (public).
 ~22 000 lignes TS/TSX, 193 fichiers.
 
 ## 2. Environnement machine (déjà prêt, vérifié)
