@@ -28,7 +28,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  moduleIcon, mergeModuleStates, type ModuleState, portalUrl,
+  moduleIcon, mergeModuleStates, moveFlowStep, toggleFlowStep,
+  type ModuleState, portalUrl,
 } from "@/lib/admin/modules";
 import { ForgeJourney } from "@/components/admin/forge/ForgeJourney";
 import { ForgeBranding } from "@/components/admin/forge/ForgeBranding";
@@ -133,29 +134,18 @@ export default function AdminForge() {
 
   // ── Handlers transmis aux onglets ─────────────────────────────────────
   const toggleModule = (id: string) => {
+    const m = modules.find((x) => x.id === id);
+    if (!m) return;
+    const nextEnabled = !m.enabled;
     setModules((prev) =>
-      prev.map((m) => {
-        const next = { ...m, enabled: !m.enabled };
-        return next;
-      }),
+      prev.map((x) => (x.id === id ? { ...x, enabled: nextEnabled } : x)),
     );
-    setFlowOrder((prev) => {
-      const m = modules.find((x) => x.id === id);
-      if (!m) return prev;
-      return m.enabled ? prev.filter((n) => n !== m.module_name) : [...prev, m.module_name];
-    });
+    setFlowOrder((prev) => toggleFlowStep(prev, m.module_name, nextEnabled));
     setDirty(true);
   };
 
   const moveStep = (module_name: string, dir: -1 | 1) => {
-    setFlowOrder((prev) => {
-      const i = prev.indexOf(module_name);
-      const j = i + dir;
-      if (i < 0 || j < 0 || j >= prev.length) return prev;
-      const next = [...prev];
-      [next[i], next[j]] = [next[j], next[i]];
-      return next;
-    });
+    setFlowOrder((prev) => moveFlowStep(prev, module_name, dir));
     setDirty(true);
   };
 

@@ -1,7 +1,9 @@
 // Tests ciblés — modules du parcours (catalogue × activations par site).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeModuleStates, portalUrl, moduleIcon } from './modules.ts';
+import {
+  mergeModuleStates, portalUrl, moduleIcon, moveFlowStep, toggleFlowStep,
+} from './modules.ts';
 
 const CATALOGUE = [
   { id: 'm1', module_name: 'payment', display_name: 'Accès Payant' },
@@ -50,4 +52,46 @@ test('moduleIcon: chaque module du catalogue a une icône lisible (fallback incl
   assert.equal(typeof moduleIcon('mini_games'), 'string');
   assert.ok(moduleIcon('mini_games').length > 0);
   assert.equal(moduleIcon('module_inconnu'), 'puzzle');
+});
+
+// ── Forge : ordre du parcours (moveFlowStep / toggleFlowStep) ───────────────
+
+test('moveFlowStep: monte un précepte d\'un cran (immuable)', () => {
+  const order = ['quiz', 'video', 'payment'];
+  assert.deepEqual(moveFlowStep(order, 'video', -1), ['video', 'quiz', 'payment']);
+  // L'ordre d'origine n'est pas muté (state React)
+  assert.deepEqual(order, ['quiz', 'video', 'payment']);
+});
+
+test('moveFlowStep: descend un précepte d\'un cran', () => {
+  assert.deepEqual(
+    moveFlowStep(['quiz', 'video', 'payment'], 'video', 1),
+    ['quiz', 'payment', 'video'],
+  );
+});
+
+test('moveFlowStep: hors bornes → ordre inchangé (pas de throw)', () => {
+  const order = ['quiz', 'video'];
+  assert.deepEqual(moveFlowStep(order, 'quiz', -1), ['quiz', 'video']);
+  assert.deepEqual(moveFlowStep(order, 'video', 1), ['quiz', 'video']);
+  assert.deepEqual(moveFlowStep(order, 'absent', 1), ['quiz', 'video']);
+});
+
+test('toggleFlowStep: l\'activation ajoute en fin de parcours', () => {
+  assert.deepEqual(
+    toggleFlowStep(['quiz', 'video'], 'payment', true),
+    ['quiz', 'video', 'payment'],
+  );
+});
+
+test('toggleFlowStep: la désactivation retire sans toucher au reste', () => {
+  assert.deepEqual(
+    toggleFlowStep(['quiz', 'video', 'payment'], 'video', false),
+    ['quiz', 'payment'],
+  );
+});
+
+test('toggleFlowStep: idempotent (déjà activé/désactivé → inchangé)', () => {
+  assert.deepEqual(toggleFlowStep(['quiz'], 'quiz', true), ['quiz']);
+  assert.deepEqual(toggleFlowStep([], 'quiz', false), []);
 });

@@ -72,3 +72,37 @@ const ICONS: Record<string, string> = {
 export function moduleIcon(moduleName: string): string {
   return ICONS[moduleName] ?? 'puzzle';
 }
+
+/**
+ * Déplace un précepte dans l'ordre du parcours. Immuable (la Forge l'utilise
+ * en state React). Hors bornes → ordre inchangé (pas de throw : un bouton
+ * désactivé ne devrait jamais pouvoir casser l'UI).
+ */
+export function moveFlowStep(
+  order: string[],
+  module_name: string,
+  dir: -1 | 1,
+): string[] {
+  const i = order.indexOf(module_name);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= order.length) return order;
+  const next = [...order];
+  [next[i], next[j]] = [next[j], next[i]];
+  return next;
+}
+
+/**
+ * Active/désactive un précepte dans l'ordre du parcours.
+ * Activation → ajout en fin de parcours. Désactivation → retrait.
+ * L'ordre existant est préservé (pas de réinitialisation).
+ */
+export function toggleFlowStep(
+  order: string[],
+  module_name: string,
+  enabled: boolean,
+): string[] {
+  const present = order.includes(module_name);
+  if (enabled && !present) return [...order, module_name];
+  if (!enabled && present) return order.filter((n) => n !== module_name);
+  return order;
+}
