@@ -31,6 +31,20 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
   const startingPoints = config?.startingPoints ?? 10;
   const configuredEngagement = config?.engagementType ?? "quiz";
   const [currentStep, setCurrentStep] = useState<Step>(Step.AUTH);
+
+  // Forge : l'aperçu live de l'admin bascule l'étape courante du portail
+  // (postMessage même origine). Sans écouteur, le sélecteur d'étape est mort.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (e.origin !== window.location.origin) return;
+      const data = e.data as { type?: string; step?: string };
+      if (data?.type !== "forge:goto-step" || !data.step) return;
+      const step = Object.values(Step).find((s) => s === data.step);
+      if (step) setCurrentStep(step);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
   const [engagementType, setEngagementType] = useState<EngagementType>(
     configuredEngagement === "video" ? EngagementType.VIDEO : EngagementType.QUIZ
   );

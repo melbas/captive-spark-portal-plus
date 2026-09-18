@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-route
 import {
   LayoutDashboard, Users, MapPin, Wifi, CreditCard,
   Ticket, UserCheck, BarChart2, FileText, Settings, LogOut,
-  Puzzle, Wallet, Menu, Lock, Globe, Megaphone,
+  Puzzle, Wallet, Menu, Lock, Globe, Megaphone, Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -24,6 +24,7 @@ import { navItemsForRole } from '@/lib/admin/roles';
 const NAV_ITEMS = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Accueil' },
   { to: '/admin/sites', icon: MapPin, label: 'Sites' },
+  { to: '/admin/forge', icon: Wand2, label: 'Forge' },
   { to: '/admin/modules', icon: Puzzle, label: 'Modules du parcours' },
   { to: '/admin/plans', icon: Wallet, label: 'Forfaits' },
   { to: '/admin/sessions', icon: Wifi, label: 'Sessions' },
