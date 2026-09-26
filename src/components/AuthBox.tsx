@@ -18,7 +18,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { wifiPortalService } from "@/services/wifi-portal-service";
 
 interface AuthBoxProps {
-  onAuth: (method: string, data: any) => void;
+  onAuth: (method: 'sms' | 'email', data: AuthData) => void;
+}
+
+interface AuthData {
+  phoneNumber?: string;
+  email?: string;
+  code: string;
 }
 
 const DEV_OTP_CODE = '123456';
@@ -38,7 +44,6 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [authError, setAuthError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [resendDisabled, setResendDisabled] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
   
   // Get the current country example based on selected code
@@ -47,30 +52,11 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     return country ? country.example : t("localFormat");
   };
   
-  // Clear any error when the user types
-  useEffect(() => {
-    if (phoneNumber) setPhoneError('');
-    setAuthError('');
-  }, [phoneNumber]);
   
-  useEffect(() => {
-    if (email) setEmailError('');
-    setAuthError('');
-  }, [email]);
   
-  // Handle countdown for resend code
-  useEffect(() => {
-    if (resendCountdown <= 0) {
-      setResendDisabled(false);
-      return;
-    }
-    
-    const timer = setTimeout(() => {
-      setResendCountdown(resendCountdown - 1);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [resendCountdown]);
+  
+  
+  
   
   // Basic validation functions
   const isValidPhoneNumber = (phone: string): boolean => {
@@ -169,7 +155,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   };
   
   const handleResendCode = () => {
-    if (resendDisabled) return;
+    if ((resendCountdown > 0)) return;
     handleSendOtp(authMethod);
   };
   
@@ -273,7 +259,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                         placeholder={getCurrentCountryExample()}
                         className={`pl-2 ${phoneError ? 'border-red-500' : ''}`}
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        onChange={(e) => { setPhoneNumber(e.target.value); setPhoneError(''); }}
                         disabled={isSendingCode}
                       />
                     </div>
@@ -310,7 +296,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                       placeholder="your@email.com" 
                       className={`pl-10 ${emailError ? 'border-red-500' : ''}`}
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                       disabled={isSendingCode}
                     />
                   </div>
@@ -372,9 +358,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                   variant="ghost" 
                   size="sm" 
                   onClick={handleResendCode}
-                  disabled={resendDisabled || isSendingCode}
+                  disabled={(resendCountdown > 0) || isSendingCode}
                 >
-                  {resendDisabled 
+                  {(resendCountdown > 0) 
                     ? `${t("resendIn")} ${resendCountdown}s` 
                     : t("resendCode")}
                 </Button>

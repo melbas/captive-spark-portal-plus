@@ -57,7 +57,7 @@ export default function PortalPayment({ plan, siteId, userId, mac, phone, onSucc
 
       // Fallback for demo/dev: simulate success
       onSuccess();
-    } catch (err: any) {
+    } catch (err: Error) {
       toast.error(err.message || t('error'));
     } finally {
       setLoading(false);
