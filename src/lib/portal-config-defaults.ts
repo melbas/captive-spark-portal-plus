@@ -129,7 +129,8 @@ export type PortalModuleKey =
   | "rewards"
   | "referral"
   | "learning_center"
-  | "payment";
+  | "payment"
+  | "exchange";
 
 /** État de gating : `null` = aucune config publiée (fail-closed sur un vrai site). */
 export type PortalModuleGating = Record<PortalModuleKey, boolean> | null;
@@ -144,19 +145,21 @@ export const ALL_MODULES_ENABLED: PortalModuleGating = {
   referral: true,
   learning_center: true,
   payment: true,
+  exchange: true,
 };
 
 /**
- * Fail-closed : sur un vrai site sans config publiée, seuls les modules
- * obligatoires du parcours restent visibles. Rien n'est simulé.
- */
-export const MANDATORY_ONLY_GATING: PortalModuleGating = {
-  quiz: true,
-  video: true,
-  extend_time: true,
-  mini_games: false,
-  rewards: false,
-  referral: false,
-  learning_center: false,
-  payment: false,
-};
+ /** Fail-closed : sur un vrai site sans config publiée, seuls les modules
+  * obligatoires du parcours restent visibles. Rien n'est simulé.
+  */
+ export const MANDATORY_ONLY_GATING: PortalModuleGating = {
+   quiz: true,
+   video: true,
+   extend_time: true,
+   mini_games: false,
+   rewards: false,
+   referral: false,
+   learning_center: false,
+   payment: false,
+   exchange: false,
+ };

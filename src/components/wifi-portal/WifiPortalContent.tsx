@@ -21,6 +21,7 @@ const MiniGamesHub = lazy(() => import("./MiniGamesHub"));
 const LearningCenter = lazy(() => import("./LearningCenter"));
 const PaymentPortal = lazy(() => import("./PaymentPortal"));
 const AdminDashboard = lazy(() => import("./AdminDashboard"));
+const ExchangeForWifi = lazy(() => import("./ExchangeForWifi"));
 
 interface WifiPortalContentProps {
   currentStep: Step;
@@ -37,6 +38,8 @@ interface WifiPortalContentProps {
   handleInvite: (email: string) => void;
   handleGameComplete: (gameData: MiniGameData, score: number) => void;
   handlePaymentComplete: (packageId: string, minutes: number) => void;
+  /** Échange : minutes gagnées par l'utilisateur (quiz/sponsor/parrainage). */
+  handleExchangeTimeAwarded: (minutes: number) => void;
   loading?: boolean;
   error?: string | null;
   /** Gating des modules du parcours (portal_enabled_modules). null = fail-closed. */
@@ -58,6 +61,7 @@ const WifiPortalContent = ({
   handleInvite,
   handleGameComplete,
   handlePaymentComplete,
+  handleExchangeTimeAwarded,
   loading,
   error,
   modules
@@ -241,6 +245,15 @@ const WifiPortalContent = ({
         }
         if (engagementType === EngagementType.QUIZ && moduleOn("quiz")) {
           return <MarketingQuiz onComplete={handleEngagementComplete} />;
+        }
+        if (engagementType === EngagementType.EXCHANGE && moduleOn("exchange")) {
+          return (
+            <ExchangeForWifi
+              onTimeAwarded={handleExchangeTimeAwarded}
+              onComplete={handleEngagementComplete}
+              referralCode={userData.referralCode}
+            />
+          );
         }
         // Module d'engagement désactivé : pas de contournement simulé
         return null;

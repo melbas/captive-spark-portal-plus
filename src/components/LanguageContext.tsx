@@ -587,6 +587,112 @@ export const translations: Record<string, Translations> = {
       fr: "Offre spéciale",
       es: "Oferta especial"
     },
+    // — Exchange : troc explicite temps contre attention —
+    exchangeTitle: {
+      en: "Exchange",
+      fr: "Échange",
+      es: "Intercambio"
+    },
+    exchangeHeading: {
+      en: "Earn time, your way",
+      fr: "Gagne du temps, à ta façon",
+      es: "Gana tiempo, a tu manera"
+    },
+    exchangeSubheading: {
+      en: "Choose your exchange — you see exactly what you get before you start. No obligation, no surprises.",
+      fr: "Choisis ton échange — tu vois exactement ce que tu gagnes avant de t'engager. Aucune obligation, aucune surprise.",
+      es: "Elige tu intercambio — ves exactamente lo que ganas antes de empezar. Sin obligación, sin sorpresas."
+    },
+    exchangeQuizTitle: {
+      en: "Answer 1 question",
+      fr: "Répondre à 1 question",
+      es: "Responde 1 pregunta"
+    },
+    exchangeQuizDesc: {
+      en: "About this place — 15 seconds",
+      fr: "Sur ce lieu — 15 secondes",
+      es: "Sobre este lugar — 15 segundos"
+    },
+    exchangeSponsorTitle: {
+      en: "Discover the sponsor",
+      fr: "Découvrir le sponsor",
+      es: "Descubre el patrocinador"
+    },
+    exchangeSponsorDesc: {
+      en: "A look at our partner — 5 seconds",
+      fr: "Un coup d'œil à notre partenaire — 5 secondes",
+      es: "Un vistazo a nuestro socio — 5 segundos"
+    },
+    exchangeReferralTitle: {
+      en: "Refer a friend",
+      fr: "Parrainer un proche",
+      es: "Recomienda a un amigo"
+    },
+    exchangeReferralDesc: {
+      en: "Share your code — they get time too",
+      fr: "Partage ton code — il gagne du temps aussi",
+      es: "Comparte tu código — también gana tiempo"
+    },
+    exchangeQuizQuestion: {
+      en: "What's the main reason you connect to this WiFi?",
+      fr: "Quelle est la principale raison pour laquelle tu te connectes à ce WiFi ?",
+      es: "¿Cuál es la razón principal por la que te conectas a este WiFi?"
+    },
+    exchangeQuizOptA: {
+      en: "Stay in touch with family",
+      fr: "Rester en contact avec ma famille",
+      es: "Estar en contacto con la familia"
+    },
+    exchangeQuizOptB: {
+      en: "Work or study",
+      fr: "Travailler ou étudier",
+      es: "Trabajar o estudiar"
+    },
+    exchangeQuizOptC: {
+      en: "Entertainment",
+      fr: "Le divertissement",
+      es: "Entretenimiento"
+    },
+    exchangeQuizAnswered: {
+      en: "Thanks — your time has been added.",
+      fr: "Merci — ton temps a été ajouté.",
+      es: "Gracias — se ha añadido tu tiempo."
+    },
+    exchangeSponsorBody: {
+      en: "Our partner makes this free WiFi possible. That's it — nothing to fill out afterwards.",
+      fr: "Notre partenaire rend ce WiFi gratuit possible. C'est tout — rien à remplir ensuite.",
+      es: "Nuestro socio hace posible este WiFi gratuito. Eso es todo — nada que rellenar después."
+    },
+    exchangeSponsorDone: {
+      en: "Thank you — your time has been added.",
+      fr: "Merci — ton temps a été ajouté.",
+      es: "Gracias — se ha añadido tu tiempo."
+    },
+    exchangeCopy: {
+      en: "Copy",
+      fr: "Copier",
+      es: "Copiar"
+    },
+    exchangeCopied: {
+      en: "Copied",
+      fr: "Copié",
+      es: "Copiado"
+    },
+    exchangeReferralBody: {
+      en: "Your friend enters this code when they connect: they get time, and so do you.",
+      fr: "Ton proche entre ce code à sa connexion : il gagne du temps, et toi aussi.",
+      es: "Tu amigo introduce este código al conectarse: gana tiempo, y tú también."
+    },
+    exchangeConnect: {
+      en: "Connect to the internet",
+      fr: "Se connecter à Internet",
+      es: "Conectarse a Internet"
+    },
+    exchangeRewardToast: {
+      en: "+{minutes} minutes added",
+      fr: "+{minutes} minutes ajoutées",
+      es: "+{minutes} minutos añadidos"
+    },
   },
   
   // Support related

@@ -18,7 +18,8 @@ export enum Step {
 
 export enum EngagementType {
   VIDEO = "video",
-  QUIZ = "quiz"
+  QUIZ = "quiz",
+  EXCHANGE = "exchange"
 }
 
 export enum UserLevel {
