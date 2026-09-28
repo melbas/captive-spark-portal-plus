@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     const webhookSecret = Deno.env.get("WAVE_WEBHOOK_SECRET");
 
     // FAIL-CLOSED (P0) : pas de secret configuré → rejet 503, aucun traitement.
-    if (!webhookSecret) {
+    if (!webhookSecret || webhookSecret === "") {
       console.error("wave-webhook: WAVE_WEBHOOK_SECRET absent → rejet 503");
       return new Response(JSON.stringify({ error: "Webhook non configuré" }), {
         status: 503,

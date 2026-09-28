@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
 
     // 1. FAIL-CLOSED : pas de secret dédié configuré → 503, rien traité.
     const webhookSecret = Deno.env.get("BICTORYS_WEBHOOK_SECRET");
-    if (!webhookSecret) {
+    if (!webhookSecret || webhookSecret === "") {
       console.error("bictorys-webhook: BICTORYS_WEBHOOK_SECRET absent → rejet 503");
       return json({ error: "Webhook non configuré" }, 503);
     }

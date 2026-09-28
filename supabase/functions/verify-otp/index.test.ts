@@ -66,3 +66,10 @@ Deno.test("verify-otp demo bypass uses fixedCode from environment", async () => 
       .eq("entity_id", testSiteId);
   }
 });
+
+Deno.test("verify-otp rate limiting: blocks after 10 attempts/hour", async () => {
+  // This test is a placeholder and would require mocking or a test database.
+  // To run: set up a local Supabase, copy env vars, and run with `deno test`.
+  // We'll mark it as skipped until we have a proper test setup.
+  Deno.test.skip();
+});
