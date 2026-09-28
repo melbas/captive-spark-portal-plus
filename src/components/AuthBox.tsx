@@ -27,7 +27,6 @@ interface AuthData {
   code: string;
 }
 
-const DEV_OTP_CODE = '123456';
 
 const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const { t, language } = useLanguage();
@@ -106,7 +105,6 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
           // Even if SMS fails in development, allow continuing
           console.warn("SMS sending failed, but continuing in demo mode");
           toast.info(`${t("demoMode")}: ${t("useCode")} ${DEV_OTP_CODE}`);
-          setVerificationCode(DEV_OTP_CODE); // Fallback code
           setAuthMethod(method);
           setIsVerifying(true);
         }
@@ -135,8 +133,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         // For now, simulate email sending
         setTimeout(() => {
           toast.success(`${t("verificationCodeSent")} ${t("toEmail")}`);
-          // For demo, use a fixed code
-          setVerificationCode(DEV_OTP_CODE);
+          // For demo, use a random code
+          const demoCode = Math.floor(100000 + Math.random() * 900000).toString();
+          setVerificationCode(demoCode);
           setAuthMethod(method);
           setIsVerifying(true);
           
@@ -199,7 +198,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
         }
       } else {
         // For email, in this demo we just check against the fixed code
-        if (otp === verificationCode || otp === DEV_OTP_CODE) {
+        if (otp === verificationCode) {
           toast.success(t("verificationSuccessful"));
           await onAuth('email', { 
             email: email,

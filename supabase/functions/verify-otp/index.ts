@@ -39,8 +39,9 @@ Deno.serve(async (req) => {
     );
 
     // Bypass démo UNIQUEMENT via secret — plus aucun comportement par défaut
-    const isDemoCode =
-      Deno.env.get("DEV_OTP_MODE") === "true" && code === "123456";
+    const devMode = Deno.env.get("DEV_OTP_MODE") === "true";
+    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE");
+    const isDemoCode = devMode && fixedCode && code === fixedCode;
 
     // Retrieve stored OTP (colonnes nécessaires uniquement — plus de select *)
     const { data: otpRecord, error: otpErr } = await supabase

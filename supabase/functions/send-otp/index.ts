@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
     // DEV mode : UNIQUEMENT si le secret DEV_OTP_MODE=true est défini.
     const devMode = Deno.env.get("DEV_OTP_MODE") === "true";
-    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE") || "123456";
+    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE");
 
     const identifier = (phone || email)!.toString().toLowerCase();
     const identifierType = phone ? "phone" : "email";
@@ -84,9 +84,7 @@ Deno.serve(async (req) => {
     );
 
     // --- Génération OTP -----------------------------------------------------
-    const code = devMode
-      ? fixedCode
-      : String(Math.floor(100000 + Math.random() * 900000));
+    const code = devMode && fixedCode ? fixedCode : String(Math.floor(100000 + Math.random() * 900000));
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
     // Delete any existing OTP for this identifier
