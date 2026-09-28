@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { readUnifiParams } from '@/lib/portal-params';
+import { getSiteBySlug, getWifiPlans, getPortalConfig } from '@/lib/supabase/portalQueries';
 import type { PortalConfig, UnifiParams } from '@/types/premiumconnect';
 import PortalWelcome from '@/components/portal/PortalWelcome';
 import PortalAuth from '@/components/portal/PortalAuth';
@@ -50,43 +50,38 @@ export default function Portal() {
     async function loadConfig() {
       if (!slug) { setError('Slug manquant'); setLoading(false); return; }
 
-      const { data: site, error: siteErr } = await supabase
-        .from('sites')
-        .select('*')
-        .eq('portal_slug', slug)
-        .eq('is_active', true)
-        .single();
-
-      if (siteErr || !site) {
+      let site;
+      try {
+        site = await getSiteBySlug(slug);
+      } catch {
         setError('Site introuvable ou inactif');
         setLoading(false);
         return;
       }
 
-      const { data: plans } = await supabase
-        .from('wifi_plans')
-        .select('*')
-        .eq('site_id', site.id)
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+      const [plans, portalCfg] = await Promise.all([
+        getWifiPlans(site.id),
+        getPortalConfig(site.id),
+      ]);
 
       setConfig({
         siteId: site.id,
-        siteName: site.name,
-        portalSlug: site.portal_slug,
-        logoUrl: site.logo_url,
-        primaryColor: site.primary_color || '#5B4DFF',
-        welcomeMsg: site.welcome_msg || 'Bienvenue !',
-        plans: (plans || []).map((p: any) => ({
+        siteName: site.name ?? site.portal_slug ?? slug,
+        portalSlug: site.portal_slug ?? slug,
+        // La config publiée prime sur la fiche site (chaîne de priorité).
+        logoUrl: portalCfg?.logo_url ?? site.logo_url,
+        primaryColor: portalCfg?.theme_color ?? (site.primary_color || '#5B4DFF'),
+        welcomeMsg: portalCfg?.welcome_message ?? site.welcome_msg ?? 'Bienvenue !',
+        plans: (plans || []).map((p) => ({
           id: p.id,
           name: p.name,
-          durationMin: p.duration_min,
-          priceFcfa: p.price_fcfa,
-          speedDownMb: p.speed_down_mb,
-          speedUpMb: p.speed_up_mb,
+          durationMin: p.duration_min ?? 0,
+          priceFcfa: p.price_fcfa ?? 0,
+          speedDownMb: p.speed_down_mb ?? 0,
+          speedUpMb: p.speed_up_mb ?? 0,
           dataLimitMb: p.data_limit_mb,
-          maxDevices: p.max_devices,
-          isPopular: p.is_popular,
+          maxDevices: p.max_devices ?? 1,
+          isPopular: p.is_popular ?? false,
         })),
       });
       setLoading(false);
