@@ -20,6 +20,7 @@ import type { SiteFormData } from '@/components/admin/sites/SiteForm';
 import SiteForm from '@/components/admin/sites/SiteForm';
 import SitePreview from '@/components/admin/sites/SitePreview';
 import PlansTab from '@/components/admin/sites/PlansTab';
+import AdsTab from '@/pages/admin/sites/[siteId]/ads/Page';
 
 export default function SiteDetailPage() {
   const { siteId = '' } = useParams<{ siteId: string }>();
@@ -77,6 +78,7 @@ export default function SiteDetailPage() {
         <TabsList>
           <TabsTrigger value="identite">Identité</TabsTrigger>
           <TabsTrigger value="plans">Forfaits</TabsTrigger>
+          <TabsTrigger value="ads">Publicités</TabsTrigger>
         </TabsList>
 
         <TabsContent value="identite" className="grid gap-6 lg:grid-cols-[1fr_380px]">
@@ -145,6 +147,10 @@ export default function SiteDetailPage() {
               <PlansTab siteId={site.id} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="ads">
+          <AdsTab siteId={site.id} />
         </TabsContent>
       </Tabs>
     </div>
