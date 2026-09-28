@@ -3,10 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Download } from 'lucide-react';
 import { useCurrentSite } from '@/context/SiteContext';
 import { siteQueryKey } from '@/lib/admin/queries';
+import { exportCSV } from '@/lib/report/exportCSV';
 import HelpTip from '@/components/admin/HelpTip';
 
 export default function AdminTransactions() {
@@ -28,6 +31,20 @@ export default function AdminTransactions() {
     },
   });
 
+  const handleExport = () => {
+    exportCSV(
+      (transactions || []).map((t: any) => ({
+        id: t.id,
+        amount_fcfa: t.amount_fcfa ?? 0,
+        method: t.method || '',
+        status: t.status || '',
+        commission_fcfa: t.commission_fcfa ?? 0,
+        created_at: t.created_at || '',
+      })),
+      `transactions-${currentSite?.name ?? 'site'}.csv`,
+    );
+  };
+
   if (loading) return <p className="text-muted-foreground">Chargement du site courant…</p>;
 
   if (!currentSite) {
@@ -44,9 +61,14 @@ export default function AdminTransactions() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-extrabold">Transactions</h1>
-        <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-extrabold">Transactions</h1>
+          <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+        </div>
+        <Button variant="outline" onClick={handleExport} disabled={!transactions || transactions.length === 0}>
+          <Download className="h-4 w-4 mr-2" />Export CSV
+        </Button>
       </div>
       <Card className="rounded-2xl shadow-[var(--shadow-card)]">
         <CardContent className="p-0">

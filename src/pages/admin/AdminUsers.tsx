@@ -1,12 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { Download } from 'lucide-react';
 import { LOYALTY_CONFIG } from '@/types/premiumconnect';
 import type { LoyaltyLevel, AISegment } from '@/types/premiumconnect';
 import { useCurrentSite } from '@/context/SiteContext';
 import { siteQueryKey } from '@/lib/admin/queries';
+import { exportCSV } from '@/lib/report/exportCSV';
 import HelpTip from '@/components/admin/HelpTip';
 
 const segmentColors: Record<string, string> = {
@@ -20,7 +24,8 @@ const segmentColors: Record<string, string> = {
 };
 
 export default function AdminUsers() {
-  const { currentSite, loading } = useCurrentSite();
+  const qc = useQueryClient();
+  const { currentSite, canEdit, loading } = useCurrentSite();
   const siteId = currentSite?.id ?? null;
 
   const { data: users, isLoading } = useQuery({
@@ -38,6 +43,36 @@ export default function AdminUsers() {
     enabled: !!siteId,
   });
 
+  const toggleBlock = useMutation({
+    mutationFn: async ({ id, is_blocked }: { id: string; is_blocked: boolean }) => {
+      const { error } = await supabase.from('wifi_users').update({ is_blocked }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: siteQueryKey('admin-users', siteId) });
+      toast.success(vars.is_blocked ? 'Utilisateur bloqué' : 'Utilisateur débloqué');
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const handleExport = () => {
+    exportCSV(
+      (users || []).map((u: any) => ({
+        id: u.id,
+        phone: u.phone || '',
+        email: u.email || '',
+        name: u.name || '',
+        loyalty_level: u.loyalty_level || 'basic',
+        ai_segment: u.ai_segment || 'new_user',
+        churn_risk: u.churn_risk ?? 0,
+        loyalty_pts: u.loyalty_pts ?? 0,
+        is_blocked: !!u.is_blocked,
+        created_at: u.created_at || '',
+      })),
+      `utilisateurs-${currentSite?.name ?? 'site'}.csv`,
+    );
+  };
+
   if (loading) return <p className="text-muted-foreground">Chargement du site courant…</p>;
 
   if (!currentSite) {
@@ -52,9 +87,14 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-extrabold">Utilisateurs WiFi</h1>
-        <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-extrabold">Utilisateurs WiFi</h1>
+          <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
+        </div>
+        <Button variant="outline" onClick={handleExport} disabled={!users || users.length === 0}>
+          <Download className="h-4 w-4 mr-2" />Export CSV
+        </Button>
       </div>
       <Card className="rounded-2xl shadow-[var(--shadow-card)]">
         <CardContent className="p-0 overflow-x-auto">
@@ -67,13 +107,14 @@ export default function AdminUsers() {
                 <TableHead>Churn Risk</TableHead>
                 <TableHead>Points</TableHead>
                 <TableHead>Statut</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
               ) : (users || []).length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Aucun utilisateur</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Aucun utilisateur</TableCell></TableRow>
               ) : (users || []).map((u) => {
                 const churn = Number(u.churn_risk || 0);
                 const churnPct = Math.round(churn * 100);
@@ -110,6 +151,16 @@ export default function AdminUsers() {
                       ) : (
                         <Badge variant="default">Actif</Badge>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!canEdit || toggleBlock.isPending}
+                        onClick={() => toggleBlock.mutate({ id: u.id, is_blocked: !u.is_blocked })}
+                      >
+                        {u.is_blocked ? 'Débloquer' : 'Bloquer'}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );
