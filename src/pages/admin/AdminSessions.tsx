@@ -1,16 +1,20 @@
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { Download } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import { useCurrentSite } from '@/context/SiteContext';
 import { siteQueryKey } from '@/lib/admin/queries';
 import { exportCSV } from '@/lib/report/exportCSV';
+import { filterByPeriod } from '@/lib/report/periodTotals';
+import { exportPrintable } from '@/lib/report/exportPrintable';
 import HelpTip from '@/components/admin/HelpTip';
 
 export default function AdminSessions() {
@@ -49,9 +53,18 @@ export default function AdminSessions() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [periodFrom, setPeriodFrom] = useState('');
+  const [periodTo, setPeriodTo] = useState('');
+
+  // Filtrage par période côté client sur started_at (données déjà chargées).
+  const filtered = useMemo(
+    () => filterByPeriod(sessions || [], 'started_at', { from: periodFrom || undefined, to: periodTo || undefined }),
+    [sessions, periodFrom, periodTo],
+  );
+
   const handleExport = () => {
     exportCSV(
-      (sessions || []).map((s: any) => ({
+      filtered.map((s: any) => ({
         id: s.id,
         mac_address: s.mac_address || '',
         ssid: s.ssid || '',
@@ -62,6 +75,24 @@ export default function AdminSessions() {
       })),
       `sessions-${currentSite?.name ?? 'site'}.csv`,
     );
+  };
+
+  const handlePrint = () => {
+    exportPrintable({
+      title: `Sessions WiFi – ${currentSite?.name ?? 'site'}`,
+      subtitle:
+        periodFrom || periodTo
+          ? `Période : ${periodFrom || 'début'} → ${periodTo || 'aujourd’hui'}`
+          : undefined,
+      columns: ['MAC', 'SSID', 'Statut', 'Début', 'Expiration'],
+      rows: filtered.map((s: any) => [
+        s.mac_address || '—',
+        s.ssid || '—',
+        s.status || '—',
+        s.started_at ? new Date(s.started_at).toLocaleString('fr-FR') : '—',
+        s.expires_at ? new Date(s.expires_at).toLocaleString('fr-FR') : '—',
+      ]),
+    });
   };
 
   if (loading) return <p className="text-muted-foreground">Chargement du site courant…</p>;
@@ -85,10 +116,52 @@ export default function AdminSessions() {
           <h1 className="text-2xl font-extrabold">Sessions WiFi</h1>
           <span className="text-sm text-muted-foreground">Site : {currentSite.name}</span>
         </div>
-        <Button variant="outline" onClick={handleExport} disabled={!sessions || sessions.length === 0}>
-          <Download className="h-4 w-4 mr-2" />Export CSV
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={handlePrint} disabled={filtered.length === 0}>
+            <Printer className="h-4 w-4 mr-2" />Imprimer
+          </Button>
+          <Button variant="outline" onClick={handleExport} disabled={filtered.length === 0}>
+            <Download className="h-4 w-4 mr-2" />Export CSV
+          </Button>
+        </div>
       </div>
+      <Card className="rounded-2xl shadow-[var(--shadow-card)]">
+        <CardContent className="flex flex-wrap items-center gap-4 p-4">
+          <div className="flex items-center gap-2">
+            <label htmlFor="sessions-period-from" className="text-sm text-muted-foreground">Du</label>
+            <Input
+              id="sessions-period-from"
+              type="date"
+              value={periodFrom}
+              onChange={(e) => setPeriodFrom(e.target.value)}
+              className="w-40"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="sessions-period-to" className="text-sm text-muted-foreground">Au</label>
+            <Input
+              id="sessions-period-to"
+              type="date"
+              value={periodTo}
+              onChange={(e) => setPeriodTo(e.target.value)}
+              className="w-40"
+            />
+          </div>
+          {(periodFrom || periodTo) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setPeriodFrom(''); setPeriodTo(''); }}
+            >
+              Réinitialiser
+            </Button>
+          )}
+          <div className="ml-auto">
+            <p className="text-xs text-muted-foreground">Sessions</p>
+            <p className="text-xl font-bold">{filtered.length}</p>
+          </div>
+        </CardContent>
+      </Card>
       <Card className="rounded-2xl shadow-[var(--shadow-card)]">
         <CardContent className="p-0">
           <Table>
@@ -105,9 +178,9 @@ export default function AdminSessions() {
             <TableBody>
               {isLoading ? (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
-              ) : (sessions || []).length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Aucune session</TableCell></TableRow>
-              ) : (sessions || []).map((s) => (
+              ) : filtered.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-mono text-xs">{s.mac_address || '—'}</TableCell>
                   <TableCell>{s.ssid || '—'}</TableCell>
