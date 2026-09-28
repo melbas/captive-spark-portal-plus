@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "e2e": "playwright test --project=local",
     "e2e:staging": "E2E_TARGET=vercel playwright test --project=vercel",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:ci": "vitest run --exclude 'e2e/**' --exclude 'supabase/**' --exclude '**/*.cjs' --exclude 'src/lib/admin/modules.test.ts' --exclude 'src/lib/admin/plans.test.ts' --exclude 'src/lib/admin/roles.test.ts' --exclude 'src/lib/admin/site-context.test.ts' --exclude 'src/components/wifi-portal/flow-sequence.test.ts'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
