@@ -43,6 +43,8 @@ interface WifiPortalContentProps {
   error?: string | null;
   /** Gating des modules du parcours (portal_enabled_modules). null = fail-closed. */
   modules: PortalModuleGating;
+  /** Site courant : scoping DB des modules riches (games, rewards...). */
+  siteId: string;
 }
 
 const WifiPortalContent = ({
@@ -63,7 +65,8 @@ const WifiPortalContent = ({
   handleExchangeTimeAwarded,
   loading,
   error,
-  modules
+  modules,
+  siteId
 }: WifiPortalContentProps) => {
   const { t } = useLanguage();
   // Fail-closed : sans config publiée sur un vrai site, seul l'essentiel reste visible
@@ -276,6 +279,7 @@ const WifiPortalContent = ({
             userData={userData}
             onBack={() => setCurrentStep(Step.SUCCESS)}
             onRedeem={handleRedeemReward}
+            siteId={siteId}
           />
         ) : null;
       case Step.REFERRAL:
@@ -292,6 +296,7 @@ const WifiPortalContent = ({
             userData={userData}
             onBack={() => setCurrentStep(Step.SUCCESS)}
             onGameComplete={handleGameComplete}
+            siteId={siteId}
           />
         ) : null;
       case Step.LEARNING_CENTER:

@@ -6,7 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, Award, Timer, Brain, Trophy, Gamepad2, Lightbulb, Zap } from "lucide-react";
 import { MiniGameData, GameType, UserData } from "./types";
 import { GameCategory, GAME_CATEGORIES, getGameCategory } from "./types/game-categories";
+import { useQuery } from "@tanstack/react-query";
 import { analyticsService } from "@/services/analytics-service";
+import { fetchSiteGames } from "@/lib/supabase/portalModuleQueries";
 import { Badge } from "@/components/ui/badge";
 import MemoryGame from "./games/MemoryGame";
 import QuizGame from "./games/QuizGame";
@@ -18,52 +20,57 @@ interface MiniGamesHubProps {
   userData: UserData;
   onBack: () => void;
   onGameComplete: (gameData: MiniGameData, score: number) => void;
+  /** sites.id — scope les jeux lus en base (Task 18 : plus de liste hardcodée). */
+  siteId?: string | null;
 }
 
-const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) => {
+/** game_type DB → type de jeu jouable. Type inconnu → null (jeu masqué). */
+function toGameType(gameType: string): GameType | null {
+  switch (gameType) {
+    case "memory":
+      return GameType.MEMORY;
+    case "quiz":
+      return GameType.QUIZ;
+    case "puzzle":
+      return GameType.PUZZLE;
+    case "tap":
+      return GameType.TAP;
+    default:
+      return null;
+  }
+}
+
+const MiniGamesHub = ({ userData, onBack, onGameComplete, siteId }: MiniGamesHubProps) => {
   const [selectedGame, setSelectedGame] = useState<MiniGameData | null>(null);
   const [activeTab, setActiveTab] = useState("available");
   const [selectedCategory, setSelectedCategory] = useState<GameCategory | "all">("all");
 
-  // Sample games - in a real implementation, these would come from the database
-  const availableGames: MiniGameData[] = [
-    {
-      id: "memory-game",
-      name: "Jeu de Mémoire",
-      type: GameType.MEMORY,
-      description: "Retrouvez les paires de cartes identiques",
-      rewardMinutes: 10,
-      rewardPoints: 25,
-      category: GameCategory.COGNITIVE
-    },
-    {
-      id: "quiz-game",
-      name: "Quiz de Culture Générale",
-      type: GameType.QUIZ,
-      description: "Testez vos connaissances générales",
-      rewardMinutes: 15,
-      rewardPoints: 35,
-      category: GameCategory.EDUCATIONAL
-    },
-    {
-      id: "puzzle-game",
-      name: "Puzzle Glissant",
-      type: GameType.PUZZLE,
-      description: "Reconstituez l'image en déplaçant les pièces",
-      rewardMinutes: 20,
-      rewardPoints: 40,
-      category: GameCategory.COGNITIVE
-    },
-    {
-      id: "tap-game",
-      name: "Tap Challenge",
-      type: GameType.TAP,
-      description: "Tapez sur les étoiles le plus vite possible",
-      rewardMinutes: 5,
-      rewardPoints: 15,
-      category: GameCategory.CHALLENGE
-    }
-  ];
+  // Task 18 : les jeux viennent de la table `games` (par site, actifs).
+  // Réponse vide = état vide explicite — plus aucun jeu hardcodé.
+  const { data: dbGames = [], isLoading: gamesLoading } = useQuery({
+    queryKey: ["portal-games", siteId],
+    queryFn: () => fetchSiteGames(siteId ?? ""),
+    enabled: Boolean(siteId),
+    staleTime: 60_000,
+  });
+
+  // Projection DB → MiniGameData ; les types de jeu inconnus sont ignorés.
+  const availableGames: MiniGameData[] = dbGames
+    .map((g) => {
+      const type = toGameType(g.game_type);
+      if (!type) return null;
+      const game: MiniGameData = {
+        id: g.id,
+        name: g.title,
+        type,
+        description: g.description ?? "",
+        rewardMinutes: g.minutes_reward ?? 0,
+        rewardPoints: g.points_reward ?? 0,
+        category: (g.category as GameCategory) || getGameCategory(type),
+      };
+      return game;
+    })
+    .filter((g): g is MiniGameData => g !== null);
 
   const handleStartGame = (game: MiniGameData) => {
     analyticsService.startGameSession(game.id);
@@ -221,6 +228,16 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
           </TabsList>
           
           <TabsContent value="available">
+            {gamesLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="h-6 w-6 border-t-2 border-primary rounded-full animate-spin"></div>
+              </div>
+            ) : availableGames.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Aucun jeu disponible pour le moment.
+              </p>
+            ) : (
+            <>
             <div className="flex flex-wrap gap-2 mb-4">
               <Button 
                 variant={selectedCategory === "all" ? "default" : "outline"} 
@@ -284,6 +301,8 @@ const MiniGamesHub = ({ userData, onBack, onGameComplete }: MiniGamesHubProps) =
                 </Card>
               ))}
             </div>
+            </>
+            )}
           </TabsContent>
           
           <TabsContent value="rewards">

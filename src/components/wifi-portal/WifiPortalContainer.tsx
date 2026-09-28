@@ -13,16 +13,7 @@ import AudioPromo from "../ads/AudioPromo";
 import { trackingService } from "@/services/tracking-service";
 import { Step } from "./types";
 import { usePortalConfig, applyPortalBranding } from "@/hooks/usePortalConfig";
-import {
-  DEMO_AD_SLIDES,
-  DEMO_AUDIO_AD,
-  DEMO_ENGAGEMENT_TYPE,
-  DEMO_SESSION_MINUTES,
-  DEMO_STARTING_POINTS,
-  DEMO_SUPPORT_CONTACT,
-  DEMO_VIDEO_AD,
-  type LocalizedText,
-} from "@/lib/portal-config-defaults";
+import type { LocalizedText } from "@/lib/portal-config-defaults";
 
 const localizedText = (value: LocalizedText, language: string): string =>
   (language === 'en' ? value.en : value.fr);
@@ -57,9 +48,11 @@ const WifiPortalContainer = () => {
     handleGameComplete,
     handlePaymentComplete
   } = useWifiPortal({
-    sessionMinutes: portal.sessionMinutes ?? DEMO_SESSION_MINUTES,
-    startingPoints: portal.startingPoints ?? DEMO_STARTING_POINTS,
-    engagementType: portal.engagementType ?? DEMO_ENGAGEMENT_TYPE,
+    // Task 18 : plus de repli hardcodé — la config publiée est l'unique source.
+    // Sans config, le hook garde ses valeurs minimales de fonctionnement.
+    sessionMinutes: portal.sessionMinutes ?? 30,
+    startingPoints: portal.startingPoints ?? 10,
+    engagementType: portal.engagementType ?? "quiz",
     siteId: portal.siteId,
     flowOrder: portal.flowOrder,
   });
@@ -75,16 +68,13 @@ const WifiPortalContainer = () => {
     if (slide?.id) trackingService.adClick(portal.siteId, slide.id);
   };
 
-  // Slides : config publiée (ad_videos) ; repli visuel UNIQUEMENT en démo isolée
-  const slides = portal.slides.length > 0
-    ? portal.slides
-    : portal.isDemo
-      ? DEMO_AD_SLIDES
-      : [];
+  // Task 18 : slides = config publiée (ad_videos) exclusivement. Plus aucun
+  // repli démo hardcodé — pas de pub publiée = pas de carrousel.
+  const slides = portal.slides;
 
   const videoAd = portal.mediaAds.find((a) => a.kind === "video");
   const audioAd = portal.mediaAds.find((a) => a.kind === "audio");
-  const supportContact = portal.supportContact ?? (portal.isDemo ? DEMO_SUPPORT_CONTACT : null);
+  const supportContact = portal.supportContact;
 
   if (portal.loading) {
     return (
@@ -196,45 +186,41 @@ const WifiPortalContainer = () => {
             handleInvite={handleInvite}
             handleGameComplete={handleGameComplete}
             handlePaymentComplete={handlePaymentComplete}
+            // Échange (ExchangeForWifi) : les minutes gagnées prolongent la session.
+            handleExchangeTimeAwarded={handleExtendTime}
             modules={portal.enabledModules}
+            siteId={portal.siteId}
           />
         )}
 
-        {/* Video or Audio Ad - from published config (ad_videos); demo URLs only in demo */}
-        {showAds && currentStep !== Step.AUTH && (videoAd || (portal.isDemo && DEMO_VIDEO_AD) || audioAd || (portal.isDemo && DEMO_AUDIO_AD)) && (
+        {/* Video or Audio Ad - from published config (ad_videos) exclusivement
+            (Task 18 : plus aucun média démo hardcodé). */}
+        {showAds && currentStep !== Step.AUTH && (videoAd || audioAd) && (
           <div className="w-full max-w-md mt-8">
-            {(videoAd || (portal.isDemo && DEMO_VIDEO_AD)) && (
+            {videoAd && (
               <VideoAd
-                videoUrl={videoAd?.url ?? DEMO_VIDEO_AD.videoUrl}
-                title={videoAd?.title ?? localizedText(DEMO_VIDEO_AD.title, language)}
-                description={
-                  videoAd
-                    ? ""
-                    : localizedText(DEMO_VIDEO_AD.description, language)
-                }
-                poster={videoAd?.thumbnailUrl ?? DEMO_VIDEO_AD.poster}
+                videoUrl={videoAd.url}
+                title={videoAd.title}
+                description=""
+                poster={videoAd.thumbnailUrl}
                 autoPlay={false}
                 className="mb-4 wifi-card"
                 // Tracking : visionnage complet = contenu réellement regardé.
                 onEnd={() => {
-                  if (videoAd) trackingService.adProgress(portal.siteId, videoAd.id, 100);
+                  trackingService.adProgress(portal.siteId, videoAd.id, 100);
                 }}
               />
             )}
 
-            {(audioAd || (portal.isDemo && DEMO_AUDIO_AD)) && (
+            {audioAd && (
               <AudioPromo
-                audioUrl={audioAd?.url ?? DEMO_AUDIO_AD.audioUrl}
-                title={audioAd?.title ?? localizedText(DEMO_AUDIO_AD.title, language)}
-                subtitle={
-                  audioAd
-                    ? ""
-                    : localizedText(DEMO_AUDIO_AD.subtitle, language)
-                }
-                coverImage={audioAd?.thumbnailUrl ?? DEMO_AUDIO_AD.coverImage}
+                audioUrl={audioAd.url}
+                title={audioAd.title}
+                subtitle=""
+                coverImage={audioAd.thumbnailUrl}
                 className="wifi-card"
                 onEnd={() => {
-                  if (audioAd) trackingService.adProgress(portal.siteId, audioAd.id, 100);
+                  trackingService.adProgress(portal.siteId, audioAd.id, 100);
                 }}
               />
             )}

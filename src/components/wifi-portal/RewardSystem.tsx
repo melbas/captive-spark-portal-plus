@@ -1,61 +1,67 @@
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Award, ChevronLeft, Clock, Gift, Star } from "lucide-react";
 import { UserData, Reward, RewardType } from "./types";
+import { fetchSiteRewards } from "@/lib/supabase/portalModuleQueries";
 import { toast } from "sonner";
 
 interface RewardSystemProps {
   userData: UserData;
   onBack: () => void;
   onRedeem: (reward: Reward) => void;
+  /** sites.id — scope les récompenses lues en base (Task 18). */
+  siteId?: string | null;
 }
 
-const RewardSystem = ({ userData, onBack, onRedeem }: RewardSystemProps) => {
-  // Sample rewards - in a real implementation, these would come from the database
-  const availableRewards: Reward[] = [
-    {
-      id: "wifi-15",
-      name: "15 Minutes WiFi",
-      description: "Obtenez 15 minutes supplémentaires de WiFi",
-      pointsCost: 50,
-      type: RewardType.WIFI_TIME,
-      value: 15
-    },
-    {
-      id: "wifi-30",
-      name: "30 Minutes WiFi",
-      description: "Obtenez 30 minutes supplémentaires de WiFi",
-      pointsCost: 100,
-      type: RewardType.WIFI_TIME,
-      value: 30
-    },
-    {
-      id: "wifi-60",
-      name: "1 Heure WiFi",
-      description: "Obtenez une heure complète de WiFi supplémentaire",
-      pointsCost: 180,
-      type: RewardType.WIFI_TIME,
-      value: 60
-    },
-    {
-      id: "premium-1",
-      name: "Accès Premium",
-      description: "Accès Premium pendant 1 jour (sans publicités)",
-      pointsCost: 300,
-      type: RewardType.PREMIUM_ACCESS,
-      value: 1
-    },
-    {
-      id: "discount-10",
-      name: "Réduction 10%",
-      description: "Bon de réduction de 10% dans notre boutique",
-      pointsCost: 250,
-      type: RewardType.DISCOUNT,
-      value: 10
-    }
-  ];
+/** reward_type DB → type de récompense du portail. Type inconnu → null. */
+function toRewardType(rewardType: string): RewardType | null {
+  switch (rewardType) {
+    case "time":
+    case "wifi_time":
+      return RewardType.WIFI_TIME;
+    case "premium":
+    case "premium_access":
+      return RewardType.PREMIUM_ACCESS;
+    case "discount":
+    case "promo":
+      return RewardType.DISCOUNT;
+    case "gift":
+      // Un cadeau concret est traité comme un avantage premium unitaire.
+      return RewardType.PREMIUM_ACCESS;
+    default:
+      return null;
+  }
+}
+
+const RewardSystem = ({ userData, onBack, onRedeem, siteId }: RewardSystemProps) => {
+  // Task 18 : les récompenses viennent de la table `rewards` (par site, actives).
+  // Catalogue vide = état vide explicite — plus aucune récompense hardcodée.
+  const { data: dbRewards = [], isLoading: rewardsLoading } = useQuery({
+    queryKey: ["portal-rewards", siteId],
+    queryFn: () => fetchSiteRewards(siteId ?? ""),
+    enabled: Boolean(siteId),
+    staleTime: 60_000,
+  });
+
+  // Projection DB → Reward ; types inconnus ignorés (pas d'invention d'UI).
+  const availableRewards: Reward[] = dbRewards
+    .map((r) => {
+      const type = toRewardType(r.reward_type);
+      if (!type) return null;
+      const reward: Reward = {
+        id: r.id,
+        name: r.name,
+        description: r.description ?? "",
+        type,
+        value: Number(r.value) || 0,
+        pointsCost: r.points_cost,
+      };
+      return reward;
+    })
+    .filter((r): r is Reward => r !== null);
   
   const handleRedeem = (reward: Reward) => {
     const userPoints = userData.points || 0;
@@ -106,6 +112,15 @@ const RewardSystem = ({ userData, onBack, onRedeem }: RewardSystemProps) => {
           <p className="text-sm text-muted-foreground">Choisissez une récompense à échanger</p>
         </div>
         
+        {rewardsLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="h-6 w-6 border-t-2 border-primary rounded-full animate-spin"></div>
+          </div>
+        ) : availableRewards.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            Aucune récompense disponible pour le moment.
+          </p>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {availableRewards.map((reward) => (
             <Card 
@@ -152,6 +167,7 @@ const RewardSystem = ({ userData, onBack, onRedeem }: RewardSystemProps) => {
             </Card>
           ))}
         </div>
+        )}
         
         <div className="bg-muted/30 p-4 rounded-lg">
           <h4 className="font-medium mb-2">Comment gagner des points</h4>

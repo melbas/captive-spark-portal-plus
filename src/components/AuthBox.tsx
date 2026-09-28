@@ -99,12 +99,12 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
           setIsVerifying(true);
           
           // Start the countdown for resend
-          setResendDisabled(true);
           setResendCountdown(60); // 60 seconds
         } else {
           // Even if SMS fails in development, allow continuing
           console.warn("SMS sending failed, but continuing in demo mode");
-          toast.info(`${t("demoMode")}: ${t("useCode")} ${DEV_OTP_CODE}`);
+          toast.error(t("errorSendingCode"));
+          setAuthError(t("errorSendingCode"));
           setAuthMethod(method);
           setIsVerifying(true);
         }
@@ -140,7 +140,6 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
           setIsVerifying(true);
           
           // Start the countdown for resend
-          setResendDisabled(true);
           setResendCountdown(60); // 60 seconds
         }, 1000);
       } catch (error) {
@@ -351,7 +350,7 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
               </div>
               <div className="flex justify-between items-center mt-2">
                 <p className="text-xs text-muted-foreground">
-                  {t("useCodeForDemo")} <span className="font-bold">{DEV_OTP_CODE}</span>
+                  {t("useCodeForDemo")}
                 </p>
                 <Button 
                   variant="ghost" 
