@@ -13,6 +13,7 @@
 // ===========================================================================
 
 import { decryptSecret } from "./crypto.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export const CLOUD_CONNECTOR_BASE = "https://api.ui.com/v1/connector/consoles";
 
@@ -80,6 +81,31 @@ async function resolveCredentials(integ: UniFiIntegration): Promise<{
     throw new Error("Identifiants local manquants");
   }
   return { apiKey: null, password: await decryptSecret(integ.api_password_enc) };
+}
+
+// ---------------------------------------------------------------------------
+// Nouveaux : déchiffrement du secret UniFi stocké en base via pgcrypto
+// ---------------------------------------------------------------------------
+/**
+ * Déchiffre le secret UniFi stocké en base de données (colonne secret_encrypted)
+ * en utilisant la fonction SQL `decrypt_unifi_secret`.
+ * @param encrypted - Le secret chiffré sous forme de Uint8Array (bytea)
+ * @returns Le secret déchiffré
+ */
+export async function decryptUnifiSecret(encrypted: Uint8Array): Promise<string> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Missing Supabase environment variables");
+  }
+  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const hex = Buffer.from(encrypted).toString("hex");
+  const { data, error } = await supabase.rpc(
+    "decrypt_unifi_secret",
+    { encrypted: `\\\\x${hex}` }
+  );
+  if (error) throw error;
+  return data as string;
 }
 
 // ---------------------------------------------------------------------------
