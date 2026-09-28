@@ -436,9 +436,6 @@ export const useWifiPortal = (config?: WifiPortalRuntimeConfig) => {
       case "mini-games":
         setCurrentStep(Step.MINI_GAMES);
         break;
-      case "admin":
-        setCurrentStep(Step.ADMIN_STATS);
-        break;
       case "payment":
         setCurrentStep(Step.PAYMENT);
         break;
