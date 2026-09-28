@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { json } from "../_shared/auth.ts";
+import { requireAuth, json } from "../_shared/auth.ts";
 
 // ---------------------------------------------------------------------------
 // send-otp — génère et stocke un OTP.
@@ -24,6 +24,8 @@ Deno.serve(async (req) => {
 
   try {
     const { phone, email, siteId } = await req.json();
+    const auth = await requireAuth(req, { siteId, allowVisitor: true });
+    if ("error" in auth) return auth.error;
 
     if (!siteId) {
       return json({ error: "siteId requis" }, 400);

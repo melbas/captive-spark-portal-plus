@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { json } from "../_shared/auth.ts";
+import { requireAuth, json } from "../_shared/auth.ts";
 
 // ---------------------------------------------------------------------------
 // verify-otp — vérifie l'OTP et retourne l'identité visiteur.
@@ -20,7 +20,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { phone, email, code, siteId } = await req.json();
+    const body = await req.json();
+    const { phone, email, code, siteId } = body;
+
+    const auth = await requireAuth(req, { siteId, allowVisitor: true });
+    if ("error" in auth) return auth.error;
 
     if (!siteId || !code) {
       return json({ error: "siteId et code requis" }, 400);

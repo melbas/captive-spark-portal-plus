@@ -2,6 +2,7 @@
  * bictorys-webhook — webhook ENTRANT Bictorys (source de vérité des paiements).
  *
  * Référence : docs.bictorys.com/docs/integration (mars 2026).
+import { requireAuth, json } from "../_shared/auth.ts";
  *   Headers : `X-Secret-Key` (toujours) + `X-Webhook-Signature` +
  *             `X-Webhook-Timestamp` (HMAC optionnel)
  *   Payload : { id, type, amount, currency, paymentReference,
@@ -71,6 +72,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+  const auth = await requireAuth(req, { allowVisitor: true });
+  if ("error" in auth) return auth.error;
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
