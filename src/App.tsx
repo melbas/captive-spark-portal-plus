@@ -22,6 +22,7 @@ import SiteQuizPage from "./pages/admin/sites/[siteId]/quiz/Page";
 import SiteGamesPage from "./pages/admin/sites/[siteId]/games/Page";
 import SiteRewardsPage from "./pages/admin/sites/[siteId]/rewards/Page";
 import SiteDetailPage from "./pages/admin/sites/[siteId]/Page";
+import NewSiteWizardPage from "./pages/admin/sites/new/Page";
 import SiteModulesPage from "./pages/admin/sites/[siteId]/modules/Page";
 import AdminForge from "./pages/admin/AdminForge";
 import AdminKits from "./pages/admin/AdminKits";
@@ -64,6 +65,8 @@ const App = () => (
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="resellers" element={<AdminResellers />} />
                   <Route path="sites" element={<AdminSites />} />
+                  {/* /new AVANT :siteId pour que "new" ne soit pas mangé par le paramètre. */}
+                  <Route path="sites/new" element={<NewSiteWizardPage />} />
                   <Route path="sites/:siteId" element={<SiteDetailPage />} />
                   <Route path="sites/:siteId/modules" element={<SiteModulesPage />} />
                   <Route path="sites/:siteId/quiz" element={<SiteQuizPage />} />
