@@ -30,12 +30,14 @@ CREATE POLICY "sites_select_scoped"
   USING (public.can_access_site(id));
 
 -- Insert: super_admin or reseller creating a site under their own reseller_id
+-- Fix 2026-09-28 : NEW n'existe pas dans WITH CHECK Postgres → utiliser la
+-- syntaxe référençant directement les colonnes (implicite INSERT).
 CREATE POLICY "sites_insert_scoped"
   ON public.sites FOR INSERT
   TO authenticated
   WITH CHECK (
     public.is_super_admin()
-    OR public.is_reseller_of(NEW.reseller_id)
+    OR public.is_reseller_of(reseller_id)
   );
 
 -- Update: super_admin or reseller updating a site under their own reseller_id
@@ -48,7 +50,7 @@ CREATE POLICY "sites_update_scoped"
   )
   WITH CHECK (
     public.is_super_admin()
-    OR public.is_reseller_of(NEW.reseller_id)
+    OR public.is_reseller_of(reseller_id)
   );
 
 -- Delete: super_admin or reseller deleting a site under their own reseller_id
@@ -95,7 +97,7 @@ CREATE POLICY "resellers_update_scoped"
   )
   WITH CHECK (
     public.is_super_admin()
-    OR public.is_reseller_of(NEW.id)
+    OR public.is_reseller_of(id)
   );
 
 -- Delete: super_admin only
@@ -126,7 +128,7 @@ CREATE POLICY "hardware_integrations_insert_scoped"
   WITH CHECK (
     public.is_super_admin()
     OR public.is_reseller_of(
-      (SELECT reseller_id FROM public.sites WHERE id = NEW.site_id)
+      (SELECT reseller_id FROM public.sites WHERE id = site_id)
     )
   );
 
@@ -142,7 +144,7 @@ CREATE POLICY "hardware_integrations_update_scoped"
   WITH CHECK (
     public.is_super_admin()
     OR public.is_reseller_of(
-      (SELECT reseller_id FROM public.sites WHERE id = NEW.site_id)
+      (SELECT reseller_id FROM public.sites WHERE id = site_id)
     )
   );
 
@@ -243,7 +245,7 @@ DROP POLICY IF EXISTS "vouchers_viewer_read_own" ON public.vouchers;
 CREATE POLICY "vouchers_select_scoped"
   ON public.vouchers FOR SELECT
   TO authenticated
-  USING (auth.uid() = user_id OR public.can_access_site(site_id));
+  USING (auth.uid() = profile_id OR public.can_access_site(site_id));
 
 -- Write: can_access_site and not viewer
 CREATE POLICY "vouchers_write_scoped"
@@ -278,7 +280,7 @@ CREATE POLICY "wifi_plans_write_scoped"
   )
   WITH CHECK (
     public.is_super_admin()
-    OR public.is_reseller_of(NEW.site_id)
+    OR public.is_reseller_of(site_id)
   );
 
 -- --------------------------------------------------------------------------
@@ -343,8 +345,14 @@ CREATE POLICY "pc_audit_logs_insert_scoped"
   );
 
 -- Update/delete: super_admin only (logs are append-only)
-CREATE POLICY "pc_audit_logs_modify_scoped"
-  ON public.pc_audit_logs FOR UPDATE OR DELETE
+-- Fix 2026-09-28 : 'FOR UPDATE OR DELETE' invalide → une policy par action.
+CREATE POLICY "pc_audit_logs_update_scoped"
+  ON public.pc_audit_logs FOR UPDATE
+  TO authenticated
+  USING (public.is_super_admin());
+
+CREATE POLICY "pc_audit_logs_delete_scoped"
+  ON public.pc_audit_logs FOR DELETE
   TO authenticated
   USING (public.is_super_admin());
 
