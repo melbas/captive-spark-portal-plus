@@ -103,12 +103,12 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 400;
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 500;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Archivo', system-ui, sans-serif;
     font-weight: 700;
   }
 

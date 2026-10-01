@@ -41,7 +41,7 @@
   color: var(--pc-ink);
   min-height: 100vh;
   min-height: 100dvh;
-  font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   display: grid;

@@ -20,16 +20,16 @@
   font-family: inherit;
 }
 
-/* Atmosphère : halos radiaux — bleu site/doré athlètes (palette JOJ) */
+/* Atmosphère : 2 radiales seulement (bleu site + or) — le vert vit
+   uniquement dans les marques officielles (audit : densité chromatique). */
 .sct-atmos {
   position: fixed;
   inset: -20%;
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(40% 42% at 14% 8%, rgba(0, 150, 214, 0.28), transparent 65%),
-    radial-gradient(38% 38% at 90% 20%, rgba(245, 180, 0, 0.14), transparent 65%),
-    radial-gradient(50% 50% at 50% 115%, rgba(0, 155, 72, 0.12), transparent 70%);
+    radial-gradient(40% 42% at 14% 8%, rgba(79, 195, 247, 0.22), transparent 65%),
+    radial-gradient(38% 38% at 90% 20%, rgba(245, 180, 0, 0.10), transparent 65%);
   filter: blur(8px);
 }
 
@@ -85,6 +85,7 @@
   line-height: 0.96;
   letter-spacing: -0.045em;
   font-weight: 800;
+  font-stretch: 92%;
   text-wrap: balance;
 }
 .sct-hero h1 .accent {
@@ -123,7 +124,7 @@
 .sct-sponsor {
   margin-top: 30px;
   padding: 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
@@ -131,6 +132,8 @@
   gap: 13px;
 }
 .sct-sponsor .logo {
+  /* Zone de protection du logo : air libre obligatoire autour du
+     lockup DAKAR 2026 (règle charte CIO). */
   width: 52px;
   height: 52px;
   flex: none;
@@ -147,6 +150,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  padding: 6px;
 }
 .sct-sponsor .txt {
   font-size: 0.78rem;
@@ -178,14 +182,14 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 0 0 1px rgba(79, 195, 247, 0.35), 0 12px 40px -12px rgba(0, 150, 214, 0.65);
+  box-shadow: 0 4px 24px rgba(79, 195, 247, 0.25);
 }
 .sct-connect:disabled { opacity: 0.65; cursor: default; }
 .sct-connect .arrow { transition: transform var(--sct-dur) var(--sct-ease); }
 @media (hover: hover) and (pointer: fine) {
   .sct-connect:hover:not(:disabled) .arrow { transform: translateX(3px); }
 }
-.sct-connect:active { transform: scale(0.97); }
+.sct-connect:active { transform: scale(0.97); transition: transform 160ms ease-out; }
 .sct-fine {
   margin-top: 14px;
   text-align: center;
@@ -222,29 +226,25 @@
   font-weight: 700;
 }
 
-/* ---- Anneaux olympiques décoratifs (éléments DISTINCTS, jamais fusionnés
-   au logo — conforme Directives CIO §II) ---- */
+/* ---- Anneaux olympiques décoratifs — MONOCHROMES blancs (audit) :
+   les anneaux pleins 5 couleurs appartiennent aux marques officielles
+   du CIO. En usage institutionnel secondaire, la version monochrome
+   blanche est la forme reconnue, distincte du logo officiel affiché
+   à côté (conforme Directives CIO §II). ---- */
 .sct-rings {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   margin-top: 26px;
   justify-content: center;
 }
 .sct-rings span {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  border: 2.5px solid;
-  opacity: 0.75;
+  border: 2px solid #fafafa;
+  opacity: 0.65;
 }
-/* Couleurs officielles des anneaux, désaturées pour rester sobres
-   (usage institutionnel — les anneaux pleins couleur TV sont réservés
-   aux contextes broadcast ; ici on reste distincts et discrets). */
-.sct-rings span:nth-child(1) { border-color: #5aa9d6; }
-.sct-rings span:nth-child(2) { border-color: #c9cdd2; margin-top: 7px; }
-.sct-rings span:nth-child(3) { border-color: #c96a6a; }
-.sct-rings span:nth-child(4) { border-color: #d4b054; margin-top: 7px; }
-.sct-rings span:nth-child(5) { border-color: #6fae7c; }
+.sct-rings span:nth-child(even) { margin-top: 8px; }
 
 /* ---- Écran connecté ---- */
 .sct-on {
