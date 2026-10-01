@@ -34,7 +34,7 @@ test('rend le nom de l\'événement, les dates, le lieu et l\'offre', () => {
   expect(screen.getByText('19 — 21 Sept.')).toBeInTheDocument();
   expect(screen.getByText('CICAD, Dakar')).toBeInTheDocument();
   expect(
-    screen.getByText('Internet gratuit pour les 3 jours du festival'),
+    screen.getAllByText('Internet gratuit pour les 3 jours du festival')[0],
   ).toBeInTheDocument();
   expect(screen.getByText('WariTel')).toBeInTheDocument();
 });
