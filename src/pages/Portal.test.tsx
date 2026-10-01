@@ -123,9 +123,9 @@ test('portal_template "scene" rend le template Scène', async () => {
   currentSiteRow = { ...siteRow, portal_template: 'scene' };
   renderPortal();
 
-  // Le splash scène remplace le parcours instant : badge « WiFi officiel »
+  // Le splash scène remplace le parcours instant : kicker « WiFi public »
   // présent, CTA « Rejoindre » présent, CTA parcours instant absent.
-  expect(await screen.findByText('WiFi officiel')).toBeInTheDocument();
+  expect(await screen.findByText(/WiFi public/)).toBeInTheDocument();
   expect(screen.getByTestId('scene-join')).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /se connecter|wifi gratuit/i })).not.toBeInTheDocument();
 });
@@ -137,7 +137,7 @@ test('portal_template null garde le portail actuel (fallback legacy)', async () 
   // Le parcours legacy (WifiPortalContainer) affiche le message portal_config ;
   // aucun splash scène et PAS de InstantTemplate (fallback ≠ choix explicite).
   expect(await screen.findByText('Bienvenue au Hôtel Test !')).toBeInTheDocument();
-  expect(screen.queryByText('WiFi officiel')).not.toBeInTheDocument();
+  expect(screen.queryByText(/WiFi public/)).not.toBeInTheDocument();
 });
 
 test('portal_template inconnu retombe sur le portail actuel', async () => {
@@ -145,7 +145,7 @@ test('portal_template inconnu retombe sur le portail actuel', async () => {
   renderPortal();
 
   expect(await screen.findByText('Bienvenue au Hôtel Test !')).toBeInTheDocument();
-  expect(screen.queryByText('WiFi officiel')).not.toBeInTheDocument();
+  expect(screen.queryByText(/WiFi public/)).not.toBeInTheDocument();
 });
 
 test('portal_template "echange" et "instant" routent vers les templates du labo', async () => {
@@ -154,7 +154,7 @@ test('portal_template "echange" et "instant" routent vers les templates du labo'
   currentSiteRow = { ...siteRow, portal_template: 'echange' };
   renderPortal();
   expect(await screen.findByTestId('echange-template')).toHaveTextContent('site-1');
-  expect(screen.queryByText('WiFi officiel')).not.toBeInTheDocument();
+  expect(screen.queryByText(/WiFi public/)).not.toBeInTheDocument();
   cleanup();
 
   currentSiteRow = { ...siteRow, portal_template: 'instant' };

@@ -6,27 +6,30 @@
  * ici : valeurs locales équivalentes.
  */
 .sct {
-  --sct-ac: #f59e0b;
+  --sct-ac: #0096d6;
+  --sct-gold: #f5b400;
+  --sct-green: #009b48;
+  --sct-red: #ee2e24;
   --sct-dur: 180ms;
   --sct-ease: cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   min-height: 100vh;
-  background: #0c0a14;
+  background: #060b14;
   color: #fafafa;
   overflow: hidden;
   font-family: inherit;
 }
 
-/* Atmosphère : halos radiaux flous (stage lights) */
+/* Atmosphère : halos radiaux — bleu site/doré athlètes (palette JOJ) */
 .sct-atmos {
   position: fixed;
   inset: -20%;
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(38% 45% at 18% 12%, rgba(245, 158, 11, 0.2), transparent 65%),
-    radial-gradient(42% 40% at 88% 78%, rgba(217, 70, 110, 0.18), transparent 65%),
-    radial-gradient(50% 50% at 50% 110%, rgba(139, 92, 246, 0.14), transparent 70%);
+    radial-gradient(40% 42% at 14% 8%, rgba(0, 150, 214, 0.28), transparent 65%),
+    radial-gradient(38% 38% at 90% 20%, rgba(245, 180, 0, 0.14), transparent 65%),
+    radial-gradient(50% 50% at 50% 115%, rgba(0, 155, 72, 0.12), transparent 70%);
   filter: blur(8px);
 }
 
@@ -86,7 +89,7 @@
 }
 .sct-hero h1 .accent {
   display: block;
-  background: linear-gradient(100deg, #fbbf24, #f97316 55%, #e11d48);
+  background: linear-gradient(100deg, #4fc3f7, #f5b400 55%, #009b48);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -116,43 +119,42 @@
 
 .sct-sponsor {
   margin-top: 30px;
-  padding: 14px 16px;
+  padding: 16px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   gap: 13px;
 }
 .sct-sponsor .logo {
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   flex: none;
   border-radius: 11px;
-  background: linear-gradient(140deg, #f59e0b, #e11d48);
+  background: #fff;
   display: grid;
   place-items: center;
   font-weight: 800;
   font-size: 1rem;
-  color: #fff;
-  box-shadow: 0 8px 20px -10px rgba(245, 158, 11, 0.9);
+  color: #111;
   overflow: hidden;
 }
 .sct-sponsor .logo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 .sct-sponsor .txt {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: #3a4450;
   line-height: 1.4;
 }
 .sct-sponsor .txt b {
   display: block;
-  color: #fafafa;
+  color: #0b0e13;
   font-size: 0.9rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .sct-cta {
@@ -164,8 +166,8 @@
   padding: 18px;
   border: 0;
   border-radius: 20px;
-  background: #fafafa;
-  color: #0c0a14;
+  background: #ffffff;
+  color: #060b14;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -173,6 +175,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  box-shadow: 0 0 0 1px rgba(79, 195, 247, 0.35), 0 12px 40px -12px rgba(0, 150, 214, 0.65);
 }
 .sct-connect:disabled { opacity: 0.65; cursor: default; }
 .sct-connect .arrow { transition: transform var(--sct-dur) var(--sct-ease); }
@@ -186,6 +189,27 @@
   font-size: 0.74rem;
   color: rgba(255, 255, 255, 0.38);
 }
+
+/* ---- Anneaux olympiques décoratifs (éléments DISTINCTS, jamais fusionnés
+   au logo — conforme Directives CIO §II) ---- */
+.sct-rings {
+  display: flex;
+  gap: 7px;
+  margin-top: 26px;
+  justify-content: center;
+}
+.sct-rings span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid;
+  opacity: 0.9;
+}
+.sct-rings span:nth-child(1) { border-color: #4fc3f7; }
+.sct-rings span:nth-child(2) { border-color: #f5f5f5; margin-top: 7px; }
+.sct-rings span:nth-child(3) { border-color: #e57373; }
+.sct-rings span:nth-child(4) { border-color: #ffd54f; margin-top: 7px; }
+.sct-rings span:nth-child(5) { border-color: #81c784; }
 
 /* ---- Écran connecté ---- */
 .sct-on {
@@ -238,7 +262,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #f59e0b, #e11d48);
+  background: linear-gradient(90deg, #4fc3f7, #f5b400, #009b48);
   transition: width 1s linear;
 }
 .sct-on .pass {

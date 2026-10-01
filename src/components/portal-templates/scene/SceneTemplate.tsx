@@ -80,7 +80,7 @@ export default function SceneTemplate({
         <div className="sct-grain" aria-hidden="true" />
         <div className="sct-inner">
           <div className="sct-on" role="status">
-            <span className="badge">✓ Connecté au réseau du festival</span>
+            <span className="badge">✓ Connecté au réseau des Jeux</span>
             <h2>Bienvenue à<br />{eventName}</h2>
             <p className="meta">
               Internet actif sur tout le site ·{' '}
@@ -97,7 +97,7 @@ export default function SceneTemplate({
               <span style={{ width: `${pct}%` }} />
             </div>
             <div className="pass">
-              <p className="k">Ton pass journalier</p>
+              <p className="k">Ton pass des Jeux</p>
               <p className="v mono" data-testid="scene-pass">{passCode}</p>
               <p className="s">Sert aussi de tirage au sort</p>
             </div>
@@ -120,7 +120,7 @@ export default function SceneTemplate({
       <div className="sct-grain" aria-hidden="true" />
       <div className="sct-inner">
         <div className="sct-top">
-          <span className="kicker">WiFi officiel</span>
+          <span className="kicker">WiFi public — Ville de Dakar</span>
           <span className="wifi">
             <span className="bar" /><span className="bar" /><span className="bar" /> Signal excellent
           </span>
@@ -163,7 +163,7 @@ export default function SceneTemplate({
                 data-testid="scene-join"
                 onClick={() => setShowAuth(true)}
               >
-                <span>Rejoindre l'événement</span>
+                <span>Rejoindre le WiFi des Jeux</span>
                 <svg
                   className="arrow"
                   width="17"
@@ -178,6 +178,9 @@ export default function SceneTemplate({
                 </svg>
               </button>
               <p className="sct-fine">1h offerte · navigation illimitée · renouvelable</p>
+              <div className="sct-rings" aria-hidden="true">
+                <span /><span /><span /><span /><span />
+              </div>
             </>
           ) : (
             <div className="sct-auth" data-testid="scene-auth">

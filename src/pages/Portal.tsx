@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { readUnifiParams } from '@/lib/portal-params';
-import { getSiteBySlug, getWifiPlans, getPortalConfig } from '@/lib/supabase/portalQueries';
+import { getSiteBySlug, getWifiPlans, getPortalConfig, getPortalCustomizations } from '@/lib/supabase/portalQueries';
 import type { PortalConfig, UnifiParams } from '@/types/premiumconnect';
 import PortalWelcome from '@/components/portal/PortalWelcome';
 import PortalAuth from '@/components/portal/PortalAuth';
@@ -93,14 +93,20 @@ export default function Portal() {
       );
       // Données propres au template scène (event/sponsor) : customizations de la
       // config publiée quand elle existe, sinon champs de la fiche site.
+      const cust = new Map(
+        (await (portalCfg ? getPortalCustomizations(portalCfg.id) : Promise.resolve([])))
+          .map((c) => [c.customization_type, c.customization_data ?? {}]),
+      );
+      const sceneEv = cust.get('scene_event') as { tagline?: string; dates?: string } | undefined;
+      const sceneSp = cust.get('scene_sponsor') as { name?: string; logo_url?: string; subtext?: string } | undefined;
       setSceneProps({
         event_name: portalCfg?.portal_name ?? site.name,
-        event_tagline: null,
-        sponsor_name: site.name,
-        sponsor_logo_url: portalCfg?.logo_url ?? site.logo_url,
-        event_dates: null,
+        event_tagline: sceneEv?.tagline ?? null,
+        sponsor_name: sceneSp?.name ?? site.name,
+        sponsor_logo_url: sceneSp?.logo_url ?? portalCfg?.logo_url ?? site.logo_url,
+        event_dates: sceneEv?.dates ?? null,
         event_location: site.location,
-        offer_text: portalCfg?.welcome_message ?? site.welcome_msg,
+        offer_text: sceneSp?.subtext ?? portalCfg?.welcome_message ?? site.welcome_msg,
         siteId: site.id,
       });
       setLoading(false);
