@@ -150,7 +150,7 @@ export default function SceneTemplate({
           </span>
           <span className="txt">
             <b>{sponsorLabel}</b>
-            {offer_text ? 'Partenaire officiel' : 'Internet gratuit pendant l\'événement'}
+            {offer_text || 'Internet gratuit pendant l\'événement'}
           </span>
         </div>
 
