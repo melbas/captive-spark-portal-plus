@@ -68,7 +68,8 @@ interface LooseTable {
   maybeSingle: () => PromiseLike<QueryResult<never>>;
 }
 function table(name: string): LooseTable {
-  const from = supabase.from as (relation: string) => unknown;
+  // bind() obligatoire : détacher la méthode casse `this` → `this.rest` undefined.
+  const from = supabase.from.bind(supabase) as (relation: string) => unknown;
   return from(name) as unknown as LooseTable;
 }
 

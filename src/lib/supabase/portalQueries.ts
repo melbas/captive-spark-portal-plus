@@ -107,7 +107,10 @@ interface LooseTable {
 function table(name: string): LooseTable {
   // `from` est restreint aux relations du schéma généré ; on l'élargit
   // explicitement au lieu d'un `any`.
-  const from = supabase.from as (relation: string) => unknown;
+  // IMPORTANT : appel lié (supabase.from(...)) et JAMAIS `const f = supabase.from; f(...)`.
+  // Détacher la méthode casse `this` (undefined) → `this.rest` explose au runtime
+  // (bug « Cannot read properties of undefined (reading 'rest') », `/portal/*` en erreur).
+  const from = supabase.from.bind(supabase) as (relation: string) => unknown;
   return from(name) as unknown as LooseTable;
 }
 

@@ -50,7 +50,7 @@ export default function Portal() {
       let site;
       try {
         site = await getSiteBySlug(slug);
-      } catch {
+      } catch (e) {
         setError('Site introuvable ou inactif');
         setLoading(false);
         return;

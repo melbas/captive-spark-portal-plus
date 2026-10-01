@@ -220,7 +220,8 @@ interface LooseTable {
 function table(name: string): LooseTable {
   // `from` est restreint aux relations du schéma généré ; on l'élargit explicitement
   // au lieu d'un `any` : le cast reste documenté et ciblé.
-  const from = supabase.from as (relation: string) => unknown;
+  // bind() obligatoire : détacher la méthode casse `this` → `this.rest` undefined.
+  const from = supabase.from.bind(supabase) as (relation: string) => unknown;
   return from(name) as unknown as LooseTable;
 }
 
