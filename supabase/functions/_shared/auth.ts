@@ -109,6 +109,6 @@ export async function is_admin_user(supabaseClient: ReturnType<typeof createClie
  * Vérifie si l'utilisateur peut accéder au site spécifié
  */
 export async function can_access_site(supabaseClient: ReturnType<typeof createClient>, siteId: string): Promise<boolean> {
-  const { data } = await supabaseClient.rpc('can_access_site', { p_site_id: siteId });
+  const { data } = await supabaseClient.rpc('can_access_site', { p_site_id: siteId } as never);
   return data === true;
 }

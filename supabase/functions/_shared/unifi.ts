@@ -320,6 +320,261 @@ export async function unauthorizeGuest(
 }
 
 // ---------------------------------------------------------------------------
+// QoS — mapping normatif (docs/hardware/unifi-integration-rules.md)
+// qos_rate_max_up/down en Mbps, plage 2 → 100 000, -1 = illimité.
+// ⚠️ 1 Mbps est REJETÉ par le pattern API (-1|[2-9]|[1-9][0-9]{1,4}|100000)
+// → tout <= 1 est mappé vers 2 ; null → -1 (illimité).
+// ---------------------------------------------------------------------------
+export function mapQosRate(mbps: number | null | undefined): number {
+  if (mbps === null || mbps === undefined) return -1;
+  if (mbps <= 1) return 2;
+  if (mbps > 100000) return 100000;
+  return Math.round(mbps);
+}
+
+// ---------------------------------------------------------------------------
+// Explication des erreurs UniFi selon le tableau des pièges réels.
+// ---------------------------------------------------------------------------
+export function explainUniFiError(op: string, status: number, detail = ""): string {
+  let hint = "";
+  if (status === 401) hint = " (401: token console sur /proxy/network — utiliser X-API-Key ou session+csrf)";
+  else if (status === 400 && /qos/i.test(detail)) hint = " (400 InvalidPayload qos: 1 Mbps rejeté — min 2 ou -1)";
+  else if (status === 400 && /NotNull\.schedule/i.test(detail)) hint = " (400: schedule obligatoire sur POST firewall)";
+  else if (status === 404) hint = " (404: vérifier le pluriel des endpoints v2, ex. firewall-policies)";
+  else if (status === 405) hint = " (405: route en POST uniquement — cmd jamais en GET)";
+  return op + " HTTP " + status + hint + (detail ? " — " + detail : "");
+}
+
+// ---------------------------------------------------------------------------
+// Requête locale : X-API-Key prioritaire (règle 1), sinon session legacy
+// cookie + CSRF (règle 2). Ne JAMAIS utiliser le token console /api/access
+// sur /proxy/network (401 vérifié).
+// ---------------------------------------------------------------------------
+async function localAuthHeaders(
+  integ: UniFiIntegration,
+  signal?: AbortSignal
+): Promise<HeadersInit> {
+  if (integ.api_key_enc) {
+    const key = await decryptSecret(integ.api_key_enc);
+    return {
+      "X-API-Key": key,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    };
+  }
+  const { password } = await resolveCredentials(integ);
+  const base = (integ.controller_url || "").replace(/\/$/, "");
+  const session = await localSession(base, integ.api_username as string, password as string, signal);
+  if (!session) throw new Error("Échec login local UniFi");
+  return {
+    Cookie: session.cookies,
+    "X-Csrf-Token": session.csrf,
+    "Content-Type": "application/json",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Requête unifiée sur les endpoints rest/* et cmd/* de l'API Network :
+//  - cloud_connector : api.ui.com/.../consoles/{consoleId}/proxy/network/...
+//  - local : {controller_url}/proxy/network/...
+// ---------------------------------------------------------------------------
+async function unifiRequest(
+  integ: UniFiIntegration,
+  proxyPath: string, // commence par /proxy/network/
+  init: RequestInit,
+  signal?: AbortSignal
+): Promise<Response> {
+  if (integ.connection_mode === "cloud_connector") {
+    if (!integ.console_id) throw new Error("Mode cloud_connector : console_id manquant");
+    const { apiKey } = await resolveCredentials(integ);
+    const url = CLOUD_CONNECTOR_BASE + "/" + integ.console_id + proxyPath;
+    return fetch(url, {
+      ...init,
+      headers: { ...(init.headers as Record<string, string>), ...cloudHeaders(apiKey as string) },
+      signal,
+    });
+  }
+  const base = (integ.controller_url || "").replace(/\/$/, "");
+  const headers = await localAuthHeaders(integ, signal);
+  return fetch(base + proxyPath, {
+    ...init,
+    headers: { ...(init.headers as Record<string, string>), ...headers },
+    signal,
+  });
+}
+
+function restPath(integ: UniFiIntegration, resource: string): string {
+  return "/proxy/network/api/s/" + (integ.unifi_site_id || "default") + "/rest/" + resource;
+}
+
+// ---------------------------------------------------------------------------
+// Retrouve l'id client UniFi à partir du MAC.
+// Cloud : GET /v1/sites/{site}/clients?filter=macAddress.eq(...) (existant).
+// Local : GET rest/user puis filtrage par mac côté serveur (l'API Network ne
+// filtre pas rest/user par MAC de façon fiable — lecture complète, filtre ici).
+// ---------------------------------------------------------------------------
+export async function findClientByMac(
+  integ: UniFiIntegration,
+  mac: string,
+  signal?: AbortSignal
+): Promise<UniFiResult> {
+  if (integ.connection_mode === "cloud_connector") {
+    return resolveClientId(integ, mac, signal);
+  }
+  try {
+    const res = await unifiRequest(integ, restPath(integ, "user"), { method: "GET" }, signal);
+    if (!res.ok) {
+      return { success: false, message: explainUniFiError("GET rest/user", res.status) };
+    }
+    const rows = extractRows(await res.json());
+    const norm = mac.toLowerCase();
+    const row = rows.find(
+      (r) => typeof (r as Record<string, unknown>).mac === "string" &&
+        ((r as Record<string, unknown>).mac as string).toLowerCase() === norm
+    ) as Record<string, unknown> | undefined;
+    if (!row) {
+      return { success: false, message: "Aucun client rest/user pour le MAC " + mac };
+    }
+    const clientId = (row._id ?? row.id ?? row.clientId) as string | undefined;
+    if (!clientId) {
+      return { success: false, message: "Client UniFi trouvé sans id" };
+    }
+    return { success: true, message: "Client résolu", data: { clientId, macAddress: row.mac } };
+  } catch (err) {
+    return { success: false, message: "findClientByMac: " + (err as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// authorize-sta (règle normative : cmd en POST OBLIGATOIRE, GET = 404/405).
+// Local : POST cmd/stamgr { cmd: "authorize-sta", mac, minutes }.
+// Cloud : action v1 AUTHORIZE_GUEST_ACCESS (client résolu depuis le MAC).
+// ---------------------------------------------------------------------------
+export async function authorizeSta(
+  integ: UniFiIntegration,
+  mac: string,
+  minutes: number,
+  signal?: AbortSignal
+): Promise<UniFiResult> {
+  if (integ.connection_mode === "cloud_connector") {
+    const resolved = await resolveClientId(integ, mac, signal);
+    if (!resolved.success) return resolved;
+    const clientId = (resolved.data as Record<string, unknown>).clientId as string;
+    return authorizeGuest(integ, clientId, minutes, signal);
+  }
+  try {
+    const res = await unifiRequest(
+      integ,
+      "/proxy/network/api/s/" + (integ.unifi_site_id || "default") + "/cmd/stamgr",
+      {
+        method: "POST",
+        body: JSON.stringify({ cmd: "authorize-sta", mac: mac.toLowerCase(), minutes }),
+      },
+      signal
+    );
+    if (!res.ok) {
+      let detail = "";
+      try {
+        detail = JSON.stringify(await res.json()).slice(0, 300);
+      } catch { /* corps non JSON */ }
+      return { success: false, message: explainUniFiError("authorize-sta", res.status, detail) };
+    }
+    return { success: true, message: "authorize-sta OK (" + minutes + " min)" };
+  } catch (err) {
+    return { success: false, message: "authorizeSta: " + (err as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Trouve OU crée le groupe QoS d'un plan (rest/usergroup, testé en lab ✅).
+// qos_rate_max_down/up déjà mappés via mapQosRate (2..100000 ou -1).
+// ---------------------------------------------------------------------------
+export async function ensureUserGroup(
+  integ: UniFiIntegration,
+  name: string,
+  qos: { downMbps: number; upMbps: number },
+  signal?: AbortSignal
+): Promise<UniFiResult> {
+  const path = restPath(integ, "usergroup");
+  try {
+    // 1. Lecture : un groupe existant est réutilisé (jamais recréé en double)
+    const getRes = await unifiRequest(integ, path, { method: "GET" }, signal);
+    if (!getRes.ok) {
+      return { success: false, message: explainUniFiError("GET rest/usergroup", getRes.status) };
+    }
+    const rows = extractRows(await getRes.json());
+    const existing = rows.find((r) => (r as Record<string, unknown>).name === name) as
+      | Record<string, unknown>
+      | undefined;
+    if (existing) {
+      const id = (existing._id ?? existing.id) as string | undefined;
+      if (!id) return { success: false, message: "Groupe usergroup existant sans id" };
+      return { success: true, message: "Groupe QoS existant", data: { userGroupId: id, created: false } };
+    }
+
+    // 2. Création avec les débits du plan (pattern API : 2..100000 ou -1)
+    const postRes = await unifiRequest(
+      integ,
+      path,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          qos_rate_max_down: qos.downMbps,
+          qos_rate_max_up: qos.upMbps,
+        }),
+      },
+      signal
+    );
+    if (!postRes.ok) {
+      let detail = "";
+      try {
+        detail = JSON.stringify(await postRes.json()).slice(0, 300);
+      } catch { /* corps non JSON */ }
+      return { success: false, message: explainUniFiError("POST rest/usergroup", postRes.status, detail) };
+    }
+    const created = extractRows(await postRes.json());
+    const newId = ((created[0] as Record<string, unknown> | undefined)?._id ??
+      (created[0] as Record<string, unknown> | undefined)?.id) as string | undefined;
+    if (!newId) return { success: false, message: "POST rest/usergroup sans _id en retour" };
+    return { success: true, message: "Groupe QoS créé", data: { userGroupId: newId, created: true } };
+  } catch (err) {
+    return { success: false, message: "ensureUserGroup: " + (err as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Applique le groupe QoS au client : PUT rest/user/{id} { usergroup_id }.
+// (⚠️ statut de test : modèle connu, à confirmer sur site — voir doc.)
+// ---------------------------------------------------------------------------
+export async function setClientUserGroup(
+  integ: UniFiIntegration,
+  clientId: string,
+  userGroupId: string,
+  signal?: AbortSignal
+): Promise<UniFiResult> {
+  const path = restPath(integ, "user") + "/" + encodeURIComponent(clientId);
+  try {
+    const res = await unifiRequest(
+      integ,
+      path,
+      { method: "PUT", body: JSON.stringify({ usergroup_id: userGroupId }) },
+      signal
+    );
+    if (!res.ok) {
+      let detail = "";
+      try {
+        detail = JSON.stringify(await res.json()).slice(0, 300);
+      } catch { /* corps non JSON */ }
+      return { success: false, message: explainUniFiError("PUT rest/user", res.status, detail) };
+    }
+    return { success: true, message: "Groupe QoS appliqué au client" };
+  } catch (err) {
+    return { success: false, message: "setClientUserGroup: " + (err as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Parse une réponse d'action guest.
 // ---------------------------------------------------------------------------
 async function parseAction(res: Response, action: string): Promise<UniFiResult> {
