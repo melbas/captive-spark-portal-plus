@@ -39,16 +39,6 @@ export default function Portal() {
   // Le site de démo est toujours accessible sans paramètres UniFi (tests bout en bout)
   const isDemo = searchParams.has('demo') || slug === 'demo';
 
-  // Site démo = design complet identique au portail racine (slides, ads vidéo/audio, jeux)
-  if (slug === 'demo') {
-    return (
-      <>
-        <PortalDemoBanner />
-        <WifiPortalContainer />
-      </>
-    );
-  }
-
   // Load site config + UniFi params
   useEffect(() => {
     const params = readUnifiParams();
@@ -154,18 +144,31 @@ export default function Portal() {
   // Défaut ('legacy' : null, valeur inconnue, site sans template choisi) →
   // portail actuel (WifiPortalContainer), comportement inchangé.
   if (portalTemplate === 'scene') {
-    return <SceneTemplate {...sceneProps} />;
+    return (
+      <>
+        {isDemo && <PortalDemoBanner />}
+        <SceneTemplate {...sceneProps} />
+      </>
+    );
   }
   if (portalTemplate === 'echange') {
-    return <EchangeTemplate siteId={config.siteId} />;
+    return (
+      <>
+        {isDemo && <PortalDemoBanner />}
+        <EchangeTemplate siteId={config.siteId} />
+      </>
+    );
   }
   if (portalTemplate === 'instant') {
     return (
-      <InstantTemplate
-        siteId={config.siteId}
-        mac={unifiParams?.mac || null}
-        successUrl={unifiParams?.redirectUrl}
-      />
+      <>
+        {isDemo && <PortalDemoBanner />}
+        <InstantTemplate
+          siteId={config.siteId}
+          mac={unifiParams?.mac || null}
+          successUrl={unifiParams?.redirectUrl}
+        />
+      </>
     );
   }
 
