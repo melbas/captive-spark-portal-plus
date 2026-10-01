@@ -9,16 +9,30 @@ import { toast } from 'sonner';
 import { CheckCircle, ArrowRight, Mail, Phone, AlertCircle, Loader2 } from 'lucide-react';
 import { useLanguage } from "@/components/LanguageContext";
 import CountryCodeSelector, { countryCodes } from "@/components/CountryCodeSelector";
-import { 
+import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot
 } from "@/components/ui/input-otp";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { wifiPortalService } from "@/services/wifi-portal-service";
+import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * P0 sécurité (AUDIT-BACKEND) : l'OTP est généré, stocké et vérifié UNIQUEMENT
+ * côté serveur via les Edge Functions `send-otp` / `verify-otp`.
+ * Aucun code n'est généré, stocké ni comparé dans le navigateur (fail-closed).
+ * La vérification passe par `verify-otp` via user-service.createUser, appelé
+ * par le parent (Index.handleAuth) avec le code saisi.
+ *
+ * siteId : requis par send-otp/verify-otp (rate limiting + stockage OTP
+ * scoped au site). Le portail démo n'a pas encore de contexte site branché
+ * (Index.tsx ne reçoit pas de siteId) — identifiant de démo explicite en
+ * attendant l'intégration Portal.tsx → AuthBox (suivi: contexte site portail).
+ */
+const DEMO_SITE_ID = 'demo-site';
 
 interface AuthBoxProps {
-  onAuth: (method: 'sms' | 'email', data: AuthData) => void;
+  onAuth: (method: 'sms' | 'email', data: AuthData) => void | Promise<void>;
 }
 
 interface AuthData {
@@ -38,25 +52,26 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
   const [authMethod, setAuthMethod] = useState<'sms' | 'email'>('sms');
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
-  
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
+
   // Get the current country example based on selected code
   const getCurrentCountryExample = () => {
     const country = countryCodes.find(c => c.code === countryCode);
     return country ? country.example : t("localFormat");
   };
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
   // Basic validation functions
   const isValidPhoneNumber = (phone: string): boolean => {
     // Simple validation - phone should be numbers only and at least 6 digits
@@ -64,154 +79,98 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
     const digitsOnly = phone.replace(/\D/g, '');
     return digitsOnly.length >= 6 && digitsOnly.length <= 15;
   };
-  
+
   const isValidEmail = (email: string): boolean => {
     // Basic email validation
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
-  
+
+  // Envoi du code : Edge Function `send-otp` (génération + stockage serveur,
+  // rate limiting 3/h/identifiant + 10/j/IP). Le front ne manipule jamais le code.
   const handleSendOtp = async (method: 'sms' | 'email') => {
-    if (method === 'sms') {
-      setIsSendingCode(true);
-      
-      try {
+    setIsSendingCode(true);
+    setAuthError('');
+
+    try {
+      let payload: { phone?: string; email?: string; siteId: string };
+
+      if (method === 'sms') {
         if (!phoneNumber) {
           setPhoneError(t('fillRequired'));
           return;
         }
-        
         if (!isValidPhoneNumber(phoneNumber)) {
           setPhoneError(t('enterValidCode'));
           return;
         }
-        
-        // Format the full phone number
-        const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
-        
-        // Send the verification code
-        const result = await wifiPortalService.sendVerificationCode(fullPhoneNumber);
-        
-        if (result.success) {
-          toast.success(`${t("verificationCodeSent")} ${t("toPhone")}`);
-          // Store the code for debug purposes
-          setVerificationCode(result.code);
-          setAuthMethod(method);
-          setIsVerifying(true);
-          
-          // Start the countdown for resend
-          setResendCountdown(60); // 60 seconds
-        } else {
-          // Even if SMS fails in development, allow continuing
-          console.warn("SMS sending failed, but continuing in demo mode");
-          toast.error(t("errorSendingCode"));
-          setAuthError(t("errorSendingCode"));
-          setAuthMethod(method);
-          setIsVerifying(true);
-        }
-      } catch (error) {
-        console.error("Error sending OTP:", error);
-        toast.error(t("errorSendingCode"));
-        setAuthError(t("errorSendingCode"));
-      } finally {
-        setIsSendingCode(false);
-      }
-    } else if (method === 'email') {
-      setIsSendingCode(true);
-      
-      try {
+        payload = { phone: `${countryCode}${phoneNumber.replace(/\s/g, '')}`, siteId: DEMO_SITE_ID };
+      } else {
         if (!email) {
           setEmailError(t('fillRequired'));
           return;
         }
-        
         if (!isValidEmail(email)) {
           setEmailError(t('enterValidCode'));
           return;
         }
-        
-        // In a real implementation, this would send an email
-        // For now, simulate email sending
-        setTimeout(() => {
-          toast.success(`${t("verificationCodeSent")} ${t("toEmail")}`);
-          // For demo, use a random code
-          const demoCode = Math.floor(100000 + Math.random() * 900000).toString();
-          setVerificationCode(demoCode);
-          setAuthMethod(method);
-          setIsVerifying(true);
-          
-          // Start the countdown for resend
-          setResendCountdown(60); // 60 seconds
-        }, 1000);
-      } catch (error) {
-        console.error("Error sending email:", error);
+        payload = { email: email.trim(), siteId: DEMO_SITE_ID };
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-otp', { body: payload });
+
+      // Fail-closed : toute erreur (réseau, 429 rate limit, 5xx) bloque le
+      // passage à l'écran de saisie OTP. Aucun fallback côté client.
+      if (error || !data?.success) {
+        console.error("send-otp a échoué:", error || data);
         toast.error(t("errorSendingCode"));
         setAuthError(t("errorSendingCode"));
-      } finally {
-        setIsSendingCode(false);
+        return;
       }
+
+      toast.success(method === 'sms'
+        ? `${t("verificationCodeSent")} ${t("toPhone")}`
+        : `${t("verificationCodeSent")} ${t("toEmail")}`);
+      setAuthMethod(method);
+      setOtp('');
+      setIsVerifying(true);
+      setResendCountdown(60); // 60 seconds
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast.error(t("errorSendingCode"));
+      setAuthError(t("errorSendingCode"));
+    } finally {
+      setIsSendingCode(false);
     }
   };
-  
+
   const handleResendCode = () => {
     if ((resendCountdown > 0)) return;
     handleSendOtp(authMethod);
   };
-  
+
+  // Vérification : AUCUNE comparaison locale. Le code saisi est transmis au
+  // parent (Index.handleAuth → wifiPortalService.createUser) qui appelle la
+  // Edge Function `verify-otp` : seule la réponse serveur décide du succès.
   const handleVerifyOtp = async () => {
     if (!otp || otp.length < 6) {
       toast.error(t("enterValidCode"));
       return;
     }
-    
+
     setIsVerifyingCode(true);
     setAuthError('');
-    
+
     try {
-      if (authMethod === 'sms') {
-        // Format the full phone number
-        const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
-        
-        // Verify the code using the service
-        const result = wifiPortalService.verifyCode(fullPhoneNumber, otp);
-        
-        if (result.success) {
-          toast.success(t("verificationSuccessful"));
-          await onAuth('sms', { 
-            phoneNumber: fullPhoneNumber,
-            code: otp
-          });
-        } else {
-          // Handle different error types
-          let errorMessage = t("invalidCode");
-          
-          if (result.error === 'code_expired') {
-            errorMessage = t("codeExpired") || "Le code a expiré";
-          } else if (result.error === 'max_attempts_reached') {
-            errorMessage = t("maxAttemptsReached") || "Nombre maximum de tentatives atteint";
-          } else if (result.attemptsRemaining !== undefined && result.attemptsRemaining > 0) {
-            errorMessage = `${t("invalidCode")} (${result.attemptsRemaining} ${t("attemptsRemaining") || "tentatives restantes"})`;
-          }
-          
-          toast.error(errorMessage);
-          setAuthError(errorMessage);
-        }
-      } else {
-        // For email, in this demo we just check against the fixed code
-        if (otp === verificationCode) {
-          toast.success(t("verificationSuccessful"));
-          await onAuth('email', { 
-            email: email,
-            code: otp
-          });
-        } else {
-          toast.error(t("invalidCode"));
-          setAuthError(t("invalidCode"));
-        }
-      }
+      const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
+      await onAuth(authMethod, authMethod === 'sms'
+        ? { phoneNumber: fullPhoneNumber, code: otp }
+        : { email: email.trim(), code: otp });
+      toast.success(t("verificationSuccessful"));
     } catch (error) {
-      console.error("Authentication error:", error);
-      setAuthError(t("authError"));
-      toast.error(t("authError"));
+      // verify-otp (côté serveur) a rejeté le code / l'identifiant.
+      console.error("verify-otp a refusé le code:", error);
+      toast.error(t("invalidCode"));
+      setAuthError(t("invalidCode"));
     } finally {
       setIsVerifyingCode(false);
     }
@@ -247,13 +206,13 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                 <div className="space-y-2">
                   <Label htmlFor="phone">{t("phoneNumber")}</Label>
                   <div className="flex space-x-2">
-                    <CountryCodeSelector 
+                    <CountryCodeSelector
                       value={countryCode}
                       onChange={setCountryCode}
                     />
                     <div className="relative flex-1">
-                      <Input 
-                        id="phone" 
+                      <Input
+                        id="phone"
                         placeholder={getCurrentCountryExample()}
                         className={`pl-2 ${phoneError ? 'border-red-500' : ''}`}
                         value={phoneNumber}
@@ -269,8 +228,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                     {t("example")}: {getCurrentCountryExample()}
                   </p>
                 </div>
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={() => handleSendOtp('sms')}
                   disabled={isSendingCode}
                 >
@@ -288,10 +247,10 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                   <Label htmlFor="email">{t("emailAddress")}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="your@email.com" 
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
                       className={`pl-10 ${emailError ? 'border-red-500' : ''}`}
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
@@ -302,8 +261,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                     <p className="text-xs text-red-500">{emailError}</p>
                   )}
                 </div>
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={() => handleSendOtp('email')}
                   disabled={isSendingCode}
                 >
@@ -322,8 +281,8 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">{t("verificationCode")}</CardTitle>
             <CardDescription className="text-center">
-              {authMethod === 'sms' 
-                ? `${t("enterCodeSentTo")} ${countryCode} ${phoneNumber}` 
+              {authMethod === 'sms'
+                ? `${t("enterCodeSentTo")} ${countryCode} ${phoneNumber}`
                 : `${t("enterCodeSentTo")} ${email}`}
             </CardDescription>
           </CardHeader>
@@ -352,19 +311,19 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
                 <p className="text-xs text-muted-foreground">
                   {t("useCodeForDemo")}
                 </p>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleResendCode}
                   disabled={(resendCountdown > 0) || isSendingCode}
                 >
-                  {(resendCountdown > 0) 
-                    ? `${t("resendIn")} ${resendCountdown}s` 
+                  {(resendCountdown > 0)
+                    ? `${t("resendIn")} ${resendCountdown}s`
                     : t("resendCode")}
                 </Button>
               </div>
             </div>
-            <Button 
+            <Button
               className="w-full"
               onClick={handleVerifyOtp}
               disabled={isVerifyingCode || !otp || otp.length < 6}
@@ -377,9 +336,9 @@ const AuthBox: React.FC<AuthBoxProps> = ({ onAuth }) => {
             </Button>
           </CardContent>
           <CardFooter>
-            <Button 
-              variant="link" 
-              className="w-full" 
+            <Button
+              variant="link"
+              className="w-full"
               onClick={() => {
                 setIsVerifying(false);
                 setAuthError('');
