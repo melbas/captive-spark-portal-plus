@@ -89,7 +89,10 @@
 }
 .sct-hero h1 .accent {
   display: block;
-  background: linear-gradient(100deg, #4fc3f7, #f5b400 55%, #009b48);
+  /* 2 stops (bleu site → or) : le vert en dernier stop tombait sous 4.5:1
+     sur #060b14 (audit lisibilité). Dakar 2026 utilise officiellement des
+     dégradés — le principe reste, en version lisible. */
+  background: linear-gradient(100deg, #4fc3f7, #f5b400 60%, #ffd54f);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -228,17 +231,20 @@
   justify-content: center;
 }
 .sct-rings span {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   border: 2.5px solid;
-  opacity: 0.9;
+  opacity: 0.75;
 }
-.sct-rings span:nth-child(1) { border-color: #4fc3f7; }
-.sct-rings span:nth-child(2) { border-color: #f5f5f5; margin-top: 7px; }
-.sct-rings span:nth-child(3) { border-color: #e57373; }
-.sct-rings span:nth-child(4) { border-color: #ffd54f; margin-top: 7px; }
-.sct-rings span:nth-child(5) { border-color: #81c784; }
+/* Couleurs officielles des anneaux, désaturées pour rester sobres
+   (usage institutionnel — les anneaux pleins couleur TV sont réservés
+   aux contextes broadcast ; ici on reste distincts et discrets). */
+.sct-rings span:nth-child(1) { border-color: #5aa9d6; }
+.sct-rings span:nth-child(2) { border-color: #c9cdd2; margin-top: 7px; }
+.sct-rings span:nth-child(3) { border-color: #c96a6a; }
+.sct-rings span:nth-child(4) { border-color: #d4b054; margin-top: 7px; }
+.sct-rings span:nth-child(5) { border-color: #6fae7c; }
 
 /* ---- Écran connecté ---- */
 .sct-on {
@@ -291,7 +297,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #4fc3f7, #f5b400, #009b48);
+  background: linear-gradient(90deg, #4fc3f7, #ffd54f);
   transition: width 1s linear;
 }
 .sct-on .pass {
