@@ -904,6 +904,7 @@ export type Database = {
           logo_url: string | null
           name: string
           portal_slug: string
+          portal_template: string | null
           primary_color: string | null
           reseller_id: string | null
           type: string | null
@@ -918,6 +919,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           portal_slug: string
+          portal_template?: string | null
           primary_color?: string | null
           reseller_id?: string | null
           type?: string | null
@@ -932,6 +934,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           portal_slug?: string
+          portal_template?: string | null
           primary_color?: string | null
           reseller_id?: string | null
           type?: string | null

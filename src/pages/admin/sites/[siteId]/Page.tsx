@@ -33,7 +33,7 @@ export default function SiteDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sites')
-        .select('id, name, portal_slug, logo_url, primary_color, welcome_msg, is_active')
+        .select('id, name, portal_slug, logo_url, primary_color, welcome_msg, is_active, portal_template')
         .eq('id', siteId)
         .single();
       if (error) throw error;

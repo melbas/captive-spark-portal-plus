@@ -21,7 +21,28 @@ export interface SiteFormData {
   primary_color: string;
   welcome_msg: string;
   is_active: boolean;
+  /** Template de portail choisi : 'instant' | 'scene' | 'echange'. */
+  portal_template?: string | null;
 }
+
+/** Templates de portail proposés (migration 20260930000000). */
+export const PORTAL_TEMPLATES = [
+  {
+    value: 'instant',
+    label: 'Instant',
+    description: 'Portail actuel : forfaits, paiement, jeux. Défaut.',
+  },
+  {
+    value: 'scene',
+    label: 'Scène',
+    description: 'Événementiel : splash sponsor, pass journalier, jauge de temps.',
+  },
+  {
+    value: 'echange',
+    label: 'Échange',
+    description: 'PremiumConnect : échange contre données, jauge en héros (bientôt).',
+  },
+] as const;
 
 interface SiteFormProps {
   site: SiteFormData;
@@ -37,6 +58,7 @@ export default function SiteForm({ site, canEdit = true, onSaved }: SiteFormProp
     primary_color: site.primary_color ?? '#5B4DFF',
     welcome_msg: site.welcome_msg ?? '',
     is_active: site.is_active ?? true,
+    portal_template: site.portal_template ?? 'instant',
   });
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
@@ -52,6 +74,7 @@ export default function SiteForm({ site, canEdit = true, onSaved }: SiteFormProp
           primary_color: values.primary_color,
           welcome_msg: values.welcome_msg,
           is_active: values.is_active,
+          portal_template: values.portal_template,
         })
         .eq('id', site.id);
       if (error) throw error;
@@ -111,6 +134,26 @@ export default function SiteForm({ site, canEdit = true, onSaved }: SiteFormProp
           disabled={!canEdit}
           onChange={(e) => set('welcome_msg', e.target.value)}
         />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="site-template">Template du portail</Label>
+        <select
+          id="site-template"
+          value={form.portal_template}
+          disabled={!canEdit}
+          onChange={(e) => set('portal_template', e.target.value)}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {PORTAL_TEMPLATES.map((tpl) => (
+            <option key={tpl.value} value={tpl.value}>
+              {tpl.label} — {tpl.description}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Le template choisit l'expérience du portail public pour ce site.
+        </p>
       </div>
 
       <div className="flex items-center justify-between rounded-xl border border-border p-4">

@@ -1,5 +1,5 @@
-import { test, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const updateEqMock = vi.fn(() => Promise.resolve({ error: null }));
@@ -39,6 +39,8 @@ beforeEach(() => {
   updateEqMock.mockClear();
 });
 
+afterEach(cleanup);
+
 test('submits the form and updates the site with the edited fields', async () => {
   renderForm();
 
@@ -67,9 +69,44 @@ test('submits the form and updates the site with the edited fields', async () =>
     primary_color: '#FF8800',
     welcome_msg: 'Karibou !',
     is_active: true,
+    portal_template: 'instant',
   });
   expect(updateEqMock).toHaveBeenCalledWith('id', 'site-1');
   await waitFor(() => {
     expect(screen.getByText(/site enregistré/i)).toBeInTheDocument();
   });
+});
+
+test('template select offers the 3 templates and persists the chosen value', async () => {
+  renderForm();
+
+  const select = screen.getByLabelText(/template du portail/i) as HTMLSelectElement;
+  const values = Array.from(select.options).map((o) => o.value);
+  expect(values).toEqual(['instant', 'scene', 'echange']);
+  expect(select.value).toBe('instant');
+
+  // Choisir « scene » puis enregistrer : la mutation porte portal_template.
+  fireEvent.change(select, { target: { value: 'scene' } });
+  expect(select.value).toBe('scene');
+
+  fireEvent.click(screen.getByRole('button', { name: /enregistrer/i }));
+
+  await waitFor(() => {
+    expect(updateMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ portal_template: 'scene' }),
+    );
+  });
+  expect(updateEqMock).toHaveBeenCalledWith('id', 'site-1');
+});
+
+test('initializes the select from site.portal_template when provided', () => {
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <SiteForm site={{ ...defaultSite, portal_template: 'scene' }} canEdit />
+    </QueryClientProvider>,
+  );
+
+  expect(
+    (screen.getByLabelText(/template du portail/i) as HTMLSelectElement).value,
+  ).toBe('scene');
 });

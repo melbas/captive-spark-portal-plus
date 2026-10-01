@@ -10,7 +10,16 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from '@/components/LanguageContext';
 
-const siteRow = {
+const siteRow: {
+  id: string;
+  name: string;
+  portal_slug: string;
+  logo_url: string;
+  primary_color: string | null;
+  welcome_msg: string | null;
+  is_active: boolean;
+  portal_template?: string | null;
+} = {
   id: 'site-1',
   name: 'Hôtel Test',
   portal_slug: 'hotel-test',
@@ -20,30 +29,28 @@ const siteRow = {
   is_active: true,
 };
 
-const portalConfigRow = {
-  id: 'cfg-1',
-  site_id: 'site-1',
-  portal_name: 'Portail Hôtel Test',
-  logo_url: null,
-  theme_color: null,
-  welcome_message: 'Bienvenue au Hôtel Test !',
-  portal_status: 'active',
-};
-
-const results: Record<string, { data: unknown; error: unknown }> = {
-  sites: { data: siteRow, error: null },
-  wifi_plans: { data: [], error: null },
-  portal_config: { data: portalConfigRow, error: null },
-  portal_customizations: { data: [], error: null },
-  portal_enabled_modules: { data: [], error: null },
-  portal_modules: { data: [], error: null },
-  ad_videos: { data: [], error: null },
-  games: { data: [], error: null },
-  quizzes: { data: [], error: null },
-  rewards: { data: [], error: null },
-};
-
-function chainFor(name: string) {
+/**
+ * Surcharge par test du site renvoyé par sites (routeur de templates).
+ * makeChain() recrée la chaîne à chaque appel : les mutations par test ne
+ * fuient pas dans les suivants.
+ */
+let currentSiteRow = siteRow;
+function makeChain(name: string) {
+  const results: Record<string, { data: unknown; error: unknown }> = {
+    sites: { data: currentSiteRow, error: null },
+    wifi_plans: { data: [], error: null },
+    portal_config: {
+      data: {
+        id: 'cfg-1',
+        portal_name: 'Portail Hôtel Test',
+        logo_url: null,
+        theme_color: null,
+        welcome_message: 'Bienvenue au Hôtel Test !',
+        portal_status: 'active',
+      },
+      error: null,
+    },
+  };
   const p = Promise.resolve(results[name] ?? { data: [], error: null });
   const chain = {
     select: () => chain,
@@ -60,7 +67,21 @@ function chainFor(name: string) {
 }
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: (t: string) => chainFor(t) },
+  supabase: { from: (t: string) => makeChain(t) },
+}));
+
+// Templates labo mockés en tête de fichier (hoisting) : les tests du routeur
+// assertent le routage/les props, pas le rendu DB des templates eux-mêmes
+// (couvert par leurs propres suites).
+vi.mock('@/components/portal-templates/instant/InstantTemplate', () => ({
+  default: ({ siteId }: { siteId: string }) => (
+    <div data-testid="instant-template">{siteId}</div>
+  ),
+}));
+vi.mock('@/components/portal-templates/echange/EchangeTemplate', () => ({
+  default: ({ siteId }: { siteId?: string }) => (
+    <div data-testid="echange-template">{siteId}</div>
+  ),
 }));
 
 import Portal from './Portal';
@@ -94,4 +115,50 @@ test('affiche le message de bienvenue publié (portal_config.welcome_message)', 
   renderPortal();
   // site.welcome_msg est null : seul portal_config.welcome_message peut fournir ce texte.
   expect(await screen.findByText('Bienvenue au Hôtel Test !')).toBeInTheDocument();
+});
+
+// ---- Routeur de templates (migration 20260930000000) ----
+
+test('portal_template "scene" rend le template Scène', async () => {
+  currentSiteRow = { ...siteRow, portal_template: 'scene' };
+  renderPortal();
+
+  // Le splash scène remplace le parcours instant : badge « WiFi officiel »
+  // présent, CTA « Rejoindre » présent, CTA parcours instant absent.
+  expect(await screen.findByText('WiFi officiel')).toBeInTheDocument();
+  expect(screen.getByTestId('scene-join')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /se connecter|wifi gratuit/i })).not.toBeInTheDocument();
+});
+
+test('portal_template null garde le portail actuel (fallback legacy)', async () => {
+  currentSiteRow = { ...siteRow, portal_template: null };
+  renderPortal();
+
+  // Le parcours legacy (WifiPortalContainer) affiche le message portal_config ;
+  // aucun splash scène et PAS de InstantTemplate (fallback ≠ choix explicite).
+  expect(await screen.findByText('Bienvenue au Hôtel Test !')).toBeInTheDocument();
+  expect(screen.queryByText('WiFi officiel')).not.toBeInTheDocument();
+});
+
+test('portal_template inconnu retombe sur le portail actuel', async () => {
+  currentSiteRow = { ...siteRow, portal_template: 'mystere' };
+  renderPortal();
+
+  expect(await screen.findByText('Bienvenue au Hôtel Test !')).toBeInTheDocument();
+  expect(screen.queryByText('WiFi officiel')).not.toBeInTheDocument();
+});
+
+test('portal_template "echange" et "instant" routent vers les templates du labo', async () => {
+  // Templates mockés en tête de fichier : le siteId reçu en prop est affiché,
+  // ce qui prouve le routage ET la transmission des props.
+  currentSiteRow = { ...siteRow, portal_template: 'echange' };
+  renderPortal();
+  expect(await screen.findByTestId('echange-template')).toHaveTextContent('site-1');
+  expect(screen.queryByText('WiFi officiel')).not.toBeInTheDocument();
+  cleanup();
+
+  currentSiteRow = { ...siteRow, portal_template: 'instant' };
+  renderPortal();
+  expect(await screen.findByTestId('instant-template')).toHaveTextContent('site-1');
+  cleanup();
 });

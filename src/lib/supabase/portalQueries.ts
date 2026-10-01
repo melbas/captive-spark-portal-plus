@@ -18,6 +18,10 @@ export interface PortalSite {
   logo_url: string | null;
   primary_color: string | null;
   welcome_msg: string | null;
+  /** Template de portail choisi (instant | scene | echange) — migration 20260930000000. */
+  portal_template?: string | null;
+  /** Champ libre `sites.location` — sert de lieu d'événement au template scène. */
+  location?: string | null;
 }
 
 export interface PortalPlan {
@@ -110,7 +114,7 @@ function table(name: string): LooseTable {
 /** Site actif par slug du portail (policy lecture anon attendue — voir notes Task 17). */
 export async function getSiteBySlug(slug: string): Promise<PortalSite> {
   const { data, error } = (await table('sites')
-    .select('id, name, portal_slug, logo_url, primary_color, welcome_msg')
+    .select('id, name, portal_slug, logo_url, primary_color, welcome_msg, portal_template, location')
     .eq('portal_slug', slug)
     .eq('is_active', true)
     .single()) as unknown as QueryResult<PortalSite>;
