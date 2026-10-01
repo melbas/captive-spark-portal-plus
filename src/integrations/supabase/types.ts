@@ -84,141 +84,6 @@ export type Database = {
         }
         Relationships: []
       }
-      ad_videos: {
-        Row: {
-          active: boolean | null
-          created_at: string | null
-          id: string
-          min_view_percentage: number | null
-          priority: number | null
-          skip_after_seconds: number | null
-          thumbnail_url: string | null
-          title: string
-          updated_at: string | null
-          video_url: string
-        }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          id?: string
-          min_view_percentage?: number | null
-          priority?: number | null
-          skip_after_seconds?: number | null
-          thumbnail_url?: string | null
-          title: string
-          updated_at?: string | null
-          video_url: string
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          id?: string
-          min_view_percentage?: number | null
-          priority?: number | null
-          skip_after_seconds?: number | null
-          thumbnail_url?: string | null
-          title?: string
-          updated_at?: string | null
-          video_url?: string
-        }
-        Relationships: []
-      }
-      admin_audit_logs: {
-        Row: {
-          action_description: string
-          action_type: string
-          admin_user_id: string
-          created_at: string | null
-          criticality: string | null
-          id: string
-          ip_address: unknown
-          new_data: Json | null
-          previous_data: Json | null
-          request_id: string | null
-          session_id: string | null
-          target_entity: string | null
-          target_id: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          action_description: string
-          action_type: string
-          admin_user_id: string
-          created_at?: string | null
-          criticality?: string | null
-          id?: string
-          ip_address?: unknown
-          new_data?: Json | null
-          previous_data?: Json | null
-          request_id?: string | null
-          session_id?: string | null
-          target_entity?: string | null
-          target_id?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          action_description?: string
-          action_type?: string
-          admin_user_id?: string
-          created_at?: string | null
-          criticality?: string | null
-          id?: string
-          ip_address?: unknown
-          new_data?: Json | null
-          previous_data?: Json | null
-          request_id?: string | null
-          session_id?: string | null
-          target_entity?: string | null
-          target_id?: string | null
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
-      admin_sessions: {
-        Row: {
-          admin_user_id: string
-          ended_at: string | null
-          id: string
-          ip_address: unknown
-          is_active: boolean | null
-          last_activity: string | null
-          location_data: Json | null
-          session_duration_minutes: number | null
-          session_token: string
-          started_at: string | null
-          total_actions: number | null
-          user_agent: string | null
-        }
-        Insert: {
-          admin_user_id: string
-          ended_at?: string | null
-          id?: string
-          ip_address?: unknown
-          is_active?: boolean | null
-          last_activity?: string | null
-          location_data?: Json | null
-          session_duration_minutes?: number | null
-          session_token: string
-          started_at?: string | null
-          total_actions?: number | null
-          user_agent?: string | null
-        }
-        Update: {
-          admin_user_id?: string
-          ended_at?: string | null
-          id?: string
-          ip_address?: unknown
-          is_active?: boolean | null
-          last_activity?: string | null
-          location_data?: Json | null
-          session_duration_minutes?: number | null
-          session_token?: string
-          started_at?: string | null
-          total_actions?: number | null
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
       ai_providers_config: {
         Row: {
           api_endpoint: string | null
@@ -348,45 +213,6 @@ export type Database = {
         }
         Relationships: []
       }
-      auth_funnel_metrics: {
-        Row: {
-          auth_method: string
-          created_at: string
-          failure_count: number
-          id: string
-          site_id: string | null
-          stage: string
-          success_count: number
-          success_rate: number
-          timestamp: string
-          total_attempts: number
-        }
-        Insert: {
-          auth_method: string
-          created_at?: string
-          failure_count?: number
-          id?: string
-          site_id?: string | null
-          stage: string
-          success_count?: number
-          success_rate?: number
-          timestamp?: string
-          total_attempts?: number
-        }
-        Update: {
-          auth_method?: string
-          created_at?: string
-          failure_count?: number
-          id?: string
-          site_id?: string | null
-          stage?: string
-          success_count?: number
-          success_rate?: number
-          timestamp?: string
-          total_attempts?: number
-        }
-        Relationships: []
-      }
       auth_otp_config: {
         Row: {
           created_at: string | null
@@ -413,98 +239,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      }
-      chat_analytics: {
-        Row: {
-          avg_response_time_ms: number | null
-          created_at: string | null
-          date: string | null
-          id: string
-          popular_questions: Json | null
-          provider_usage: Json | null
-          satisfaction_avg: number | null
-          total_conversations: number | null
-          total_cost: number | null
-          total_messages: number | null
-        }
-        Insert: {
-          avg_response_time_ms?: number | null
-          created_at?: string | null
-          date?: string | null
-          id?: string
-          popular_questions?: Json | null
-          provider_usage?: Json | null
-          satisfaction_avg?: number | null
-          total_conversations?: number | null
-          total_cost?: number | null
-          total_messages?: number | null
-        }
-        Update: {
-          avg_response_time_ms?: number | null
-          created_at?: string | null
-          date?: string | null
-          id?: string
-          popular_questions?: Json | null
-          provider_usage?: Json | null
-          satisfaction_avg?: number | null
-          total_conversations?: number | null
-          total_cost?: number | null
-          total_messages?: number | null
-        }
-        Relationships: []
-      }
-      chat_conversations: {
-        Row: {
-          context_data: Json | null
-          conversation_type: string | null
-          created_at: string | null
-          id: string
-          primary_provider_used: string | null
-          session_id: string | null
-          status: string | null
-          total_cost: number | null
-          total_messages: number | null
-          updated_at: string | null
-          user_id: string | null
-          user_satisfaction_score: number | null
-        }
-        Insert: {
-          context_data?: Json | null
-          conversation_type?: string | null
-          created_at?: string | null
-          id?: string
-          primary_provider_used?: string | null
-          session_id?: string | null
-          status?: string | null
-          total_cost?: number | null
-          total_messages?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-          user_satisfaction_score?: number | null
-        }
-        Update: {
-          context_data?: Json | null
-          conversation_type?: string | null
-          created_at?: string | null
-          id?: string
-          primary_provider_used?: string | null
-          session_id?: string | null
-          status?: string | null
-          total_cost?: number | null
-          total_messages?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-          user_satisfaction_score?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_conversations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "wifi_users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       chat_knowledge_base: {
         Row: {
@@ -548,104 +282,6 @@ export type Database = {
         }
         Relationships: []
       }
-      chat_messages: {
-        Row: {
-          ai_provider: string | null
-          confidence_score: number | null
-          content: string
-          conversation_id: string
-          cost: number | null
-          created_at: string | null
-          id: string
-          metadata: Json | null
-          response_time_ms: number | null
-          sender_type: string
-          tokens_used: number | null
-        }
-        Insert: {
-          ai_provider?: string | null
-          confidence_score?: number | null
-          content: string
-          conversation_id: string
-          cost?: number | null
-          created_at?: string | null
-          id?: string
-          metadata?: Json | null
-          response_time_ms?: number | null
-          sender_type: string
-          tokens_used?: number | null
-        }
-        Update: {
-          ai_provider?: string | null
-          confidence_score?: number | null
-          content?: string
-          conversation_id?: string
-          cost?: number | null
-          created_at?: string | null
-          id?: string
-          metadata?: Json | null
-          response_time_ms?: number | null
-          sender_type?: string
-          tokens_used?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "chat_conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      customer_satisfaction_metrics: {
-        Row: {
-          acquisition_channel: string | null
-          created_at: string
-          csat_score: number | null
-          fcr_rate: number
-          id: string
-          metric_date: string
-          nps_score: number | null
-          resolved_first_contact: number
-          segment: string | null
-          support_tickets: number
-          survey_responses: number
-          ttfa_median_hours: number | null
-          ttfa_p95_hours: number | null
-        }
-        Insert: {
-          acquisition_channel?: string | null
-          created_at?: string
-          csat_score?: number | null
-          fcr_rate?: number
-          id?: string
-          metric_date?: string
-          nps_score?: number | null
-          resolved_first_contact?: number
-          segment?: string | null
-          support_tickets?: number
-          survey_responses?: number
-          ttfa_median_hours?: number | null
-          ttfa_p95_hours?: number | null
-        }
-        Update: {
-          acquisition_channel?: string | null
-          created_at?: string
-          csat_score?: number | null
-          fcr_rate?: number
-          id?: string
-          metric_date?: string
-          nps_score?: number | null
-          resolved_first_contact?: number
-          segment?: string | null
-          support_tickets?: number
-          survey_responses?: number
-          ttfa_median_hours?: number | null
-          ttfa_p95_hours?: number | null
-        }
-        Relationships: []
-      }
       events: {
         Row: {
           created_at: string | null
@@ -684,66 +320,6 @@ export type Database = {
           },
         ]
       }
-      financial_kpis: {
-        Row: {
-          arpu: number
-          arpu_b2b: number
-          arpu_b2c: number
-          churn_rate_customers: number
-          churn_rate_revenue: number
-          churned_customers: number
-          created_at: string
-          id: string
-          metric_date: string
-          mrr_churn: number
-          mrr_contraction: number
-          mrr_expansion: number
-          mrr_new: number
-          mrr_total: number
-          new_customers: number
-          nrr_percentage: number
-          total_customers: number
-        }
-        Insert: {
-          arpu?: number
-          arpu_b2b?: number
-          arpu_b2c?: number
-          churn_rate_customers?: number
-          churn_rate_revenue?: number
-          churned_customers?: number
-          created_at?: string
-          id?: string
-          metric_date?: string
-          mrr_churn?: number
-          mrr_contraction?: number
-          mrr_expansion?: number
-          mrr_new?: number
-          mrr_total?: number
-          new_customers?: number
-          nrr_percentage?: number
-          total_customers?: number
-        }
-        Update: {
-          arpu?: number
-          arpu_b2b?: number
-          arpu_b2c?: number
-          churn_rate_customers?: number
-          churn_rate_revenue?: number
-          churned_customers?: number
-          created_at?: string
-          id?: string
-          metric_date?: string
-          mrr_churn?: number
-          mrr_contraction?: number
-          mrr_expansion?: number
-          mrr_new?: number
-          mrr_total?: number
-          new_customers?: number
-          nrr_percentage?: number
-          total_customers?: number
-        }
-        Relationships: []
-      }
       games: {
         Row: {
           active: boolean | null
@@ -755,6 +331,7 @@ export type Database = {
           id: string
           minutes_reward: number | null
           points_reward: number | null
+          site_id: string | null
           title: string
           updated_at: string | null
         }
@@ -768,6 +345,7 @@ export type Database = {
           id?: string
           minutes_reward?: number | null
           points_reward?: number | null
+          site_id?: string | null
           title: string
           updated_at?: string | null
         }
@@ -781,129 +359,19 @@ export type Database = {
           id?: string
           minutes_reward?: number | null
           points_reward?: number | null
+          site_id?: string | null
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
-      }
-      hardware_integrations: {
-        Row: {
-          api_password_enc: string | null
-          api_username: string | null
-          brand: string | null
-          controller_url: string
-          id: string
-          is_active: boolean | null
-          last_test_msg: string | null
-          last_test_ok: boolean | null
-          last_tested_at: string | null
-          site_id: string | null
-          unifi_site_id: string | null
-        }
-        Insert: {
-          api_password_enc?: string | null
-          api_username?: string | null
-          brand?: string | null
-          controller_url: string
-          id?: string
-          is_active?: boolean | null
-          last_test_msg?: string | null
-          last_test_ok?: boolean | null
-          last_tested_at?: string | null
-          site_id?: string | null
-          unifi_site_id?: string | null
-        }
-        Update: {
-          api_password_enc?: string | null
-          api_username?: string | null
-          brand?: string | null
-          controller_url?: string
-          id?: string
-          is_active?: boolean | null
-          last_test_msg?: string | null
-          last_test_ok?: boolean | null
-          last_tested_at?: string | null
-          site_id?: string | null
-          unifi_site_id?: string | null
-        }
         Relationships: [
           {
-            foreignKeyName: "hardware_integrations_site_id_fkey"
+            foreignKeyName: "games_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
         ]
-      }
-      incidents_tracking: {
-        Row: {
-          affected_sites: string[] | null
-          affected_users_count: number | null
-          assigned_to: string | null
-          closed_at: string | null
-          created_at: string
-          description: string | null
-          eta: string | null
-          first_response_at: string | null
-          id: string
-          impact_level: string
-          incident_id: string
-          last_update_at: string
-          mttr_minutes: number | null
-          resolved_at: string | null
-          severity: string
-          sla_breached: boolean
-          sla_target_minutes: number
-          started_at: string
-          status: string
-          title: string
-        }
-        Insert: {
-          affected_sites?: string[] | null
-          affected_users_count?: number | null
-          assigned_to?: string | null
-          closed_at?: string | null
-          created_at?: string
-          description?: string | null
-          eta?: string | null
-          first_response_at?: string | null
-          id?: string
-          impact_level: string
-          incident_id: string
-          last_update_at?: string
-          mttr_minutes?: number | null
-          resolved_at?: string | null
-          severity: string
-          sla_breached?: boolean
-          sla_target_minutes?: number
-          started_at?: string
-          status?: string
-          title: string
-        }
-        Update: {
-          affected_sites?: string[] | null
-          affected_users_count?: number | null
-          assigned_to?: string | null
-          closed_at?: string | null
-          created_at?: string
-          description?: string | null
-          eta?: string | null
-          first_response_at?: string | null
-          id?: string
-          impact_level?: string
-          incident_id?: string
-          last_update_at?: string
-          mttr_minutes?: number | null
-          resolved_at?: string | null
-          severity?: string
-          sla_breached?: boolean
-          sla_target_minutes?: number
-          started_at?: string
-          status?: string
-          title?: string
-        }
-        Relationships: []
       }
       loyalty_levels: {
         Row: {
@@ -932,173 +400,26 @@ export type Database = {
         }
         Relationships: []
       }
-      payment_methods: {
+      otp_attempts: {
         Row: {
-          active: boolean | null
-          commission_percentage: number | null
-          config: Json | null
-          created_at: string | null
+          attempted_at: string
           id: string
-          name: string
-          provider: string
-          updated_at: string | null
+          identifier: string
+          ip_address: string
         }
         Insert: {
-          active?: boolean | null
-          commission_percentage?: number | null
-          config?: Json | null
-          created_at?: string | null
+          attempted_at?: string
           id?: string
-          name: string
-          provider: string
-          updated_at?: string | null
+          identifier: string
+          ip_address: string
         }
         Update: {
-          active?: boolean | null
-          commission_percentage?: number | null
-          config?: Json | null
-          created_at?: string | null
+          attempted_at?: string
           id?: string
-          name?: string
-          provider?: string
-          updated_at?: string | null
+          identifier?: string
+          ip_address?: string
         }
         Relationships: []
-      }
-      pc_admin_users: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: string
-          is_active: boolean | null
-          last_login_at: string | null
-          name: string | null
-          reseller_id: string | null
-          role: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id?: string
-          is_active?: boolean | null
-          last_login_at?: string | null
-          name?: string | null
-          reseller_id?: string | null
-          role?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: string
-          is_active?: boolean | null
-          last_login_at?: string | null
-          name?: string | null
-          reseller_id?: string | null
-          role?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pc_admin_users_reseller_id_fkey"
-            columns: ["reseller_id"]
-            isOneToOne: false
-            referencedRelation: "resellers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pc_audit_logs: {
-        Row: {
-          action: string
-          admin_id: string | null
-          created_at: string | null
-          details: Json | null
-          entity_id: string | null
-          entity_type: string | null
-          id: string
-          ip_address: string | null
-        }
-        Insert: {
-          action: string
-          admin_id?: string | null
-          created_at?: string | null
-          details?: Json | null
-          entity_id?: string | null
-          entity_type?: string | null
-          id?: string
-          ip_address?: string | null
-        }
-        Update: {
-          action?: string
-          admin_id?: string | null
-          created_at?: string | null
-          details?: Json | null
-          entity_id?: string | null
-          entity_type?: string | null
-          id?: string
-          ip_address?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pc_audit_logs_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "pc_admin_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      portal_analytics: {
-        Row: {
-          avg_session_duration_minutes: number | null
-          bounce_rate: number | null
-          conversion_rate: number | null
-          created_at: string | null
-          id: string
-          metric_date: string | null
-          popular_modules: Json | null
-          portal_config_id: string | null
-          revenue_generated: number | null
-          successful_authentications: number | null
-          total_visitors: number | null
-          user_satisfaction_score: number | null
-        }
-        Insert: {
-          avg_session_duration_minutes?: number | null
-          bounce_rate?: number | null
-          conversion_rate?: number | null
-          created_at?: string | null
-          id?: string
-          metric_date?: string | null
-          popular_modules?: Json | null
-          portal_config_id?: string | null
-          revenue_generated?: number | null
-          successful_authentications?: number | null
-          total_visitors?: number | null
-          user_satisfaction_score?: number | null
-        }
-        Update: {
-          avg_session_duration_minutes?: number | null
-          bounce_rate?: number | null
-          conversion_rate?: number | null
-          created_at?: string | null
-          id?: string
-          metric_date?: string | null
-          popular_modules?: Json | null
-          portal_config_id?: string | null
-          revenue_generated?: number | null
-          successful_authentications?: number | null
-          total_visitors?: number | null
-          user_satisfaction_score?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "portal_analytics_portal_config_id_fkey"
-            columns: ["portal_config_id"]
-            isOneToOne: false
-            referencedRelation: "portal_config"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       portal_config: {
         Row: {
@@ -1177,50 +498,6 @@ export type Database = {
           },
         ]
       }
-      portal_customer_journeys: {
-        Row: {
-          conditions: Json | null
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          is_default: boolean | null
-          journey_name: string
-          journey_steps: Json
-          portal_config_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          conditions?: Json | null
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_default?: boolean | null
-          journey_name: string
-          journey_steps?: Json
-          portal_config_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          conditions?: Json | null
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_default?: boolean | null
-          journey_name?: string
-          journey_steps?: Json
-          portal_config_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "portal_customer_journeys_portal_config_id_fkey"
-            columns: ["portal_config_id"]
-            isOneToOne: false
-            referencedRelation: "portal_config"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       portal_customizations: {
         Row: {
           created_at: string | null
@@ -1249,15 +526,7 @@ export type Database = {
           portal_config_id?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "portal_customizations_portal_config_id_fkey"
-            columns: ["portal_config_id"]
-            isOneToOne: false
-            referencedRelation: "portal_config"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       portal_enabled_modules: {
         Row: {
@@ -1284,22 +553,7 @@ export type Database = {
           module_id?: string | null
           portal_config_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "portal_enabled_modules_module_id_fkey"
-            columns: ["module_id"]
-            isOneToOne: false
-            referencedRelation: "portal_modules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "portal_enabled_modules_portal_config_id_fkey"
-            columns: ["portal_config_id"]
-            isOneToOne: false
-            referencedRelation: "portal_config"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       portal_kits: {
         Row: {
@@ -1489,45 +743,6 @@ export type Database = {
         }
         Relationships: []
       }
-      qoe_measurements: {
-        Row: {
-          ap_name: string | null
-          created_at: string
-          id: string
-          latency_p95_ms: number | null
-          packet_loss_percentage: number | null
-          qoe_score: number
-          site_id: string
-          throughput_mbps: number | null
-          timestamp: string
-          user_count: number
-        }
-        Insert: {
-          ap_name?: string | null
-          created_at?: string
-          id?: string
-          latency_p95_ms?: number | null
-          packet_loss_percentage?: number | null
-          qoe_score: number
-          site_id: string
-          throughput_mbps?: number | null
-          timestamp?: string
-          user_count?: number
-        }
-        Update: {
-          ap_name?: string | null
-          created_at?: string
-          id?: string
-          latency_p95_ms?: number | null
-          packet_loss_percentage?: number | null
-          qoe_score?: number
-          site_id?: string
-          throughput_mbps?: number | null
-          timestamp?: string
-          user_count?: number
-        }
-        Relationships: []
-      }
       quiz_options: {
         Row: {
           id: string
@@ -1604,6 +819,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          site_id: string | null
           title: string
           updated_at: string | null
         }
@@ -1612,6 +828,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          site_id?: string | null
           title: string
           updated_at?: string | null
         }
@@ -1620,239 +837,19 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          site_id?: string | null
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
-      }
-      radius_coa_requests: {
-        Row: {
-          attributes: Json
-          created_at: string
-          error_message: string | null
-          id: string
-          nas_ip_address: unknown
-          nas_port_id: string | null
-          request_type: string
-          response_at: string | null
-          response_code: number | null
-          sent_at: string | null
-          session_id: string
-          status: string
-        }
-        Insert: {
-          attributes?: Json
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          nas_ip_address: unknown
-          nas_port_id?: string | null
-          request_type: string
-          response_at?: string | null
-          response_code?: number | null
-          sent_at?: string | null
-          session_id: string
-          status?: string
-        }
-        Update: {
-          attributes?: Json
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          nas_ip_address?: unknown
-          nas_port_id?: string | null
-          request_type?: string
-          response_at?: string | null
-          response_code?: number | null
-          sent_at?: string | null
-          session_id?: string
-          status?: string
-        }
         Relationships: [
           {
-            foreignKeyName: "radius_coa_requests_session_id_fkey"
-            columns: ["session_id"]
+            foreignKeyName: "quizzes_site_id_fkey"
+            columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "radius_sessions"
+            referencedRelation: "sites"
             referencedColumns: ["id"]
           },
         ]
-      }
-      radius_sessions: {
-        Row: {
-          ap_name: string | null
-          created_at: string
-          id: string
-          ip_address: unknown
-          last_seen: string | null
-          mac_address: string | null
-          nas_ip_address: unknown
-          nas_port_id: string | null
-          profile_id: string | null
-          rx_bytes: number | null
-          rx_packets: number | null
-          session_id: string
-          session_time: number | null
-          ssid: string | null
-          start_time: string
-          state: string
-          stop_time: string | null
-          terminate_cause: string | null
-          tx_bytes: number | null
-          tx_packets: number | null
-          updated_at: string
-          user_id: string | null
-          username: string | null
-          vlan_id: number | null
-        }
-        Insert: {
-          ap_name?: string | null
-          created_at?: string
-          id?: string
-          ip_address?: unknown
-          last_seen?: string | null
-          mac_address?: string | null
-          nas_ip_address?: unknown
-          nas_port_id?: string | null
-          profile_id?: string | null
-          rx_bytes?: number | null
-          rx_packets?: number | null
-          session_id: string
-          session_time?: number | null
-          ssid?: string | null
-          start_time?: string
-          state?: string
-          stop_time?: string | null
-          terminate_cause?: string | null
-          tx_bytes?: number | null
-          tx_packets?: number | null
-          updated_at?: string
-          user_id?: string | null
-          username?: string | null
-          vlan_id?: number | null
-        }
-        Update: {
-          ap_name?: string | null
-          created_at?: string
-          id?: string
-          ip_address?: unknown
-          last_seen?: string | null
-          mac_address?: string | null
-          nas_ip_address?: unknown
-          nas_port_id?: string | null
-          profile_id?: string | null
-          rx_bytes?: number | null
-          rx_packets?: number | null
-          session_id?: string
-          session_time?: number | null
-          ssid?: string | null
-          start_time?: string
-          state?: string
-          stop_time?: string | null
-          terminate_cause?: string | null
-          tx_bytes?: number | null
-          tx_packets?: number | null
-          updated_at?: string
-          user_id?: string | null
-          username?: string | null
-          vlan_id?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "radius_sessions_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "access_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      referrals: {
-        Row: {
-          code: string | null
-          completed_at: string | null
-          created_at: string | null
-          id: string
-          referred_id: string | null
-          referred_reward: number | null
-          referrer_id: string | null
-          referrer_reward: number | null
-          status: string | null
-        }
-        Insert: {
-          code?: string | null
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          referred_id?: string | null
-          referred_reward?: number | null
-          referrer_id?: string | null
-          referrer_reward?: number | null
-          status?: string | null
-        }
-        Update: {
-          code?: string | null
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          referred_id?: string | null
-          referred_reward?: number | null
-          referrer_id?: string | null
-          referrer_reward?: number | null
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "referrals_referred_id_fkey"
-            columns: ["referred_id"]
-            isOneToOne: false
-            referencedRelation: "wifi_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "referrals_referrer_id_fkey"
-            columns: ["referrer_id"]
-            isOneToOne: false
-            referencedRelation: "wifi_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      resellers: {
-        Row: {
-          address: string | null
-          commission_rate: number | null
-          created_at: string | null
-          email: string | null
-          id: string
-          is_active: boolean | null
-          name: string
-          phone: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          address?: string | null
-          commission_rate?: number | null
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          is_active?: boolean | null
-          name: string
-          phone?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          address?: string | null
-          commission_rate?: number | null
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          is_active?: boolean | null
-          name?: string
-          phone?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       rewards: {
         Row: {
@@ -1863,6 +860,7 @@ export type Database = {
           name: string
           points_cost: number
           reward_type: string
+          site_id: string | null
           value: string
         }
         Insert: {
@@ -1873,6 +871,7 @@ export type Database = {
           name: string
           points_cost: number
           reward_type: string
+          site_id?: string | null
           value: string
         }
         Update: {
@@ -1883,87 +882,18 @@ export type Database = {
           name?: string
           points_cost?: number
           reward_type?: string
+          site_id?: string | null
           value?: string
         }
-        Relationships: []
-      }
-      security_alerts: {
-        Row: {
-          admin_user_id: string | null
-          alert_type: string
-          created_at: string | null
-          description: string
-          id: string
-          ip_address: unknown
-          is_resolved: boolean | null
-          metadata: Json | null
-          resolved_at: string | null
-          resolved_by: string | null
-          severity: string
-          title: string
-        }
-        Insert: {
-          admin_user_id?: string | null
-          alert_type: string
-          created_at?: string | null
-          description: string
-          id?: string
-          ip_address?: unknown
-          is_resolved?: boolean | null
-          metadata?: Json | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          severity: string
-          title: string
-        }
-        Update: {
-          admin_user_id?: string | null
-          alert_type?: string
-          created_at?: string | null
-          description?: string
-          id?: string
-          ip_address?: unknown
-          is_resolved?: boolean | null
-          metadata?: Json | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          severity?: string
-          title?: string
-        }
-        Relationships: []
-      }
-      site_availability_metrics: {
-        Row: {
-          created_at: string
-          downtime_minutes: number
-          id: string
-          incident_count: number
-          site_id: string
-          sla_breached: boolean
-          timestamp: string
-          uptime_percentage: number
-        }
-        Insert: {
-          created_at?: string
-          downtime_minutes?: number
-          id?: string
-          incident_count?: number
-          site_id: string
-          sla_breached?: boolean
-          timestamp?: string
-          uptime_percentage?: number
-        }
-        Update: {
-          created_at?: string
-          downtime_minutes?: number
-          id?: string
-          incident_count?: number
-          site_id?: string
-          sla_breached?: boolean
-          timestamp?: string
-          uptime_percentage?: number
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "rewards_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sites: {
         Row: {
@@ -1974,6 +904,7 @@ export type Database = {
           logo_url: string | null
           name: string
           portal_slug: string
+          portal_template: string | null
           primary_color: string | null
           reseller_id: string | null
           type: string | null
@@ -1988,6 +919,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           portal_slug: string
+          portal_template?: string | null
           primary_color?: string | null
           reseller_id?: string | null
           type?: string | null
@@ -2002,21 +934,14 @@ export type Database = {
           logo_url?: string | null
           name?: string
           portal_slug?: string
+          portal_template?: string | null
           primary_color?: string | null
           reseller_id?: string | null
           type?: string | null
           updated_at?: string | null
           welcome_msg?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "sites_reseller_id_fkey"
-            columns: ["reseller_id"]
-            isOneToOne: false
-            referencedRelation: "resellers"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       transactions: {
         Row: {
@@ -2075,13 +1000,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "transactions_payment_method_id_fkey"
-            columns: ["payment_method_id"]
-            isOneToOne: false
-            referencedRelation: "payment_methods"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "transactions_plan_id_fkey"
             columns: ["plan_id"]
             isOneToOne: false
@@ -2104,199 +1022,34 @@ export type Database = {
           },
         ]
       }
-      user_access: {
-        Row: {
-          created_at: string
-          id: string
-          last_reset_at: string | null
-          minutes_used: number | null
-          profile_id: string
-          quota_used_mb: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_reset_at?: string | null
-          minutes_used?: number | null
-          profile_id: string
-          quota_used_mb?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_reset_at?: string | null
-          minutes_used?: number | null
-          profile_id?: string
-          quota_used_mb?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_access_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "access_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_roles: {
         Row: {
           created_at: string | null
           id: string
+          reseller_id: string | null
           role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_segment_memberships: {
-        Row: {
-          created_at: string | null
-          id: string
-          segment_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          segment_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          segment_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_segment_memberships_segment_id_fkey"
-            columns: ["segment_id"]
-            isOneToOne: false
-            referencedRelation: "user_segments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_segment_memberships_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "wifi_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_segments: {
-        Row: {
-          created_at: string | null
-          criteria: Json
-          description: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          criteria: Json
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          criteria?: Json
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      vouchers: {
-        Row: {
-          batch_name: string | null
-          code: string
-          created_at: string
-          created_by: string | null
-          expires_at: string | null
-          id: string
-          is_active: boolean
-          is_used: boolean | null
-          plan_id: string | null
-          profile_id: string
           site_id: string | null
-          use_limit: number | null
-          used_at: string | null
-          used_by: string | null
-          used_count: number | null
-          valid_from: string
-          valid_to: string
+          user_id: string
         }
         Insert: {
-          batch_name?: string | null
-          code: string
-          created_at?: string
-          created_by?: string | null
-          expires_at?: string | null
+          created_at?: string | null
           id?: string
-          is_active?: boolean
-          is_used?: boolean | null
-          plan_id?: string | null
-          profile_id: string
+          reseller_id?: string | null
+          role: Database["public"]["Enums"]["app_role"]
           site_id?: string | null
-          use_limit?: number | null
-          used_at?: string | null
-          used_by?: string | null
-          used_count?: number | null
-          valid_from?: string
-          valid_to: string
+          user_id: string
         }
         Update: {
-          batch_name?: string | null
-          code?: string
-          created_at?: string
-          created_by?: string | null
-          expires_at?: string | null
+          created_at?: string | null
           id?: string
-          is_active?: boolean
-          is_used?: boolean | null
-          plan_id?: string | null
-          profile_id?: string
+          reseller_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           site_id?: string | null
-          use_limit?: number | null
-          used_at?: string | null
-          used_by?: string | null
-          used_count?: number | null
-          valid_from?: string
-          valid_to?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "vouchers_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "access_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vouchers_site_id_fkey"
+            foreignKeyName: "user_roles_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sites"
@@ -2558,7 +1311,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_site: { Args: { p_site_id: string }; Returns: boolean }
       cleanup_old_audit_logs: { Args: never; Returns: undefined }
+      decrypt_unifi_secret: { Args: { encrypted: string }; Returns: string }
       fn_apply_quota: { Args: { target_user_id: string }; Returns: undefined }
       get_active_sessions: {
         Args: never
@@ -2595,9 +1350,19 @@ export type Database = {
         Returns: boolean
       }
       is_admin_user: { Args: never; Returns: boolean }
+      is_reseller_of: { Args: { p_reseller_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
+      is_viewer: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "super_admin"
+        | "reseller"
+        | "site_manager"
+        | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2728,7 +1493,15 @@ export const Constants = {
   },
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "super_admin",
+        "reseller",
+        "site_manager",
+        "viewer",
+      ],
     },
   },
 } as const

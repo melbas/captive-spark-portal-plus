@@ -38,7 +38,9 @@ alter table public.pc_admin_users
   check (role in ('super_admin','reseller','site_manager','viewer'));
 
 -- 4. RLS sur pc_admin_users (actuellement sans RLS ? on force l'activation)
-alter table public.pc_admin_users enable row level force;
+-- Fix 2026-09-28 : syntaxe invalide 'enable row level force' → FORCE ROW LEVEL SECURITY
+alter table public.pc_admin_users enable row level security;
+alter table public.pc_admin_users force row level security;
 
 drop policy if exists "pc_admin_users_super_admin_manage" on public.pc_admin_users;
 create policy "pc_admin_users_super_admin_manage"

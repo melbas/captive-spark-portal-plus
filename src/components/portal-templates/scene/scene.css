@@ -1,0 +1,299 @@
+/**
+ * SceneTemplate — portage CSS du prototype « SCÈNE » (portal-lab #v-scene).
+ * Source : /home/seck/projects/portal-lab/index.html (lignes 314-377, 876-916).
+ * Scoping sous .sct (anciennement #v-scene) pour éviter toute collision avec
+ * les styles globaux de l'app. Les tokens --dur/--ease du labo n'existent pas
+ * ici : valeurs locales équivalentes.
+ */
+.sct {
+  --sct-ac: #f59e0b;
+  --sct-dur: 180ms;
+  --sct-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  min-height: 100vh;
+  background: #0c0a14;
+  color: #fafafa;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+/* Atmosphère : halos radiaux flous (stage lights) */
+.sct-atmos {
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 45% at 18% 12%, rgba(245, 158, 11, 0.2), transparent 65%),
+    radial-gradient(42% 40% at 88% 78%, rgba(217, 70, 110, 0.18), transparent 65%),
+    radial-gradient(50% 50% at 50% 110%, rgba(139, 92, 246, 0.14), transparent 70%);
+  filter: blur(8px);
+}
+
+/* Grain : turbulence SVG à faible opacité */
+.sct-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.sct-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 28px 22px 96px;
+}
+
+/* ---- Écran splash ---- */
+.sct-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+.sct-top .kicker {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.5);
+}
+.sct-top .wifi {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+.sct-top .wifi .bar {
+  width: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+.sct-top .wifi .bar:nth-child(1) { height: 5px; }
+.sct-top .wifi .bar:nth-child(2) { height: 8px; }
+.sct-top .wifi .bar:nth-child(3) { height: 11px; background: var(--sct-ac); }
+
+.sct-hero h1 {
+  font-size: clamp(2.4rem, 11vw, 3.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+.sct-hero h1 .accent {
+  display: block;
+  background: linear-gradient(100deg, #fbbf24, #f97316 55%, #e11d48);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sct-hero .date {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+.sct-hero .date .sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+.sct-hero .lede {
+  margin-top: 18px;
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 34ch;
+}
+
+.sct-sponsor {
+  margin-top: 30px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.sct-sponsor .logo {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 11px;
+  background: linear-gradient(140deg, #f59e0b, #e11d48);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: 0 8px 20px -10px rgba(245, 158, 11, 0.9);
+  overflow: hidden;
+}
+.sct-sponsor .logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sct-sponsor .txt {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+.sct-sponsor .txt b {
+  display: block;
+  color: #fafafa;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.sct-cta {
+  margin-top: 26px;
+  width: 100%;
+}
+.sct-connect {
+  width: 100%;
+  padding: 18px;
+  border: 0;
+  border-radius: 20px;
+  background: #fafafa;
+  color: #0c0a14;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.sct-connect:disabled { opacity: 0.65; cursor: default; }
+.sct-connect .arrow { transition: transform var(--sct-dur) var(--sct-ease); }
+@media (hover: hover) and (pointer: fine) {
+  .sct-connect:hover:not(:disabled) .arrow { transform: translateX(3px); }
+}
+.sct-connect:active { transform: scale(0.97); }
+.sct-fine {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ---- Écran connecté ---- */
+.sct-on {
+  text-align: center;
+  padding-top: 10vh;
+  animation: sct-curtain 700ms var(--sct-ease) both;
+}
+@keyframes sct-curtain {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+.sct-on .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+.sct-on h2 {
+  margin-top: 22px;
+  font-size: clamp(1.8rem, 8vw, 2.4rem);
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  line-height: 1.05;
+}
+.sct-on .meta {
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.86rem;
+}
+.sct-on .mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+/* Jauge de temps restant */
+.sct-juice {
+  margin: 18px auto 0;
+  max-width: 300px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.sct-juice > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #e11d48);
+  transition: width 1s linear;
+}
+.sct-on .pass {
+  margin: 26px auto 0;
+  max-width: 300px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+.sct-on .pass .k {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.4);
+}
+.sct-on .pass .v {
+  font-size: 1.5rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.sct-on .pass .s {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 2px;
+}
+.sct-reset {
+  margin-top: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.5);
+  padding: 11px 18px;
+  border-radius: 13px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sct-reset:active { transform: scale(0.97); }
+
+/* ---- Panneau d'authentification (AuthBox) ---- */
+.sct-auth {
+  margin-top: 26px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fafafa;
+  text-align: left;
+}
+/* AuthBox est un composant shadcn sombre-sur-clair : on force un fond lisible
+   dans la scène sombre sans réécrire le composant partagé. */
+.sct-auth .glass-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  max-width: none;
+  width: 100%;
+}

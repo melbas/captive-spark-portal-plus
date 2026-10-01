@@ -18,6 +18,13 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminResellers from "./pages/admin/AdminResellers";
 import AdminSites from "./pages/admin/AdminSites";
 import AdminModules from "./pages/admin/AdminModules";
+import SiteQuizPage from "./pages/admin/sites/[siteId]/quiz/Page";
+import SiteGamesPage from "./pages/admin/sites/[siteId]/games/Page";
+import SiteRewardsPage from "./pages/admin/sites/[siteId]/rewards/Page";
+import SiteDetailPage from "./pages/admin/sites/[siteId]/Page";
+import ResellerDetailPage from "./pages/admin/resellers/[resellerId]/Page";
+import NewSiteWizardPage from "./pages/admin/sites/new/Page";
+import SiteModulesPage from "./pages/admin/sites/[siteId]/modules/Page";
 import AdminForge from "./pages/admin/AdminForge";
 import AdminKits from "./pages/admin/AdminKits";
 import AdminPlans from "./pages/admin/AdminPlans";
@@ -58,7 +65,15 @@ const App = () => (
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="resellers" element={<AdminResellers />} />
+                  <Route path="resellers/:resellerId" element={<ResellerDetailPage />} />
                   <Route path="sites" element={<AdminSites />} />
+                  {/* /new AVANT :siteId pour que "new" ne soit pas mangé par le paramètre. */}
+                  <Route path="sites/new" element={<NewSiteWizardPage />} />
+                  <Route path="sites/:siteId" element={<SiteDetailPage />} />
+                  <Route path="sites/:siteId/modules" element={<SiteModulesPage />} />
+                  <Route path="sites/:siteId/quiz" element={<SiteQuizPage />} />
+                  <Route path="sites/:siteId/games" element={<SiteGamesPage />} />
+                  <Route path="sites/:siteId/rewards" element={<SiteRewardsPage />} />
                   <Route path="modules" element={<AdminModules />} />
                   <Route path="forge" element={<AdminForge />} />
                   <Route path="kits" element={<AdminKits />} />

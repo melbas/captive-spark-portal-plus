@@ -6,6 +6,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import HelpTip from '@/components/admin/HelpTip';
 import { useCurrentSite } from '@/context/SiteContext';
+import { APP_VERSION, GIT_COMMIT, BUILD_DATE } from '@/generated/version';
 
 export default function AdminSettings() {
   const { role, currentSite } = useCurrentSite();
@@ -28,6 +29,10 @@ export default function AdminSettings() {
         <CardHeader><CardTitle className="text-base">Configuration globale</CardTitle></CardHeader>
         <CardContent><p className="text-muted-foreground text-sm">Paramètres en cours de développement…</p></CardContent>
       </Card>
+
+      <footer className="pt-4 text-center text-xs text-muted-foreground/70">
+        v{APP_VERSION} · {GIT_COMMIT} · build {BUILD_DATE}
+      </footer>
     </div>
   );
 }

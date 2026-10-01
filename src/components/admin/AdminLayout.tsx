@@ -132,7 +132,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-surface-light">
       {/* Sidebar — desktop */}
-      <aside className="hidden lg:flex w-[280px] bg-surface-dark text-white flex-col shrink-0">
+      <aside aria-label="sidebar"  className="hidden lg:flex w-[280px] bg-surface-dark text-white flex-col shrink-0">
         <div className="p-6 flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-extrabold text-lg"
             style={{ background: 'var(--brand-gradient)' }}>

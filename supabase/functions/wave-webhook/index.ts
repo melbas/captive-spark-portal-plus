@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 import { timingSafeEqual } from "../_shared/crypto.ts";
+import { requireAuth, json } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,10 +21,12 @@ Deno.serve(async (req) => {
     );
 
     const body = await req.text();
+    const auth = await requireAuth(req, { allowVisitor: true });
+    if ("error" in auth) return auth.error;
     const webhookSecret = Deno.env.get("WAVE_WEBHOOK_SECRET");
 
     // FAIL-CLOSED (P0) : pas de secret configuré → rejet 503, aucun traitement.
-    if (!webhookSecret) {
+    if (!webhookSecret || webhookSecret === "") {
       console.error("wave-webhook: WAVE_WEBHOOK_SECRET absent → rejet 503");
       return new Response(JSON.stringify({ error: "Webhook non configuré" }), {
         status: 503,

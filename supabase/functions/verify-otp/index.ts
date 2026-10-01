@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { json } from "../_shared/auth.ts";
+import { requireAuth, json } from "../_shared/auth.ts";
 
 // ---------------------------------------------------------------------------
 // verify-otp — vérifie l'OTP et retourne l'identité visiteur.
@@ -20,16 +20,21 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { phone, email, code, siteId } = await req.json();
+    const body = await req.json();
+    const { phone, email, code, siteId } = body;
+
+    const auth = await requireAuth(req, { siteId, allowVisitor: true });
+    if ("error" in auth) return auth.error;
 
     if (!siteId || !code) {
       return json({ error: "siteId et code requis" }, 400);
     }
 
-    const identifier = phone || email;
+    const identifierInput = phone || email;
     const identifierType = phone ? "phone" : "email";
+    const identifierLower = identifierInput.toString().toLowerCase();
 
-    if (!identifier) {
+    if (!identifierInput) {
       return json({ error: "phone ou email requis" }, 400);
     }
 
@@ -38,9 +43,34 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Record attempt for rate limiting / tracking
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+    // Rate limiting: max 10 verification attempts per hour per identifier+IP
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const { data: attemptCount, error: countError } = await supabase
+      .from("otp_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("identifier", identifierLower)
+      .eq("ip_address", ip)
+      .gte("attempted_at", oneHourAgo.toISOString());
+
+    if (countError) throw countError;
+    if (attemptCount && attemptCount >= 10) {
+      return json({ error: "Trop de tentatives de vérification. Réessayez dans une heure." }, 429);
+    }
+
+    // Record this attempt
+    await supabase.from("otp_attempts").insert({
+      identifier: identifierLower,
+      ip_address: ip,
+      attempted_at: new Date().toISOString()
+    });
+
     // Bypass démo UNIQUEMENT via secret — plus aucun comportement par défaut
-    const isDemoCode =
-      Deno.env.get("DEV_OTP_MODE") === "true" && code === "123456";
+    const devMode = Deno.env.get("DEV_OTP_MODE") === "true";
+    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE");
+    const isDemoCode = devMode && fixedCode && code === fixedCode;
 
     // Retrieve stored OTP (colonnes nécessaires uniquement — plus de select *)
     const { data: otpRecord, error: otpErr } = await supabase
@@ -48,7 +78,7 @@ Deno.serve(async (req) => {
       .select("id, details")
       .eq("action", "otp_pending")
       .eq("entity_type", identifierType)
-      .eq("ip_address", identifier)
+      .eq("ip_address", identifierLower) // stored as lowercased in send-otp
       .eq("entity_id", siteId)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -100,8 +130,8 @@ Deno.serve(async (req) => {
 
     // Find or create wifi_user (service_role — le front n'écrit plus direct)
     const userFilter = identifierType === "phone"
-      ? { phone: identifier, site_id: siteId }
-      : { email: identifier, site_id: siteId };
+      ? { phone: identifierInput, site_id: siteId }
+      : { email: identifierInput, site_id: siteId };
 
     let { data: existingUser } = await supabase
       .from("wifi_users")
@@ -122,7 +152,7 @@ Deno.serve(async (req) => {
         loyalty_pts: 0,
         is_blocked: false,
       };
-      insertData[identifierType] = identifier;
+      insertData[identifierType] = identifierInput;
 
       const { data: newUser, error: insertErr } = await supabase
         .from("wifi_users")

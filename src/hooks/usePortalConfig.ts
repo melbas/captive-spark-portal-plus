@@ -309,6 +309,20 @@ export function usePortalConfig(siteSlug?: string): PortalRuntimeConfig {
         let adRows: AdVideoRow[] = [];
         let partial = false;
 
+        // Task 18 : même en démo, la source des pubs est la DB. Le site démo
+        // (/portal/demo ou racine sans slug) est résolu par son site `demo`
+        // en base (portal_slug = 'demo') quand il existe ; sinon aucun média
+        // n'est servi (plus aucun repli hardcodé).
+        const demoSlug = 'demo';
+        if (!site && isDemo && typeof window !== 'undefined') {
+          const { data, error } = (await table("sites")
+            .select("id, name, logo_url, primary_color")
+            .eq("portal_slug", demoSlug)
+            .eq("is_active", true)
+            .maybeSingle()) as unknown as QueryResult<SiteRow>;
+          if (!error) site = data;
+        }
+
         if (site) {
           // Deux requêtes séparées (un Promise.all de builders PostgREST fait
           // exploser l'inférence TS2589) — même sémantique, exécution parallèle conservée.

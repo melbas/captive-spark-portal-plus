@@ -45,7 +45,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
       } else {
         setDevCode(null);
       }
-    } catch (err: any) {
+    } catch (err: Error) {
       toast.error(err.message || t('error'));
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
       // Numéro au format E.164 (déjà construit ci-dessus) pour pré-remplir le
       // wallet — l'utilisateur ne le ressaisit pas au paiement.
       onAuthenticated(data.userId, activeTab === 'phone' ? `+221${phone}` : null);
-    } catch (err: any) {
+    } catch (err: Error) {
       toast.error(err.message || t('invalidCode'));
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ export default function PortalAuth({ siteId, onAuthenticated, onBack }: Props) {
       }
       toast.success('Code valide !');
       onAuthenticated(voucher.id); // Temporary: use voucher ID as user ref
-    } catch (err: any) {
+    } catch (err: Error) {
       toast.error(err.message || t('error'));
     } finally {
       setLoading(false);

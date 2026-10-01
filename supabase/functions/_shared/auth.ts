@@ -95,3 +95,20 @@ export function json(body: unknown, status: number): Response {
     },
   });
 }
+
+
+/**
+ * Vérifie si l'utilisateur est un super administrateur
+ */
+export async function is_admin_user(supabaseClient: ReturnType<typeof createClient>): Promise<boolean> {
+  const { data } = await supabaseClient.rpc('is_admin_user');
+  return data === true;
+}
+
+/**
+ * Vérifie si l'utilisateur peut accéder au site spécifié
+ */
+export async function can_access_site(supabaseClient: ReturnType<typeof createClient>, siteId: string): Promise<boolean> {
+  const { data } = await supabaseClient.rpc('can_access_site', { p_site_id: siteId } as never);
+  return data === true;
+}

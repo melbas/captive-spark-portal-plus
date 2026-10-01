@@ -1,142 +1,24 @@
+import { SMSMessage } from "./types";
 
-import { SMSMessage, SMSVerification } from "./types";
-
-// Store verification codes in memory (in a production environment, this would be in a database)
-const verificationCodes: SMSVerification[] = [];
-
+/**
+ * P0 sécurité (AUDIT-BACKEND) : les codes OTP ne sont plus générés, stockés ni
+ * vérifiés dans le navigateur. Toute la logique OTP vit côté serveur dans les
+ * Edge Functions Supabase :
+ *  - `send-otp`   : génération + stockage + rate limiting (3/h/id, 10/j/IP)
+ *  - `verify-otp` : vérification + création du wifi_user (via user-service)
+ *
+ * Ce module n'expose plus que `sendSMS` (notification générique, sans code)
+ * utilisée pour le message de bienvenue. Toute fonction de vérification
+ * client (generateVerificationCode / sendVerificationCode / verifyCode) a été
+ * supprimée — aucun fallback front acceptant un code n'est autorisé
+ * (fail-closed, cf. SECURITY_CHECKLIST.md).
+ */
 export const smsService = {
   async sendSMS(smsData: SMSMessage): Promise<boolean> {
-    try {
-      console.log(`Sending SMS to ${smsData.to}: ${smsData.message}`);
-      
-      // Store SMS in database for tracking (in a real implementation)
-      // For now, we'll just log it and simulate success/failure
-      const success = Math.random() > 0.1; // 90% success rate for simulation
-      
-      if (!success) {
-        console.error(`Failed to send SMS to ${smsData.to}`);
-        return false;
-      }
-      
-      // In a real implementation, this would call an SMS API
-      // Example integration with an SMS API (commented out):
-      // const response = await fetch('https://your-sms-api.com/send', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${YOUR_SMS_API_KEY}`
-      //   },
-      //   body: JSON.stringify({
-      //     to: smsData.to,
-      //     message: smsData.message
-      //   })
-      // });
-      
-      // Track SMS sent in statistics (you might want to add this column to your statistics table)
-      // await this.incrementStatistic('sms_sent');
-      
-      return true;
-    } catch (error) {
-      console.error("Failed to send SMS:", error);
-      return false;
-    }
+    // La vraie intégration provider SMS n'existe pas encore : les Edge
+    // Functions gèrent l'OTP (avec mode démo serveur DEV_OTP_MODE). Ce stub
+    // ne manipule AUCUN code de vérification.
+    console.log(`[sms-service] sendSMS (stub, pas de provider SMS): to=${smsData.to} type=${smsData.type ?? 'notification'}`);
+    return true;
   },
-  
-  generateVerificationCode(): string {
-    // Generate a random 6-digit code
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  },
-  
-  async sendVerificationCode(phoneNumber: string): Promise<{ success: boolean; code: string }> {
-    try {
-      // Remove any existing verification code for this number
-      const index = verificationCodes.findIndex(v => v.phoneNumber === phoneNumber);
-      if (index !== -1) {
-        verificationCodes.splice(index, 1);
-      }
-      
-      // Generate a new verification code
-      const code = this.generateVerificationCode();
-      
-      // Store the verification code with expiration (15 minutes)
-      const expiresAt = new Date();
-      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
-      
-      verificationCodes.push({
-        phoneNumber,
-        code,
-        expiresAt,
-        attempts: 0
-      });
-      
-      // Send the verification SMS
-      const message = `Votre code de vérification est: ${code}. Valable pendant 15 minutes.`;
-      const sent = await this.sendSMS({
-        to: phoneNumber,
-        message,
-        type: 'verification'
-      });
-      
-      return { 
-        success: sent,
-        code // Return the code for development purposes only
-      };
-    } catch (error) {
-      console.error("Error sending verification code:", error);
-      return { 
-        success: false,
-        code: ''
-      };
-    }
-  },
-  
-  verifyCode(phoneNumber: string, code: string): { success: boolean; attemptsRemaining?: number; error?: string } {
-    // Find the verification record
-    const index = verificationCodes.findIndex(v => v.phoneNumber === phoneNumber);
-    
-    if (index === -1) {
-      console.error("No verification code found for this number");
-      return { success: false, error: 'no_code_found' };
-    }
-    
-    const verification = verificationCodes[index];
-    
-    // Check if the code has expired
-    if (new Date() > verification.expiresAt) {
-      // Remove expired code
-      verificationCodes.splice(index, 1);
-      console.error("Verification code has expired");
-      return { success: false, error: 'code_expired' };
-    }
-    
-    // Code universel DEV (tests bout en bout jusqu'à la mise en prod)
-    if (code === '123456') {
-      verificationCodes.splice(index, 1);
-      console.log("Verification successful (DEV code)");
-      return { success: true };
-    }
-
-    // Check if the code matches FIRST
-    if (verification.code === code) {
-      // Code correct: remove the verification record on success
-      verificationCodes.splice(index, 1);
-      console.log("Verification successful");
-      return { success: true };
-    }
-    
-    // Code incorrect: increment attempt count
-    verification.attempts += 1;
-    const attemptsRemaining = 5 - verification.attempts;
-    
-    // Check if max attempts reached (5 attempts)
-    if (verification.attempts >= 5) {
-      // Remove the verification record
-      verificationCodes.splice(index, 1);
-      console.error("Max verification attempts reached");
-      return { success: false, error: 'max_attempts_reached', attemptsRemaining: 0 };
-    }
-    
-    console.log(`Invalid code. ${attemptsRemaining} attempts remaining`);
-    return { success: false, error: 'invalid_code', attemptsRemaining };
-  }
 };

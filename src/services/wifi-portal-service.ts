@@ -12,7 +12,6 @@ import {
 import { userService } from "./wifi/user-service";
 import { sessionService } from "./wifi/session-service";
 import { statisticsService } from "./wifi/statistics-service";
-import { smsService } from "./wifi/sms-service";
 import { familyService } from "./wifi/family";
 
 // Re-export all types and services
@@ -28,8 +27,10 @@ export type {
 };
 
 // Combined service for backwards compatibility
+// NOTE (P0 sécurité) : aucune fonction OTP ici — send-otp/verify-otp sont des
+// Edge Functions appelées via supabase.functions.invoke (AuthBox / user-service).
 export const wifiPortalService = {
-  // User operations
+  // User operations (createUser → Edge `verify-otp` quand VITE_USE_EDGE_AUTH)
   createUser: userService.createUser,
   getUserByMac: userService.getUserByMac,
   updateUser: userService.updateUser,
@@ -41,12 +42,6 @@ export const wifiPortalService = {
   
   // Statistics operations
   incrementStatistic: statisticsService.incrementStatistic,
-  
-  // SMS services
-  sendSMS: smsService.sendSMS,
-  generateVerificationCode: smsService.generateVerificationCode,
-  sendVerificationCode: smsService.sendVerificationCode,
-  verifyCode: smsService.verifyCode,
   
   // Family services
   getFamilyProfiles: familyService.getFamilyProfiles,

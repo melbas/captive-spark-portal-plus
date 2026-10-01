@@ -20,7 +20,7 @@ const ReferralSystem = lazy(() => import("./ReferralSystem"));
 const MiniGamesHub = lazy(() => import("./MiniGamesHub"));
 const LearningCenter = lazy(() => import("./LearningCenter"));
 const PaymentPortal = lazy(() => import("./PaymentPortal"));
-const AdminDashboard = lazy(() => import("./AdminDashboard"));
+const ExchangeForWifi = lazy(() => import("./ExchangeForWifi"));
 
 interface WifiPortalContentProps {
   currentStep: Step;
@@ -37,10 +37,14 @@ interface WifiPortalContentProps {
   handleInvite: (email: string) => void;
   handleGameComplete: (gameData: MiniGameData, score: number) => void;
   handlePaymentComplete: (packageId: string, minutes: number) => void;
+  /** Échange : minutes gagnées par l'utilisateur (quiz/sponsor/parrainage). */
+  handleExchangeTimeAwarded: (minutes: number) => void;
   loading?: boolean;
   error?: string | null;
   /** Gating des modules du parcours (portal_enabled_modules). null = fail-closed. */
   modules: PortalModuleGating;
+  /** Site courant : scoping DB des modules riches (games, rewards...). */
+  siteId: string;
 }
 
 const WifiPortalContent = ({
@@ -58,9 +62,11 @@ const WifiPortalContent = ({
   handleInvite,
   handleGameComplete,
   handlePaymentComplete,
+  handleExchangeTimeAwarded,
   loading,
   error,
-  modules
+  modules,
+  siteId
 }: WifiPortalContentProps) => {
   const { t } = useLanguage();
   // Fail-closed : sans config publiée sur un vrai site, seul l'essentiel reste visible
@@ -141,20 +147,6 @@ const WifiPortalContent = ({
       </div>
 
       <div className="w-full max-w-md mt-3 grid grid-cols-1 gap-3">
-        {userData.isAdmin && (
-          <Button
-            variant="outline"
-            onClick={() => handleNavigate("admin")}
-            className="flex flex-col items-center justify-center p-3 h-auto min-h-[60px] sm:flex-row sm:justify-start"
-          >
-            <svg className="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-              <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
-            <span className="text-center sm:text-left">{t("administration")}</span>
-          </Button>
-        )}
-
         {!userData.isAdmin && moduleOn("referral") && (
           <Button
             variant="outline"
@@ -242,6 +234,15 @@ const WifiPortalContent = ({
         if (engagementType === EngagementType.QUIZ && moduleOn("quiz")) {
           return <MarketingQuiz onComplete={handleEngagementComplete} />;
         }
+        if (engagementType === EngagementType.EXCHANGE && moduleOn("exchange")) {
+          return (
+            <ExchangeForWifi
+              onTimeAwarded={handleExchangeTimeAwarded}
+              onComplete={handleEngagementComplete}
+              referralCode={userData.referralCode}
+            />
+          );
+        }
         // Module d'engagement désactivé : pas de contournement simulé
         return null;
       case Step.SUCCESS:
@@ -278,6 +279,7 @@ const WifiPortalContent = ({
             userData={userData}
             onBack={() => setCurrentStep(Step.SUCCESS)}
             onRedeem={handleRedeemReward}
+            siteId={siteId}
           />
         ) : null;
       case Step.REFERRAL:
@@ -294,15 +296,9 @@ const WifiPortalContent = ({
             userData={userData}
             onBack={() => setCurrentStep(Step.SUCCESS)}
             onGameComplete={handleGameComplete}
+            siteId={siteId}
           />
         ) : null;
-      case Step.ADMIN_STATS:
-        return (
-          <AdminDashboard
-            userData={userData}
-            onBack={() => setCurrentStep(Step.SUCCESS)}
-          />
-        );
       case Step.LEARNING_CENTER:
         return moduleOn("learning_center") ? (
           <LearningCenter userData={userData} onBack={() => setCurrentStep(Step.SUCCESS)} />

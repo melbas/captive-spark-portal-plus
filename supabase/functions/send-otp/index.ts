@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { json } from "../_shared/auth.ts";
+import { requireAuth, json } from "../_shared/auth.ts";
 
 // ---------------------------------------------------------------------------
 // send-otp — génère et stocke un OTP.
@@ -24,6 +24,8 @@ Deno.serve(async (req) => {
 
   try {
     const { phone, email, siteId } = await req.json();
+    const auth = await requireAuth(req, { siteId, allowVisitor: true });
+    if ("error" in auth) return auth.error;
 
     if (!siteId) {
       return json({ error: "siteId requis" }, 400);
@@ -37,9 +39,18 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Record OTP send attempt for rate limiting / tracking
+    const identifier = (phone || email)!.toString().toLowerCase();
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    await supabase.from("otp_attempts").insert({
+      identifier,
+      ip_address: ip,
+      attempted_at: new Date().toISOString()
+    });
+
     // DEV mode : UNIQUEMENT si le secret DEV_OTP_MODE=true est défini.
     const devMode = Deno.env.get("DEV_OTP_MODE") === "true";
-    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE") || "123456";
+    const fixedCode = Deno.env.get("DEV_OTP_FIXED_CODE");
 
     const identifier = (phone || email)!.toString().toLowerCase();
     const identifierType = phone ? "phone" : "email";
@@ -84,9 +95,7 @@ Deno.serve(async (req) => {
     );
 
     // --- Génération OTP -----------------------------------------------------
-    const code = devMode
-      ? fixedCode
-      : String(Math.floor(100000 + Math.random() * 900000));
+    const code = devMode && fixedCode ? fixedCode : String(Math.floor(100000 + Math.random() * 900000));
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
     // Delete any existing OTP for this identifier

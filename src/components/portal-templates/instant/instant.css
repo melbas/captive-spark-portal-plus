@@ -1,0 +1,648 @@
+/**
+ * instant.css — portage fidèle du prototype #v-instant du labo
+ * (/home/seck/projects/portal-lab/index.html, lignes 716-875 + CSS lignes 10-302, 666-681).
+ *
+ * Scoping : le labo définissait des utilitaires sur :root (eases, durations,
+ * safe-areas) et stylait via #v-instant / .in2-*. Ici TOUT est scopé sous la
+ * racine `.pc-instant` (aucune pollution globale, pas de Tailwind pour ce
+ * template) — les variables "charte PremiumConnect" vivent sur `.pc-instant`.
+ *
+ * Correction du bug labo : le badge SPONSOR débordait de la carte (badge en
+ * `top:-8px` + `overflow: visible`) — badge repositionné DANS la carte,
+ * carte passée en `overflow: hidden` (voir .pc-instant .in2-pack.free).
+ */
+
+.pc-instant {
+  /* Motion — Emil Kowalski standards (courbes custom, <300ms UI) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1); /* atterrissage léger */
+
+  --dur-press: 140ms;
+  --dur-hover: 180ms;
+  --dur-card: 220ms;
+  --dur-page: 320ms;
+
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+
+  /* Charte PremiumConnect */
+  --pc-violet: #5b4dff;
+  --pc-coral: #ff4d6a;
+  --pc-ink: #191933;
+  --pc-bg: #f5f5fb;
+  --pc-card: #ffffff;
+  --pc-track: #e9e9f4;
+  --pc-muted: #6d6d88;
+  --pc-line: #e6e6f0;
+
+  --ac: #5b4dff;
+  background: var(--pc-bg);
+  color: var(--pc-ink);
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  display: grid;
+  place-items: center;
+}
+
+.pc-instant *,
+.pc-instant *::before,
+.pc-instant *::after {
+  box-sizing: border-box;
+}
+
+.pc-instant button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.pc-instant .inner {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: calc(20px + var(--safe-t)) 18px calc(110px + var(--safe-b));
+}
+
+/* ---------- utilitaires partagés (ex-:root du labo) ---------- */
+.pc-instant .btn-press {
+  transition: transform var(--dur-press) var(--ease-out);
+}
+.pc-instant .btn-press:active {
+  transform: scale(0.97);
+}
+.pc-instant .mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+.pc-instant .rise {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.pc-instant .rise.in {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--dur-page) var(--ease-out),
+    transform var(--dur-page) var(--ease-out);
+}
+
+/* ---------- topbar ---------- */
+.pc-instant .in2-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.pc-instant .in2-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.pc-instant .in2-brand .dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--pc-violet), var(--pc-coral));
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px -6px rgba(91, 77, 255, 0.7);
+}
+.pc-instant .in2-brand .dot svg {
+  width: 17px;
+  height: 17px;
+}
+.pc-instant .in2-lang {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--pc-muted);
+}
+
+/* ---------- retour ---------- */
+.pc-instant .in2-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  border: 1px solid var(--pc-line);
+  background: var(--pc-card);
+  color: var(--pc-muted);
+  padding: 8px 15px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+.pc-instant .in2-back:active {
+  transform: scale(0.96);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-instant .in2-back:hover {
+    color: var(--pc-ink);
+    background: var(--pc-track);
+  }
+}
+
+/* ---------- vues ---------- */
+.pc-instant .in2-view {
+  display: none;
+}
+.pc-instant .in2-view.show {
+  display: block;
+}
+
+.pc-instant .in2-hero {
+  margin-bottom: 18px;
+}
+.pc-instant .in2-hero h1 {
+  font-size: clamp(1.6rem, 7vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+}
+.pc-instant .in2-hero h1 b {
+  background: linear-gradient(100deg, var(--pc-violet), var(--pc-coral));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.pc-instant .in2-hero p {
+  margin-top: 8px;
+  color: var(--pc-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.pc-instant .in2-sec {
+  margin: 20px 0 11px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.pc-instant .in2-sec span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--pc-muted);
+}
+.pc-instant .in2-sec i {
+  flex: 1;
+  height: 1px;
+  background: var(--pc-line);
+}
+
+/* ---------- forfaits ---------- */
+.pc-instant .in2-packs {
+  display: grid;
+  gap: 10px;
+}
+.pc-instant .in2-pack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 15px;
+  border-radius: 18px;
+  background: var(--pc-card);
+  border: 1.5px solid var(--pc-line);
+  box-shadow: 0 4px 14px -10px rgba(25, 25, 51, 0.4);
+  transition:
+    transform var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-instant .in2-pack:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -14px rgba(91, 77, 255, 0.45);
+    border-color: #d9d4ff;
+  }
+}
+.pc-instant .in2-pack:active {
+  transform: scale(0.98);
+}
+.pc-instant .in2-pack.sel {
+  border-color: var(--pc-violet);
+  box-shadow: 0 10px 22px -12px rgba(91, 77, 255, 0.6);
+}
+
+/* FIX labo : le badge débordait de la carte (top:-8px + overflow:visible).
+   Il vit désormais ENTIÈREMENT dans la carte (overflow: hidden garanti). */
+.pc-instant .in2-pack.free {
+  overflow: hidden;
+  padding-top: 26px;
+}
+.pc-instant .in2-pack .badge-free {
+  position: absolute;
+  top: 7px;
+  right: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--pc-violet), var(--pc-coral));
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 5px 12px -5px rgba(91, 77, 255, 0.9);
+}
+
+.pc-instant .in2-pack .ic {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: rgba(91, 77, 255, 0.1);
+}
+.pc-instant .in2-pack .ic svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--pc-violet);
+  fill: none;
+  stroke-linecap: round;
+}
+.pc-instant .in2-pack .t {
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: block;
+}
+.pc-instant .in2-pack .d {
+  font-size: 0.74rem;
+  color: var(--pc-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+  display: block;
+}
+.pc-instant .in2-pack .price {
+  margin-left: auto;
+  flex: none;
+  text-align: right;
+}
+.pc-instant .in2-pack .price .p {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  display: block;
+}
+.pc-instant .in2-pack .price .u {
+  font-size: 0.66rem;
+  color: var(--pc-muted);
+  font-weight: 700;
+  display: block;
+}
+.pc-instant .in2-pack.free .price .p {
+  color: #0d9b5c;
+}
+
+/* ---------- note flux ---------- */
+.pc-instant .in2-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(91, 77, 255, 0.06);
+  border: 1px solid #ddd8ff;
+  font-size: 0.74rem;
+  color: var(--pc-muted);
+  line-height: 1.55;
+}
+.pc-instant .in2-note b {
+  color: var(--pc-ink);
+}
+
+/* ---------- CTA fixe (récapitulatif de sélection) ---------- */
+.pc-instant .in2-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 12px 18px calc(12px + var(--safe-b));
+  background: rgba(245, 245, 251, 0.9);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-top: 1px solid var(--pc-line);
+  max-width: 430px;
+  margin: 0 auto;
+}
+.pc-instant .in2-cta.inline {
+  position: static;
+  margin-top: 20px;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: 0;
+}
+.pc-instant .in2-build {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--pc-track);
+  color: var(--pc-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition:
+    background var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out);
+}
+.pc-instant .in2-build.live {
+  background: linear-gradient(135deg, var(--pc-violet), var(--pc-coral));
+  color: #fff;
+  box-shadow:
+    0 14px 30px -12px rgba(91, 77, 255, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.pc-instant .in2-build.live:active {
+  transform: scale(0.97);
+}
+.pc-instant .in2-build:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.pc-instant .in2-hint {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: var(--pc-muted);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ---------- spinner ---------- */
+.pc-instant .spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  animation: pc-spin 0.8s linear infinite;
+}
+@keyframes pc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- récap paiement ---------- */
+.pc-instant .in2-sum {
+  padding: 15px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(91, 77, 255, 0.09), rgba(255, 77, 106, 0.06));
+  border: 1px solid #ddd8ff;
+}
+.pc-instant .in2-sum .r {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.86rem;
+}
+.pc-instant .in2-sum .r + .r {
+  margin-top: 8px;
+}
+.pc-instant .in2-sum .r span {
+  color: var(--pc-muted);
+  font-weight: 600;
+}
+.pc-instant .in2-sum .r b {
+  font-weight: 800;
+}
+.pc-instant .in2-sum .tot {
+  border-top: 1px dashed #cfc9f5;
+  margin-top: 11px;
+  padding-top: 11px;
+}
+.pc-instant .in2-sum .tot b {
+  font-size: 1.15rem;
+}
+
+/* ---------- méthodes de paiement ---------- */
+.pc-instant .in2-pays {
+  display: grid;
+  gap: 9px;
+}
+.pc-instant .in2-pay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 14px;
+  border-radius: 15px;
+  border: 1.5px solid var(--pc-line);
+  background: var(--pc-card);
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-hover) var(--ease-out);
+}
+.pc-instant .in2-pay:active {
+  transform: scale(0.98);
+}
+.pc-instant .in2-pay.sel {
+  border-color: var(--pc-violet);
+  background: rgba(91, 77, 255, 0.05);
+}
+.pc-instant .in2-pay .logo {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.86rem;
+  color: #fff;
+}
+.pc-instant .in2-pay .nm {
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: block;
+}
+.pc-instant .in2-pay .sub {
+  font-size: 0.72rem;
+  color: var(--pc-muted);
+  margin-top: 1px;
+  display: block;
+}
+.pc-instant .in2-pay .tick {
+  margin-left: auto;
+  width: 21px;
+  height: 21px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--pc-line);
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out);
+}
+.pc-instant .in2-pay.sel .tick {
+  background: var(--pc-violet);
+  border-color: var(--pc-violet);
+}
+.pc-instant .in2-pay .tick svg {
+  width: 11px;
+  height: 11px;
+  stroke: #fff;
+  opacity: 0;
+  fill: none;
+  stroke-linecap: round;
+}
+.pc-instant .in2-pay.sel .tick svg {
+  opacity: 1;
+}
+
+/* ---------- écran connecté ---------- */
+.pc-instant .in2-on {
+  text-align: center;
+  padding-top: 6vh;
+}
+.pc-instant .in2-on .ring {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+.pc-instant .in2-on .ring svg {
+  width: 38px;
+  height: 38px;
+  stroke: #0d9b5c;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pc-instant .in2-on h2 {
+  font-size: clamp(1.5rem, 6.5vw, 1.9rem);
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  margin: 0;
+}
+.pc-instant .in2-on .meta {
+  margin-top: 10px;
+  color: var(--pc-muted);
+  font-size: 0.9rem;
+}
+
+/* jauge de temps restant (production : vraie session, pas un timer JS fake) */
+.pc-instant .in2-gauge {
+  margin-top: 22px;
+  padding: 0 6px;
+}
+.pc-instant .in2-gauge .track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--pc-track);
+  overflow: hidden;
+}
+.pc-instant .in2-gauge .fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--pc-violet), var(--pc-coral));
+  transition: width 1s linear;
+}
+.pc-instant .in2-gauge .legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--pc-muted);
+}
+
+.pc-instant .in2-on .row {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  text-align: left;
+}
+.pc-instant .in2-on .stat {
+  padding: 13px;
+  border-radius: 16px;
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+}
+.pc-instant .in2-on .stat .k {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--pc-muted);
+  font-weight: 700;
+  margin: 0;
+}
+.pc-instant .in2-on .stat .v {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-top: 3px;
+}
+.pc-instant .in2-go {
+  margin-top: 24px;
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--pc-violet), var(--pc-coral));
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  box-shadow: 0 14px 30px -12px rgba(91, 77, 255, 0.85);
+}
+.pc-instant .in2-go:active {
+  transform: scale(0.97);
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pc-instant *,
+  .pc-instant *::before,
+  .pc-instant *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .pc-instant .rise,
+  .pc-instant .rise.in {
+    transform: none !important;
+    transition: none !important;
+  }
+  .pc-instant .in2-gauge .fill {
+    transition: none !important;
+  }
+}
