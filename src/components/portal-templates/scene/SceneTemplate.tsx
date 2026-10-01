@@ -180,7 +180,15 @@ export default function SceneTemplate({
                   <path d="M4 12h15M12 5l7 7-7 7" />
                 </svg>
               </button>
-              <p className="sct-fine">1h offerte · navigation illimitée · renouvelable</p>
+              <p className="sct-fine">Accès gratuit · Connexion sécurisée · Une minute suffit</p>
+              <div className="sct-premium" role="note">
+                <span className="ic" aria-hidden="true">🛡️</span>
+                <span>
+                  <b>Infrastructure professionnelle.</b> Réseau Fibre dédié, supervision
+                  en continu et support sur site — un service de la Ville de Dakar,
+                  opéré par Valcore Networks.
+                </span>
+              </div>
               <div className="sct-rings" aria-hidden="true">
                 <span /><span /><span /><span /><span />
               </div>
