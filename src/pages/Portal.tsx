@@ -106,7 +106,11 @@ export default function Portal() {
         sponsor_logo_url: sceneSp?.logo_url ?? portalCfg?.logo_url ?? site.logo_url,
         event_dates: sceneEv?.dates ?? null,
         event_location: site.location,
-        offer_text: sceneSp?.subtext ?? portalCfg?.welcome_message ?? site.welcome_msg,
+        // Le lede = accueil du site (welcome_msg) ; le sous-texte du bloc
+        // sponsor = scene_sponsor.subtext. Sinon les deux affichent la même
+        // phrase (doublon constaté sur la démo JOJ).
+        offer_text: portalCfg?.welcome_message ?? site.welcome_msg,
+        sponsor_subtext: sceneSp?.subtext ?? null,
         siteId: site.id,
       });
       setLoading(false);

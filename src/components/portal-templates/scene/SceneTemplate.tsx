@@ -20,6 +20,8 @@ export interface SceneTemplateProps {
   event_dates?: string | null;
   event_location?: string | null;
   offer_text?: string | null;
+  /** Sous-texte du bloc sponsor (distinct du lede/accueil). */
+  sponsor_subtext?: string | null;
   /** Requis : contexte site pour send-otp / verify-otp (rate limiting). */
   siteId?: string | null;
 }
@@ -44,6 +46,7 @@ export default function SceneTemplate({
   event_dates,
   event_location,
   offer_text,
+  sponsor_subtext,
   siteId,
 }: SceneTemplateProps) {
   const [connected, setConnected] = useState(false);
@@ -150,7 +153,7 @@ export default function SceneTemplate({
           </span>
           <span className="txt">
             <b>{sponsorLabel}</b>
-            {offer_text || 'Internet gratuit pendant l\'événement'}
+            {sponsor_subtext || offer_text || 'Internet gratuit pendant l\'événement'}
           </span>
         </div>
 
