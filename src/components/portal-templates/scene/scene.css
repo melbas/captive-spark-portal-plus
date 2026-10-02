@@ -197,35 +197,6 @@
   color: rgba(255, 255, 255, 0.38);
 }
 
-/* ---- Note premium (scellement qualité de service, chiffré et factuel) ---- */
-.sct-premium {
-  margin-top: 24px;
-  padding: 13px 16px;
-  border-radius: 13px;
-  background: linear-gradient(135deg, rgba(79, 195, 247, 0.09), rgba(245, 180, 0, 0.06));
-  border: 1px solid rgba(79, 195, 247, 0.22);
-  font-size: 0.78rem;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.6);
-  display: flex;
-  gap: 11px;
-  align-items: flex-start;
-}
-.sct-premium .ic {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: rgba(79, 195, 247, 0.14);
-  display: grid;
-  place-items: center;
-  font-size: 0.9rem;
-}
-.sct-premium b {
-  color: #fafafa;
-  font-weight: 700;
-}
-
 /* ---- Anneaux olympiques décoratifs — MONOCHROMES blancs (audit) :
    les anneaux pleins 5 couleurs appartiennent aux marques officielles
    du CIO. En usage institutionnel secondaire, la version monochrome

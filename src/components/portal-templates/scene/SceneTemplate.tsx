@@ -183,14 +183,6 @@ export default function SceneTemplate({
                 </svg>
               </button>
               <p className="sct-fine">Accès gratuit · Connexion sécurisée · Une minute suffit</p>
-              <div className="sct-premium" role="note">
-                <span className="ic" aria-hidden="true">🛡️</span>
-                <span>
-                  <b>Infrastructure professionnelle.</b> Réseau Fibre dédié, supervision
-                  en continu et support sur site — un service de la Ville de Dakar,
-                  opéré par Valcore Networks.
-                </span>
-              </div>
               <div className="sct-rings" aria-hidden="true">
                 <span /><span /><span /><span /><span />
               </div>
