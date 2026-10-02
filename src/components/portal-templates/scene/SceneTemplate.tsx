@@ -131,7 +131,9 @@ export default function SceneTemplate({
 
         <div className="sct-hero">
           <h1>
-            {event_tagline || eventName.split(' ').slice(0, 1)}
+            {/* Pas de fallback sur le 1er mot du nom : sans tagline configurée,
+                le titre = eventName seul (sinon doublon « JOJ / JOJ Dakar 2026 »). */}
+            {event_tagline}
             <span className="accent">{eventName}</span>
           </h1>
           <p className="date">
